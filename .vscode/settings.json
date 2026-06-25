@@ -1,0 +1,34 @@
+{
+  "files.watcherExclude": {
+    "**/routeTree.gen.ts": true
+  },
+  "search.exclude": {
+    "**/routeTree.gen.ts": true
+  },
+  "files.readonlyInclude": {
+    "**/routeTree.gen.ts": true
+  },
+  "workbench.colorCustomizations": {
+    "activityBar.activeBackground": "#1c5a3e",
+    "activityBar.background": "#1c5a3e",
+    "activityBar.foreground": "#e7e7e7",
+    "activityBar.inactiveForeground": "#e7e7e799",
+    "activityBarBadge.background": "#210f31",
+    "activityBarBadge.foreground": "#e7e7e7",
+    "commandCenter.border": "#e7e7e799",
+    "sash.hoverBorder": "#1c5a3e",
+    "statusBar.background": "#103323",
+    "statusBar.foreground": "#e7e7e7",
+    "statusBarItem.hoverBackground": "#1c5a3e",
+    "statusBarItem.remoteBackground": "#103323",
+    "statusBarItem.remoteForeground": "#e7e7e7",
+    "titleBar.activeBackground": "#103323",
+    "titleBar.activeForeground": "#e7e7e7",
+    "titleBar.inactiveBackground": "#10332399",
+    "titleBar.inactiveForeground": "#e7e7e799"
+  },
+  "peacock.color": "#103323",
+  "chat.tools.terminal.autoApprove": {
+    "Copy-Item": true
+  }
+}
