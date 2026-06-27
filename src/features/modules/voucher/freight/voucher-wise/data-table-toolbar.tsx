@@ -60,7 +60,7 @@ export function DataTableToolbar<TData>({
           className="h-8 w-[150px] lg:w-[250px]"
         />
 
-        <ReportingPeriod />
+        <ReportingPeriod disableHotkey />
 
         <div className='flex flex-row items-center gap-2'>
 

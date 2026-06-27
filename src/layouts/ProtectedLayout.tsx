@@ -7,6 +7,7 @@ import { Suspense } from 'react'
 import { AppSidebar } from './components/app-sidebar'
 import Footer from './components/footer'
 import HeaderComponent from './components/HeaderComponent'
+import ReportingPeriod from '@/features/global/components/reporting-period'
 import RouteBreadcrumbs from './components/route-breadcrumbs'
 
 import { GlobalContextProvider } from '@/features/global/contexts/global-context'
@@ -48,6 +49,8 @@ const ProtectedLayout = () => {
                                     </Suspense>
                                 </main>
                                 <Footer />
+                                {/* Global hotkey: Alt+P to open period modal */}
+                                <ReportingPeriod hideTrigger />
                             </div>
 
                         </div>

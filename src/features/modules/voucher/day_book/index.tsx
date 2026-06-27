@@ -14,6 +14,12 @@ interface DayBookProps {
     onSearchChange?: (value: string) => void
     onVoucherTypeChange?: (value: string[]) => void
     selectedVoucherTypes?: string[]
+    onBillingPreferenceChange?: (value: string[]) => void
+    selectedBillingPreferences?: string[]
+    onStatusChange?: (value: string[]) => void
+    selectedStatuses?: string[]
+    onSortChange?: (sortBy: string, sortOrder: string) => void
+    sorting?: import('@tanstack/react-table').SortingState
 }
 
 export default function DayBook({
@@ -24,6 +30,12 @@ export default function DayBook({
     onSearchChange,
     onVoucherTypeChange,
     selectedVoucherTypes,
+    onBillingPreferenceChange,
+    selectedBillingPreferences,
+    onStatusChange,
+    selectedStatuses,
+    onSortChange,
+    sorting,
 }: DayBookProps) {
     return (
         <DayBookProvider>
@@ -46,6 +58,12 @@ export default function DayBook({
                         onSearchChange={onSearchChange}
                         onVoucherTypeChange={onVoucherTypeChange}
                         selectedVoucherTypes={selectedVoucherTypes}
+                        onBillingPreferenceChange={onBillingPreferenceChange}
+                        selectedBillingPreferences={selectedBillingPreferences}
+                        onStatusChange={onStatusChange}
+                        selectedStatuses={selectedStatuses}
+                        onSortChange={onSortChange}
+                        sorting={sorting}
                     />
                 </div>
             </Main>

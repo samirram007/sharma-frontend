@@ -110,7 +110,7 @@ const FreightPrintDialog = (printData: DayBookSchema) => {
                         Voucher Date: <span className="underline decoration-dotted underline-offset-4 "> {date_format(printData?.voucherDate)}</span>
                     </div>
                 </div>
-                <div className="grid grid-cols-2 ">
+                <div className="grid grid-cols-2">
                     <div className="flex gap-2">
                         <span>Dl. No.:</span> <span className="underline decoration-dotted underline-offset-4 "> {printData?.referenceNo}</span>
                     </div>
@@ -118,6 +118,13 @@ const FreightPrintDialog = (printData: DayBookSchema) => {
                         <span>Dl. Date:</span> <span className="underline decoration-dotted underline-offset-4 "> {date_format(printData?.referenceDate!)}</span>
                     </div>
                 </div>
+                {printData?.voucherDispatchDetail?.billingPreference && (
+                    <div className="grid grid-cols-2 mt-1">
+                        <div className="flex gap-2">
+                            <span>Billing:</span> <span className="capitalize underline decoration-dotted underline-offset-4 font-semibold">{printData.voucherDispatchDetail.billingPreference}</span>
+                        </div>
+                    </div>
+                )}
             </div>
             <div className="x-body mt-16 grid grid-cols-[1fr_200px] gap-6">
                 <div className="grid  gap-4">
@@ -221,6 +228,11 @@ const DeliveryNotePrintDialog = (printData: DayBookSchema) => {
                         <div className="">
                             Truck No: <span className="underline decoration-dotted underline-offset-4 "> {printData?.voucherDispatchDetail?.motorVehicleNo}</span>
                         </div>
+                        {printData?.voucherDispatchDetail?.billingPreference && (
+                            <div className="mt-1">
+                                <span>Billing Preference:</span> <span className="capitalize underline decoration-dotted underline-offset-4 font-semibold">{printData.voucherDispatchDetail.billingPreference}</span>
+                            </div>
+                        )}
                     </div>
                 </div>
 

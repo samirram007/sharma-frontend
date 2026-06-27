@@ -6,6 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
 import { Loader } from 'lucide-react';
 import { useState, useCallback, useRef } from 'react';
+import type { SortingState } from '@tanstack/react-table';
 
 export const Route = createFileRoute(
   '/_protected/reports/day_book/_layout/self',
@@ -18,6 +19,10 @@ export const Route = createFileRoute(
     })
     const [debouncedSearch, setDebouncedSearch] = useState('')
     const [voucherTypeIds, setVoucherTypeIds] = useState<string[]>([])
+    const [billingPreferences, setBillingPreferences] = useState<string[]>([])
+    const [statuses, setStatuses] = useState<string[]>([])
+    const [sortBy, setSortBy] = useState('')
+    const [sortOrder, setSortOrder] = useState('')
     const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
     const params: DayBookParams = {
@@ -25,6 +30,9 @@ export const Route = createFileRoute(
       per_page: perPage,
       ...(debouncedSearch ? { search: debouncedSearch } : {}),
       ...(voucherTypeIds.length > 0 ? { voucher_type_id: voucherTypeIds.join(',') } : {}),
+      ...(billingPreferences.length > 0 ? { billing_preference: billingPreferences.join(',') } : {}),
+      ...(statuses.length > 0 ? { status: statuses.join(',') } : {}),
+      ...(sortBy ? { sort_by: sortBy, sort_order: sortOrder } : {}),
     }
 
     const { data: daybook, isLoading } = useQuery(dayBookSelfQueryOptions(params))
@@ -52,6 +60,30 @@ export const Route = createFileRoute(
       setPage(1)
     }, [])
 
+    const handleBillingPreferenceChange = useCallback((value: string[]) => {
+      setBillingPreferences(value)
+      setPage(1)
+    }, [])
+
+    const handleStatusChange = useCallback((value: string[]) => {
+      setStatuses(value)
+      setPage(1)
+    }, [])
+
+    const handleSortChange = useCallback((newSortBy: string, newSortOrder: string) => {
+      setSortBy(newSortBy)
+      setSortOrder(newSortOrder)
+      setPage(1)
+    }, [])
+
+    // Convert to TanStack SortingState for the table (reverse map backend field → column id)
+    const sortFieldReverseMap: Record<string, string> = {
+      billing_preference: 'billingPreference',
+    }
+    const sorting: SortingState = sortBy
+      ? [{ id: sortFieldReverseMap[sortBy] ?? sortBy, desc: sortOrder === 'desc' }]
+      : []
+
     if (isLoading && !daybook) {
       return (
         <div className="flex items-center justify-center h-64">
@@ -69,6 +101,12 @@ export const Route = createFileRoute(
         onSearchChange={handleSearchChange}
         onVoucherTypeChange={handleVoucherTypeChange}
         selectedVoucherTypes={voucherTypeIds}
+        onBillingPreferenceChange={handleBillingPreferenceChange}
+        selectedBillingPreferences={billingPreferences}
+        onStatusChange={handleStatusChange}
+        selectedStatuses={statuses}
+        onSortChange={handleSortChange}
+        sorting={sorting}
       />
     )
   },

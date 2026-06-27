@@ -70,9 +70,9 @@ export default function StockSummary() {
                     <h3 className='text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100'>
                         {capitalizeAllWords(toSentenceCase(currentReport)).replace(/_/g, ' ')} </h3>
                     {/* {currentReport} */}
-                    {reportPeriodVisible.includes(currentReport) && <p className='text-slate-600 dark:text-slate-300'><ReportingPeriod /></p>}
+                    {reportPeriodVisible.includes(currentReport) && <p className='text-slate-600 dark:text-slate-300'><ReportingPeriod disableHotkey /></p>}
                     {/* <p className='text-muted-foreground pt-4 text-sm'>
-                        <ReportingPeriod />
+                        <ReportingPeriod disableHotkey />
                     </p> */}
                 </div>
                 <PrimaryButtons />

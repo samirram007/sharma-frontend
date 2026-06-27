@@ -51,7 +51,7 @@ export default function Transactions({ data }: TransactionProps) {
 }
 interface VoucherTypeTabletProps {
     voucherType: VoucherType
-    moduleLink: String
+    moduleLink: string
 
 }
 

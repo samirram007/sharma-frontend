@@ -175,8 +175,8 @@ export default function ProfileForm() {
     )
   }, [userRecord])
 
-  const fiscalLabel = userFiscalYear
-    ? `${new Date(userFiscalYear.startDate).toLocaleDateString()} - ${new Date(userFiscalYear.endDate).toLocaleDateString()}`
+  const fiscalLabel = userFiscalYear?.fiscalYear
+    ? `${new Date(userFiscalYear.fiscalYear.startDate).toLocaleDateString()} - ${new Date(userFiscalYear.fiscalYear.endDate).toLocaleDateString()}`
     : 'Not set'
 
   const bioLength = (form.watch('bio') ?? '').length

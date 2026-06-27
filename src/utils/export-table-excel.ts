@@ -21,6 +21,13 @@ export interface ExcelSheet<T = any> {
             backgroundColor?: string
         }[]
     }
+    /** Merge cell ranges: startRow, endRow, startCol, endCol (1-indexed) */
+    mergeCells?: Array<{
+        startRow: number
+        endRow: number
+        startCol: number
+        endCol: number
+    }>
 }
 
 interface ExportToExcelProps<T> {
@@ -57,13 +64,74 @@ export default async function exportTableToExcel<T>({
             width: 20,
         }))
 
-        sheetDef.data.forEach((row: any) => {
+        // Track which sheets have hyperlinks from other sheets
+        const hyperlinkTargets: Array<{ sheetName: string; rowNumber: number }> = []
+
+        sheetDef.data.forEach((row: any, rowIndex: number) => {
             const rowData: Record<string, any> = {}
             sheetDef.columnData.forEach((col) => {
                 rowData[col.accessor as string] = row[col.accessor]
             })
-            worksheet.addRow(rowData)
+            const newRow = worksheet.addRow(rowData)
+
+            // Apply row-level styling based on markers
+            if (row._isHeader) {
+                // Voucher header row: gray background, bold
+                newRow.eachCell((cell) => {
+                    cell.fill = {
+                        type: 'pattern',
+                        pattern: 'solid',
+                        fgColor: { argb: 'FFE0E0E0' }, // light gray
+                    }
+                    cell.font = { bold: true }
+                })
+            } else if (row._isSubtotal) {
+                // Voucher subtotal row: blue-tinted background, bold
+                newRow.eachCell((cell) => {
+                    cell.fill = {
+                        type: 'pattern',
+                        pattern: 'solid',
+                        fgColor: { argb: 'FFDCE6F1' }, // light blue
+                    }
+                    cell.font = { bold: true }
+                })
+            } else if (row._isGrandTotal) {
+                // Transporter grand total row: dark background, white bold text
+                newRow.eachCell((cell) => {
+                    cell.fill = {
+                        type: 'pattern',
+                        pattern: 'solid',
+                        fgColor: { argb: 'FF4472C4' }, // blue
+                    }
+                    cell.font = { bold: true, color: { argb: 'FFFFFFFF' } } // white
+                })
+            }
+
+            // Track hyperlink targets (rows with _sheetLink marker)
+            if (row._sheetLink) {
+                hyperlinkTargets.push({
+                    sheetName: row._sheetLink,
+                    rowNumber: rowIndex + 2, // +2 because row 1 is header, data starts at row 2
+                })
+            }
         })
+
+        // Apply hyperlinks after all rows are added
+        // Hyperlinks from summary sheet to per-transporter sheets
+        if (hyperlinkTargets.length > 0) {
+            hyperlinkTargets.forEach(({ sheetName, rowNumber }) => {
+                const cell = worksheet.getCell(rowNumber, 1) // First column = Transporter name
+                cell.value = {
+                    text: String(cell.value || sheetName),
+                    hyperlink: `#'${sheetName}'!A1`,
+                }
+                // Blue + underline to look like a clickable link
+                cell.font = {
+                    color: { argb: 'FF0563C1' },
+                    underline: true,
+                }
+            })
+        }
 
         worksheet.getRow(1).font = { bold: true }
         worksheet.getRow(1).alignment = { vertical: 'middle', horizontal: 'center' }
@@ -92,6 +160,23 @@ export default async function exportTableToExcel<T>({
                     ext: { width: 600, height: 350 }
                 })
             }
+        }
+
+        // Apply merged cells for item grouping
+        if (sheetDef.mergeCells && sheetDef.mergeCells.length > 0) {
+            sheetDef.mergeCells.forEach(({ startRow, endRow, startCol, endCol }) => {
+                if (startRow < endRow) {
+                    const startCell = worksheet.getCell(startRow, startCol)
+                    worksheet.mergeCells(startRow, startCol, endRow, endCol)
+                    
+                    // Style the merged cell - center vertically
+                    startCell.alignment = {
+                        vertical: 'middle',
+                        horizontal: 'left',
+                        wrapText: true,
+                    }
+                }
+            })
         }
     }
 

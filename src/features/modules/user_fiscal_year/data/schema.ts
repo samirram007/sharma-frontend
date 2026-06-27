@@ -6,13 +6,15 @@ import { userSchema } from '../../user/data/schema';
 
 
 
-export const userFiscalYearSchema: z.ZodType<any> = z.object({
+export const userFiscalYearSchema = z.object({
     id: z.number().int().positive(),
     userId: z.number().int().positive(),
     fiscalYearId: z.number().int().positive(),
+    startDate: z.coerce.date(),
+    endDate: z.coerce.date(),
+    currentDate: z.coerce.date(),
     user: userSchema.nullish(),
     fiscalYear: fiscalYearSchema.nullish(),
-
 })
 export type UserFiscalYear = z.infer<typeof userFiscalYearSchema>
 export const userFiscalYearListSchema = z.array(userFiscalYearSchema)

@@ -49,7 +49,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             // console.log('Fetching profile...');
             const data = await fetchUserProfileService();
             flushSync(() => {
-                //console.log("userProfileData", data?.data)
+                
                 setUser(data?.data);
                 setUserFiscalYear(data?.data?.userFiscalYear || null);
 
@@ -59,7 +59,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 } : null);
                 const perms: string[] = [];
                 // Extract permissions from roles
-                //must be unique permissions
+               
 
                 data?.data?.roles?.forEach((role: Role) => {
                     role?.permissions?.forEach((permission: Permission) => {

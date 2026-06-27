@@ -109,7 +109,7 @@ export default function Freight({ data: freightListSchema, isLoading, pagination
                     </p>
                 </div>
                 <div className='flex items-center gap-2'>
-                    <ReportingPeriod />
+                    <ReportingPeriod disableHotkey />
                 </div>
             </div>
 

@@ -37,6 +37,7 @@ import { Route as ProtectedSettingsAppearanceRouteImport } from './routes/_prote
 import { Route as ProtectedSettingsAccountRouteImport } from './routes/_protected/settings/account'
 import { Route as ProtectedAdministrationLayoutRouteImport } from './routes/_protected/administration/_layout'
 import { Route as ProtectedauthChangePasswordRouteImport } from './routes/_protected/(auth)/change-password'
+import { Route as ProtectedReportsReceipt_note_reportIndexRouteImport } from './routes/_protected/reports/receipt_note_report/index'
 import { Route as ProtectedReportsProfit_and_lossIndexRouteImport } from './routes/_protected/reports/profit_and_loss/index'
 import { Route as ProtectedReportsBalance_sheetIndexRouteImport } from './routes/_protected/reports/balance_sheet/index'
 import { Route as ProtectedauthProfileIndexRouteImport } from './routes/_protected/(auth)/profile/index'
@@ -82,6 +83,7 @@ import { Route as ProtectedReportsStock_summaryLayoutNetStockRouteImport } from 
 import { Route as ProtectedReportsFreightLayoutFreightZoneWiseRouteImport } from './routes/_protected/reports/freight/_layout/freight-zone-wise'
 import { Route as ProtectedReportsFreightLayoutFreightVoucherWiseRouteImport } from './routes/_protected/reports/freight/_layout/freight-voucher-wise'
 import { Route as ProtectedReportsFreightLayoutFreightTransporterWiseRouteImport } from './routes/_protected/reports/freight/_layout/freight-transporter-wise'
+import { Route as ProtectedReportsFreightLayoutFreightTransporterItemWiseRouteImport } from './routes/_protected/reports/freight/_layout/freight-transporter-item-wise'
 import { Route as ProtectedReportsFreightLayoutFreightGodownWiseRouteImport } from './routes/_protected/reports/freight/_layout/freight-godown-wise'
 import { Route as ProtectedReportsFreightLayoutDeliveryNoteZoneWiseRouteImport } from './routes/_protected/reports/freight/_layout/delivery-note-zone-wise'
 import { Route as ProtectedReportsFreightLayoutDeliveryNoteGodownWiseRouteImport } from './routes/_protected/reports/freight/_layout/delivery-note-godown-wise'
@@ -449,6 +451,12 @@ const ProtectedauthChangePasswordRoute =
     path: '/change-password',
     getParentRoute: () => ProtectedRoute,
   } as any)
+const ProtectedReportsReceipt_note_reportIndexRoute =
+  ProtectedReportsReceipt_note_reportIndexRouteImport.update({
+    id: '/reports/receipt_note_report/',
+    path: '/reports/receipt_note_report/',
+    getParentRoute: () => ProtectedRoute,
+  } as any)
 const ProtectedReportsProfit_and_lossIndexRoute =
   ProtectedReportsProfit_and_lossIndexRouteImport.update({
     id: '/reports/profit_and_loss/',
@@ -719,6 +727,12 @@ const ProtectedReportsFreightLayoutFreightTransporterWiseRoute =
   ProtectedReportsFreightLayoutFreightTransporterWiseRouteImport.update({
     id: '/freight-transporter-wise',
     path: '/freight-transporter-wise',
+    getParentRoute: () => ProtectedReportsFreightLayoutRoute,
+  } as any)
+const ProtectedReportsFreightLayoutFreightTransporterItemWiseRoute =
+  ProtectedReportsFreightLayoutFreightTransporterItemWiseRouteImport.update({
+    id: '/freight-transporter-item-wise',
+    path: '/freight-transporter-item-wise',
     getParentRoute: () => ProtectedReportsFreightLayoutRoute,
   } as any)
 const ProtectedReportsFreightLayoutFreightGodownWiseRoute =
@@ -1754,6 +1768,7 @@ export interface FileRoutesByFullPath {
   '/profile/': typeof ProtectedauthProfileIndexRoute
   '/reports/balance_sheet/': typeof ProtectedReportsBalance_sheetIndexRoute
   '/reports/profit_and_loss/': typeof ProtectedReportsProfit_and_lossIndexRoute
+  '/reports/receipt_note_report/': typeof ProtectedReportsReceipt_note_reportIndexRoute
   '/administration/role': typeof ProtectedAdministrationLayoutRoleLayoutRouteWithChildren
   '/administration/user': typeof ProtectedAdministrationLayoutUserLayoutRouteWithChildren
   '/masters/miscellaneous/delivery_places': typeof ProtectedMastersMiscellaneousLayoutDelivery_placesRoute
@@ -1764,6 +1779,7 @@ export interface FileRoutesByFullPath {
   '/reports/freight/delivery-note-godown-wise': typeof ProtectedReportsFreightLayoutDeliveryNoteGodownWiseRoute
   '/reports/freight/delivery-note-zone-wise': typeof ProtectedReportsFreightLayoutDeliveryNoteZoneWiseRoute
   '/reports/freight/freight-godown-wise': typeof ProtectedReportsFreightLayoutFreightGodownWiseRoute
+  '/reports/freight/freight-transporter-item-wise': typeof ProtectedReportsFreightLayoutFreightTransporterItemWiseRoute
   '/reports/freight/freight-transporter-wise': typeof ProtectedReportsFreightLayoutFreightTransporterWiseRoute
   '/reports/freight/freight-voucher-wise': typeof ProtectedReportsFreightLayoutFreightVoucherWiseRoute
   '/reports/freight/freight-zone-wise': typeof ProtectedReportsFreightLayoutFreightZoneWiseRoute
@@ -1972,6 +1988,7 @@ export interface FileRoutesByTo {
   '/profile': typeof ProtectedauthProfileIndexRoute
   '/reports/balance_sheet': typeof ProtectedReportsBalance_sheetIndexRoute
   '/reports/profit_and_loss': typeof ProtectedReportsProfit_and_lossIndexRoute
+  '/reports/receipt_note_report': typeof ProtectedReportsReceipt_note_reportIndexRoute
   '/masters/miscellaneous/delivery_places': typeof ProtectedMastersMiscellaneousLayoutDelivery_placesRoute
   '/masters/miscellaneous/delivery_routes': typeof ProtectedMastersMiscellaneousLayoutDelivery_routesRoute
   '/masters/miscellaneous/delivery_vehicles': typeof ProtectedMastersMiscellaneousLayoutDelivery_vehiclesRouteWithChildren
@@ -1980,6 +1997,7 @@ export interface FileRoutesByTo {
   '/reports/freight/delivery-note-godown-wise': typeof ProtectedReportsFreightLayoutDeliveryNoteGodownWiseRoute
   '/reports/freight/delivery-note-zone-wise': typeof ProtectedReportsFreightLayoutDeliveryNoteZoneWiseRoute
   '/reports/freight/freight-godown-wise': typeof ProtectedReportsFreightLayoutFreightGodownWiseRoute
+  '/reports/freight/freight-transporter-item-wise': typeof ProtectedReportsFreightLayoutFreightTransporterItemWiseRoute
   '/reports/freight/freight-transporter-wise': typeof ProtectedReportsFreightLayoutFreightTransporterWiseRoute
   '/reports/freight/freight-voucher-wise': typeof ProtectedReportsFreightLayoutFreightVoucherWiseRoute
   '/reports/freight/freight-zone-wise': typeof ProtectedReportsFreightLayoutFreightZoneWiseRoute
@@ -2175,6 +2193,7 @@ export interface FileRoutesById {
   '/_protected/(auth)/profile/': typeof ProtectedauthProfileIndexRoute
   '/_protected/reports/balance_sheet/': typeof ProtectedReportsBalance_sheetIndexRoute
   '/_protected/reports/profit_and_loss/': typeof ProtectedReportsProfit_and_lossIndexRoute
+  '/_protected/reports/receipt_note_report/': typeof ProtectedReportsReceipt_note_reportIndexRoute
   '/_protected/administration/_layout/role/_layout': typeof ProtectedAdministrationLayoutRoleLayoutRouteWithChildren
   '/_protected/administration/_layout/user/_layout': typeof ProtectedAdministrationLayoutUserLayoutRouteWithChildren
   '/_protected/masters/miscellaneous/_layout/delivery_places': typeof ProtectedMastersMiscellaneousLayoutDelivery_placesRoute
@@ -2185,6 +2204,7 @@ export interface FileRoutesById {
   '/_protected/reports/freight/_layout/delivery-note-godown-wise': typeof ProtectedReportsFreightLayoutDeliveryNoteGodownWiseRoute
   '/_protected/reports/freight/_layout/delivery-note-zone-wise': typeof ProtectedReportsFreightLayoutDeliveryNoteZoneWiseRoute
   '/_protected/reports/freight/_layout/freight-godown-wise': typeof ProtectedReportsFreightLayoutFreightGodownWiseRoute
+  '/_protected/reports/freight/_layout/freight-transporter-item-wise': typeof ProtectedReportsFreightLayoutFreightTransporterItemWiseRoute
   '/_protected/reports/freight/_layout/freight-transporter-wise': typeof ProtectedReportsFreightLayoutFreightTransporterWiseRoute
   '/_protected/reports/freight/_layout/freight-voucher-wise': typeof ProtectedReportsFreightLayoutFreightVoucherWiseRoute
   '/_protected/reports/freight/_layout/freight-zone-wise': typeof ProtectedReportsFreightLayoutFreightZoneWiseRoute
@@ -2408,6 +2428,7 @@ export interface FileRouteTypes {
     | '/profile/'
     | '/reports/balance_sheet/'
     | '/reports/profit_and_loss/'
+    | '/reports/receipt_note_report/'
     | '/administration/role'
     | '/administration/user'
     | '/masters/miscellaneous/delivery_places'
@@ -2418,6 +2439,7 @@ export interface FileRouteTypes {
     | '/reports/freight/delivery-note-godown-wise'
     | '/reports/freight/delivery-note-zone-wise'
     | '/reports/freight/freight-godown-wise'
+    | '/reports/freight/freight-transporter-item-wise'
     | '/reports/freight/freight-transporter-wise'
     | '/reports/freight/freight-voucher-wise'
     | '/reports/freight/freight-zone-wise'
@@ -2626,6 +2648,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/reports/balance_sheet'
     | '/reports/profit_and_loss'
+    | '/reports/receipt_note_report'
     | '/masters/miscellaneous/delivery_places'
     | '/masters/miscellaneous/delivery_routes'
     | '/masters/miscellaneous/delivery_vehicles'
@@ -2634,6 +2657,7 @@ export interface FileRouteTypes {
     | '/reports/freight/delivery-note-godown-wise'
     | '/reports/freight/delivery-note-zone-wise'
     | '/reports/freight/freight-godown-wise'
+    | '/reports/freight/freight-transporter-item-wise'
     | '/reports/freight/freight-transporter-wise'
     | '/reports/freight/freight-voucher-wise'
     | '/reports/freight/freight-zone-wise'
@@ -2828,6 +2852,7 @@ export interface FileRouteTypes {
     | '/_protected/(auth)/profile/'
     | '/_protected/reports/balance_sheet/'
     | '/_protected/reports/profit_and_loss/'
+    | '/_protected/reports/receipt_note_report/'
     | '/_protected/administration/_layout/role/_layout'
     | '/_protected/administration/_layout/user/_layout'
     | '/_protected/masters/miscellaneous/_layout/delivery_places'
@@ -2838,6 +2863,7 @@ export interface FileRouteTypes {
     | '/_protected/reports/freight/_layout/delivery-note-godown-wise'
     | '/_protected/reports/freight/_layout/delivery-note-zone-wise'
     | '/_protected/reports/freight/_layout/freight-godown-wise'
+    | '/_protected/reports/freight/_layout/freight-transporter-item-wise'
     | '/_protected/reports/freight/_layout/freight-transporter-wise'
     | '/_protected/reports/freight/_layout/freight-voucher-wise'
     | '/_protected/reports/freight/_layout/freight-zone-wise'
@@ -3275,6 +3301,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProtectedauthChangePasswordRouteImport
       parentRoute: typeof ProtectedRoute
     }
+    '/_protected/reports/receipt_note_report/': {
+      id: '/_protected/reports/receipt_note_report/'
+      path: '/reports/receipt_note_report'
+      fullPath: '/reports/receipt_note_report/'
+      preLoaderRoute: typeof ProtectedReportsReceipt_note_reportIndexRouteImport
+      parentRoute: typeof ProtectedRoute
+    }
     '/_protected/reports/profit_and_loss/': {
       id: '/_protected/reports/profit_and_loss/'
       path: '/reports/profit_and_loss'
@@ -3588,6 +3621,13 @@ declare module '@tanstack/react-router' {
       path: '/freight-transporter-wise'
       fullPath: '/reports/freight/freight-transporter-wise'
       preLoaderRoute: typeof ProtectedReportsFreightLayoutFreightTransporterWiseRouteImport
+      parentRoute: typeof ProtectedReportsFreightLayoutRoute
+    }
+    '/_protected/reports/freight/_layout/freight-transporter-item-wise': {
+      id: '/_protected/reports/freight/_layout/freight-transporter-item-wise'
+      path: '/freight-transporter-item-wise'
+      fullPath: '/reports/freight/freight-transporter-item-wise'
+      preLoaderRoute: typeof ProtectedReportsFreightLayoutFreightTransporterItemWiseRouteImport
       parentRoute: typeof ProtectedReportsFreightLayoutRoute
     }
     '/_protected/reports/freight/_layout/freight-godown-wise': {
@@ -5659,6 +5699,7 @@ interface ProtectedReportsFreightLayoutRouteChildren {
   ProtectedReportsFreightLayoutDeliveryNoteGodownWiseRoute: typeof ProtectedReportsFreightLayoutDeliveryNoteGodownWiseRoute
   ProtectedReportsFreightLayoutDeliveryNoteZoneWiseRoute: typeof ProtectedReportsFreightLayoutDeliveryNoteZoneWiseRoute
   ProtectedReportsFreightLayoutFreightGodownWiseRoute: typeof ProtectedReportsFreightLayoutFreightGodownWiseRoute
+  ProtectedReportsFreightLayoutFreightTransporterItemWiseRoute: typeof ProtectedReportsFreightLayoutFreightTransporterItemWiseRoute
   ProtectedReportsFreightLayoutFreightTransporterWiseRoute: typeof ProtectedReportsFreightLayoutFreightTransporterWiseRoute
   ProtectedReportsFreightLayoutFreightVoucherWiseRoute: typeof ProtectedReportsFreightLayoutFreightVoucherWiseRoute
   ProtectedReportsFreightLayoutFreightZoneWiseRoute: typeof ProtectedReportsFreightLayoutFreightZoneWiseRoute
@@ -5672,6 +5713,8 @@ const ProtectedReportsFreightLayoutRouteChildren: ProtectedReportsFreightLayoutR
       ProtectedReportsFreightLayoutDeliveryNoteZoneWiseRoute,
     ProtectedReportsFreightLayoutFreightGodownWiseRoute:
       ProtectedReportsFreightLayoutFreightGodownWiseRoute,
+    ProtectedReportsFreightLayoutFreightTransporterItemWiseRoute:
+      ProtectedReportsFreightLayoutFreightTransporterItemWiseRoute,
     ProtectedReportsFreightLayoutFreightTransporterWiseRoute:
       ProtectedReportsFreightLayoutFreightTransporterWiseRoute,
     ProtectedReportsFreightLayoutFreightVoucherWiseRoute:
@@ -5773,6 +5816,7 @@ interface ProtectedRouteChildren {
   ProtectedauthProfileIndexRoute: typeof ProtectedauthProfileIndexRoute
   ProtectedReportsBalance_sheetIndexRoute: typeof ProtectedReportsBalance_sheetIndexRoute
   ProtectedReportsProfit_and_lossIndexRoute: typeof ProtectedReportsProfit_and_lossIndexRoute
+  ProtectedReportsReceipt_note_reportIndexRoute: typeof ProtectedReportsReceipt_note_reportIndexRoute
 }
 
 const ProtectedRouteChildren: ProtectedRouteChildren = {
@@ -5822,6 +5866,8 @@ const ProtectedRouteChildren: ProtectedRouteChildren = {
     ProtectedReportsBalance_sheetIndexRoute,
   ProtectedReportsProfit_and_lossIndexRoute:
     ProtectedReportsProfit_and_lossIndexRoute,
+  ProtectedReportsReceipt_note_reportIndexRoute:
+    ProtectedReportsReceipt_note_reportIndexRoute,
 }
 
 const ProtectedRouteWithChildren = ProtectedRoute._addFileChildren(

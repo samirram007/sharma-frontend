@@ -486,6 +486,7 @@ export const sidebarData: SidebarData = {
             { title: 'Delivery Note (Godown Wise)', url: '/reports/freight/delivery-note-godown-wise', icon: IconBuildingWarehouse },
             { title: 'Freight (Zone Wise)', url: '/reports/freight/freight-zone-wise', icon: IconRoute },
             { title: 'Freight (Transporter Wise)', url: '/reports/freight/freight-transporter-wise', icon: IconTruck },
+            { title: 'Freight (Transporter Item Wise)', url: '/reports/freight/freight-transporter-item-wise', icon: IconTruck },
             { title: 'Freight (Voucher Wise)', url: '/reports/freight/freight-voucher-wise', icon: IconFileText },
             { title: 'Freight (Godown Wise)', url: '/reports/freight/freight-godown-wise', icon: IconBuildingWarehouse },
           ],

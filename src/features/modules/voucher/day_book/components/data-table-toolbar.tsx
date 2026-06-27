@@ -32,6 +32,10 @@ interface DataTableToolbarProps<TData> {
   onSearchChange?: (value: string) => void
   onVoucherTypeChange?: (value: string[]) => void
   selectedVoucherTypes?: string[]
+  onBillingPreferenceChange?: (value: string[]) => void
+  selectedBillingPreferences?: string[]
+  onStatusChange?: (value: string[]) => void
+  selectedStatuses?: string[]
 }
 export interface ExportColumn<T> {
   header: string
@@ -51,6 +55,10 @@ export function DataTableToolbar<TData>({
   onSearchChange,
   onVoucherTypeChange,
   selectedVoucherTypes = [],
+  onBillingPreferenceChange,
+  selectedBillingPreferences = [],
+  onStatusChange,
+  selectedStatuses = [],
 }: DataTableToolbarProps<TData>) {
   const [voucherTypes, setVoucherTypes] = useState<VoucherTypeOption[]>([])
   const [searchValue, setSearchValue] = useState('')
@@ -76,20 +84,34 @@ export function DataTableToolbar<TData>({
   }, [onVoucherTypeChange])
 
   const exportData = useMemo(() => {
-    return (filteredRows as any[]).map((row) => ({
-      voucherDate: date_format(row.voucherDate) ?? '',
-      partyLedger: row.partyLedger?.name ?? '',
-      voucherType: row.voucherType?.name ?? '',
-      voucherNo: row.voucherNo ?? '',
-      amount: row.amount ?? '',
-    }))
+    return (filteredRows as any[]).map((row) => {
+      // Compute status display value matching the status column logic
+      let status = '—'
+      if (row.voucherType?.id === 2001) {
+        const hasFreight = row.referencedBy?.some((ref: any) => ref.type === 'freight')
+        status = hasFreight ? 'Freight Done' : 'No Freight'
+      } else if (row.module === 'freight') {
+        const paymentStatus = row.paymentStatus ?? 'unpaid'
+        status = paymentStatus === 'paid' ? 'Paid' : paymentStatus === 'partially_paid' ? 'Partial' : 'Unpaid'
+      }
+
+      return {
+        voucherDate: date_format(row.voucherDate) ?? '',
+        partyLedger: row.partyLedger?.name ?? '',
+        voucherType: row.voucherType?.name ?? '',
+        voucherNo: row.voucherNo ?? '',
+        status,
+        billingPreference: row.voucherDispatchDetail?.billingPreference ?? '',
+        amount: row.amount ?? '',
+      }
+    })
   }, [filteredRows])
 
   const filteredColumn = exportColumnsData.filter((col) => {
     return col.header !== 'actions' && col.header !== 'select'
   })
 
-  const isFiltered = selectedVoucherTypes.length > 0 || searchValue
+  const isFiltered = selectedVoucherTypes.length > 0 || selectedBillingPreferences.length > 0 || selectedStatuses.length > 0 || searchValue
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
@@ -113,12 +135,48 @@ export function DataTableToolbar<TData>({
     table.resetGlobalFilter()
     onSearchChange?.('')
     onVoucherTypeChange?.([])
+    onBillingPreferenceChange?.([])
+    onStatusChange?.([])
   }
+
+  const billingPreferenceOptions = [
+    { label: 'Advance', value: 'advance' },
+    { label: 'Current', value: 'current' },
+    { label: 'Due', value: 'due' },
+  ]
+
+  const statusOptions = [
+    { label: 'Paid', value: 'paid' },
+    { label: 'Partial', value: 'partially_paid' },
+    { label: 'Unpaid', value: 'unpaid' },
+    { label: 'Freight Done', value: 'freight_done' },
+    { label: 'No Freight', value: 'no_freight' },
+  ]
 
   const voucherTypeOptions = voucherTypes.map((vt) => ({
     label: vt.name,
     value: String(vt.id),
   }))
+
+  const handleBillingPreferenceToggle = (value: string) => {
+    const current = new Set(selectedBillingPreferences)
+    if (current.has(value)) {
+      current.delete(value)
+    } else {
+      current.add(value)
+    }
+    onBillingPreferenceChange?.(Array.from(current))
+  }
+
+  const handleStatusToggle = (value: string) => {
+    const current = new Set(selectedStatuses)
+    if (current.has(value)) {
+      current.delete(value)
+    } else {
+      current.add(value)
+    }
+    onStatusChange?.(Array.from(current))
+  }
 
   return (
     <div className="flex items-center justify-between">
@@ -203,6 +261,176 @@ export function DataTableToolbar<TData>({
                     <CommandGroup>
                       <CommandItem
                         onSelect={() => onVoucherTypeChange?.([])}
+                        className='justify-center text-center'
+                      >
+                        Clear filters
+                      </CommandItem>
+                    </CommandGroup>
+                  </>
+                )}
+              </CommandList>
+            </Command>
+          </PopoverContent>
+        </Popover>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant='outline' size='sm' className='h-8 border-dashed'>
+              <PlusCircledIcon className='mr-1 h-4 w-4' />
+              Billing Pref.
+              {selectedBillingPreferences.length > 0 && (
+                <>
+                  <Separator orientation='vertical' className='mx-2 h-4' />
+                  <Badge
+                    variant='secondary'
+                    className='rounded-sm px-1 font-normal lg:hidden'
+                  >
+                    {selectedBillingPreferences.length}
+                  </Badge>
+                  <div className='hidden space-x-1 lg:flex'>
+                    {selectedBillingPreferences.length > 2 ? (
+                      <Badge
+                        variant='secondary'
+                        className='rounded-sm px-1 font-normal'
+                      >
+                        {selectedBillingPreferences.length} selected
+                      </Badge>
+                    ) : (
+                      billingPreferenceOptions
+                        .filter((option) => selectedBillingPreferences.includes(option.value))
+                        .map((option) => (
+                          <Badge
+                            variant='secondary'
+                            key={option.value}
+                            className='rounded-sm px-1 font-normal'
+                          >
+                            {option.label}
+                          </Badge>
+                        ))
+                    )}
+                  </div>
+                </>
+              )}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className='w-[200px] p-0' align='start'>
+            <Command>
+              <CommandInput placeholder='Billing Preference' />
+              <CommandList className='max-h-full'>
+                <CommandEmpty>No results found.</CommandEmpty>
+                <CommandGroup>
+                  {billingPreferenceOptions.map((option) => {
+                    const isSelected = selectedBillingPreferences.includes(option.value)
+                    return (
+                      <CommandItem
+                        key={option.value}
+                        onSelect={() => handleBillingPreferenceToggle(option.value)}
+                      >
+                        <div
+                          className={cn(
+                            'border-primary mr-2 flex h-4 w-4 items-center justify-center rounded-sm border',
+                            isSelected
+                              ? 'bg-primary text-primary-foreground'
+                              : 'opacity-50 [&_svg]:invisible'
+                          )}
+                        >
+                          <CheckIcon className={cn('h-4 w-4')} />
+                        </div>
+                        <span className='text-nowrap capitalize'>{option.label}</span>
+                      </CommandItem>
+                    )
+                  })}
+                </CommandGroup>
+                {selectedBillingPreferences.length > 0 && (
+                  <>
+                    <CommandSeparator />
+                    <CommandGroup>
+                      <CommandItem
+                        onSelect={() => onBillingPreferenceChange?.([])}
+                        className='justify-center text-center'
+                      >
+                        Clear filters
+                      </CommandItem>
+                    </CommandGroup>
+                  </>
+                )}
+              </CommandList>
+            </Command>
+          </PopoverContent>
+        </Popover>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant='outline' size='sm' className='h-8 border-dashed'>
+              <PlusCircledIcon className='mr-1 h-4 w-4' />
+              Status
+              {selectedStatuses.length > 0 && (
+                <>
+                  <Separator orientation='vertical' className='mx-2 h-4' />
+                  <Badge
+                    variant='secondary'
+                    className='rounded-sm px-1 font-normal lg:hidden'
+                  >
+                    {selectedStatuses.length}
+                  </Badge>
+                  <div className='hidden space-x-1 lg:flex'>
+                    {selectedStatuses.length > 2 ? (
+                      <Badge
+                        variant='secondary'
+                        className='rounded-sm px-1 font-normal'
+                      >
+                        {selectedStatuses.length} selected
+                      </Badge>
+                    ) : (
+                      statusOptions
+                        .filter((option) => selectedStatuses.includes(option.value))
+                        .map((option) => (
+                          <Badge
+                            variant='secondary'
+                            key={option.value}
+                            className='rounded-sm px-1 font-normal'
+                          >
+                            {option.label}
+                          </Badge>
+                        ))
+                    )}
+                  </div>
+                </>
+              )}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className='w-[200px] p-0' align='start'>
+            <Command>
+              <CommandInput placeholder='Status' />
+              <CommandList className='max-h-full'>
+                <CommandEmpty>No results found.</CommandEmpty>
+                <CommandGroup>
+                  {statusOptions.map((option) => {
+                    const isSelected = selectedStatuses.includes(option.value)
+                    return (
+                      <CommandItem
+                        key={option.value}
+                        onSelect={() => handleStatusToggle(option.value)}
+                      >
+                        <div
+                          className={cn(
+                            'border-primary mr-2 flex h-4 w-4 items-center justify-center rounded-sm border',
+                            isSelected
+                              ? 'bg-primary text-primary-foreground'
+                              : 'opacity-50 [&_svg]:invisible'
+                          )}
+                        >
+                          <CheckIcon className={cn('h-4 w-4')} />
+                        </div>
+                        <span className='text-nowrap'>{option.label}</span>
+                      </CommandItem>
+                    )
+                  })}
+                </CommandGroup>
+                {selectedStatuses.length > 0 && (
+                  <>
+                    <CommandSeparator />
+                    <CommandGroup>
+                      <CommandItem
+                        onSelect={() => onStatusChange?.([])}
                         className='justify-center text-center'
                       >
                         Clear filters

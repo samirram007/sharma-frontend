@@ -26,7 +26,6 @@ import {
   getFacetedRowModel,
   getFacetedUniqueValues,
   getFilteredRowModel,
-  getSortedRowModel,
   useReactTable,
   type ColumnDef,
   type ColumnFiltersState,
@@ -56,6 +55,12 @@ interface DataTableProps {
   onSearchChange?: (value: string) => void
   onVoucherTypeChange?: (value: string[]) => void
   selectedVoucherTypes?: string[]
+  onBillingPreferenceChange?: (value: string[]) => void
+  selectedBillingPreferences?: string[]
+  onStatusChange?: (value: string[]) => void
+  selectedStatuses?: string[]
+  onSortChange?: (sortBy: string, sortOrder: string) => void
+  sorting?: SortingState
 }
 
 export function GridTable({
@@ -67,11 +72,16 @@ export function GridTable({
   onSearchChange,
   onVoucherTypeChange,
   selectedVoucherTypes,
+  onBillingPreferenceChange,
+  selectedBillingPreferences,
+  onStatusChange,
+  selectedStatuses,
+  onSortChange,
+  sorting = [],
 }: DataTableProps) {
   const [rowSelection, setRowSelection] = useState({})
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({ select: false })
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
-  const [sorting, setSorting] = useState<SortingState>([])
 
   const pageCount = paginationMeta ? Math.ceil(paginationMeta.total / paginationMeta.per_page) : 0
   const currentPage = paginationMeta?.current_page ?? 1
@@ -103,15 +113,29 @@ export function GridTable({
     },
     enableRowSelection: false,
     onRowSelectionChange: setRowSelection,
-    onSortingChange: setSorting,
+    onSortingChange: (updater) => {
+      const newSorting = typeof updater === 'function' ? updater(sorting) : updater
+      if (newSorting.length > 0) {
+        const sortField = newSorting[0].id
+        const sortDir = newSorting[0].desc ? 'desc' : 'asc'
+        // Map column id to backend sort field
+        const sortMap: Record<string, string> = {
+          billingPreference: 'billing_preference',
+        }
+        const backendSortBy = sortMap[sortField] ?? sortField
+        onSortChange?.(backendSortBy, sortDir)
+      } else {
+        onSortChange?.('', '')
+      }
+    },
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    getSortedRowModel: getSortedRowModel(),
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
     manualPagination: true,
+    manualSorting: true,
     onPaginationChange: (updater) => {
       if (typeof updater === 'function') {
         const current = {
@@ -148,6 +172,10 @@ export function GridTable({
         exportColumnsData={exportColumnsData}        onSearchChange={onSearchChange}
                         onVoucherTypeChange={onVoucherTypeChange}
                         selectedVoucherTypes={selectedVoucherTypes}
+                        onBillingPreferenceChange={onBillingPreferenceChange}
+                        selectedBillingPreferences={selectedBillingPreferences}
+                        onStatusChange={onStatusChange}
+                        selectedStatuses={selectedStatuses}
       />
       <div className='flex items-center justify-between gap-4 px-2'>
         <div className='text-sm text-muted-foreground'>
@@ -229,7 +257,7 @@ export function GridTable({
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id} className='group/row grid grid-cols-[90px_1fr_160px_120px_100px_100px_110px_60px] '>
+              <TableRow key={headerGroup.id} className='group/row grid grid-cols-[90px_1fr_160px_120px_100px_100px_100px_110px_60px] '>
                 {headerGroup.headers.map((header) => {
                   return (
                     <TableHead
@@ -255,7 +283,7 @@ export function GridTable({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && 'selected'}
-                  className='group/row grid grid-cols-[90px_1fr_160px_120px_100px_100px_110px_60px] hover:bg-violet-400/30'
+                  className='group/row grid grid-cols-[90px_1fr_160px_120px_100px_100px_100px_110px_60px] hover:bg-violet-400/30'
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell
