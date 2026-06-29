@@ -7,14 +7,21 @@ import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useAuth } from "@/features/auth/contexts/AuthContext";
 
+import { cn } from "@/lib/utils";
 import { date_format } from "@/utils/removeEmptyStrings";
 import { startOfDay } from "@/utils/date";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 
-import { format } from "date-fns";
-import { CalendarDays } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { format, startOfMonth, endOfMonth, subDays, subMonths } from "date-fns";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { CalendarDays, Clock, EllipsisVertical } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useForm, type Resolver, type UseFormReturn } from "react-hook-form";
 
 import { formSchemaReportingPeriod, type ReportingPeriodForm } from "../../data/schema";
@@ -68,9 +75,11 @@ const Period = ({ setopen }: { setopen: (value: boolean) => void }) => {
 
 
 export const PeriodDetailsDialog = ({ open, setopen, hideTrigger }: { open: boolean, setopen: (value: boolean) => void, hideTrigger?: boolean }) => {
-    const { period, fetchProfile } = useAuth();
+    const { period, userFiscalYear, fetchProfile } = useAuth();
     const { mutate: saveReportingPeriod, isPending } = useReportingPeriodMutation();
     const confirmRef = useRef<HTMLButtonElement>(null);
+    const [selectedQuickRange, setSelectedQuickRange] = useState<string | null>(null);
+    const isQuickRangeUpdate = useRef(false);
 
     const form = useForm<ReportingPeriodForm>({
         resolver: zodResolver(formSchemaReportingPeriod) as Resolver<ReportingPeriodForm>,
@@ -79,6 +88,122 @@ export const PeriodDetailsDialog = ({ open, setopen, hideTrigger }: { open: bool
             endDate: period?.endDate!,
         },
     })
+
+    // Clear badge when user manually edits a date field
+    useEffect(() => {
+        const { unsubscribe } = form.watch((_data, { name, type }) => {
+            if ((name === 'startDate' || name === 'endDate') && type === 'change') {
+                if (!isQuickRangeUpdate.current) {
+                    setSelectedQuickRange(null);
+                }
+            }
+        });
+        return () => unsubscribe();
+    }, [form]);
+
+    const applyQuickRange = useCallback((label: string, start: Date, end: Date) => {
+        isQuickRangeUpdate.current = true;
+
+        const fyStart = userFiscalYear?.fiscalYear?.startDate ? new Date(userFiscalYear.fiscalYear.startDate) : null;
+        const fyEnd = userFiscalYear?.fiscalYear?.endDate ? new Date(userFiscalYear.fiscalYear.endDate) : null;
+
+        // Clamp to fiscal year
+        if (fyStart && startOfDay(start) < startOfDay(fyStart)) start = fyStart;
+        if (fyEnd && startOfDay(end) > startOfDay(fyEnd)) end = fyEnd;
+
+        const fmtStart = `${start.getFullYear()}-${(start.getMonth() + 1).toString().padStart(2, '0')}-${start.getDate().toString().padStart(2, '0')}`;
+        const fmtEnd = `${end.getFullYear()}-${(end.getMonth() + 1).toString().padStart(2, '0')}-${end.getDate().toString().padStart(2, '0')}`;
+
+        form.setValue('startDate', fmtStart as unknown as Date, { shouldValidate: true, shouldDirty: true });
+        form.setValue('endDate', fmtEnd as unknown as Date, { shouldValidate: true, shouldDirty: true });
+        setSelectedQuickRange(label);
+        isQuickRangeUpdate.current = false;
+    }, [form, userFiscalYear]);
+
+    type QuickRange = {
+        label: string;
+        getRange: () => { start: Date; end: Date };
+    };
+
+    const primaryRanges: QuickRange[] = [
+        {
+            label: 'Today',
+            getRange: () => {
+                const today = startOfDay(new Date());
+                return { start: today, end: today };
+            },
+        },
+        {
+            label: 'Yesterday',
+            getRange: () => {
+                const yesterday = startOfDay(subDays(new Date(), 1));
+                return { start: yesterday, end: yesterday };
+            },
+        },
+        {
+            label: 'Last 7 Days',
+            getRange: () => {
+                const today = startOfDay(new Date());
+                return { start: subDays(today, 7), end: today };
+            },
+        },
+        {
+            label: 'Last 7 days',
+            getRange: () => {
+                const today = startOfDay(new Date());
+                return { start: subDays(today, 7), end: today };
+            },
+        },
+        {
+            label: 'Current Month',
+            getRange: () => {
+                const today = startOfDay(new Date());
+                const monthStart = startOfMonth(today);
+                return { start: monthStart, end: today };
+            },
+        },
+    ];
+
+    const moreRanges: QuickRange[] = [
+        {
+            label: 'Last 15 Days',
+            getRange: () => {
+                const today = startOfDay(new Date());
+                return { start: subDays(today, 15), end: today };
+            },
+        },
+        {
+            label: 'Last Month',
+            getRange: () => {
+                const today = startOfDay(new Date());
+                const lastMonthStart = startOfMonth(subMonths(today, 1));
+                const lastMonthEnd = endOfMonth(subMonths(today, 1));
+                return { start: lastMonthStart, end: lastMonthEnd };
+            },
+        },
+        {
+            label: 'Last 3 Months',
+            getRange: () => {
+                const today = startOfDay(new Date());
+                return { start: subMonths(today, 3), end: today };
+            },
+        },
+        {
+            label: 'Last 6 Months',
+            getRange: () => {
+                const today = startOfDay(new Date());
+                return { start: subMonths(today, 6), end: today };
+            },
+        },
+        {
+            label: 'Full Year',
+            getRange: () => {
+                const fyStart = userFiscalYear?.fiscalYear?.startDate ? startOfDay(new Date(userFiscalYear.fiscalYear.startDate)) : startOfMonth(new Date());
+                const fyEnd = userFiscalYear?.fiscalYear?.endDate ? startOfDay(new Date(userFiscalYear.fiscalYear.endDate)) : startOfDay(new Date());
+                return { start: fyStart, end: fyEnd };
+            },
+        },
+    ];
 
     const focusNextInput = () => {
         // Focus the end date input within the dialog
@@ -128,21 +253,85 @@ export const PeriodDetailsDialog = ({ open, setopen, hideTrigger }: { open: bool
                 <DialogTrigger asChild>
                     <Period setopen={setopen} />
                 </DialogTrigger>
-            )}
-            <DialogContent className="max-w-md">
+            )}                <DialogContent className="max-w-md top-[45%]">
                 <DialogHeader>
-                    <DialogTitle>Period </DialogTitle>
+                    <DialogTitle>Period</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4">
                     <Form  {...form}>
-
-
                         {period ? (
-                            <div className="space-y-2 grid grid-cols-2 gap-4">
-                                <p><strong>Start Date:</strong><DateBox form={form} autoFocus={true} name={'startDate'} onEnterNext={focusNextInput} /></p>
-                                <p><strong>End Date:</strong><DateBox form={form} name={'endDate'} onEnterNext={submitForm} /></p>
+                            <>
+                                {/* Quick date range presets */}
+                                <div className="space-y-2">
+                                    <p className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                                        <Clock className="h-3 w-3" />
+                                        Quick Select
+                                    </p>
+                                    <div className="flex flex-wrap items-center gap-1.5">
+                                        {primaryRanges.map(({ label, getRange }) => {
+                                            const { start, end } = getRange();
+                                            const isActive = selectedQuickRange === label;
+                                            return (
+                                                <Button
+                                                    key={label}
+                                                    type="button"
+                                                    variant={isActive ? 'default' : 'outline'}
+                                                    size="sm"
+                                                    className="h-7 text-xs px-2.5 cursor-pointer"
+                                                    onClick={() => applyQuickRange(label, start, end)}
+                                                >
+                                                    {label}
+                                                </Button>
+                                            );
+                                        })}
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    size="sm"
+                                                    className="h-7 w-7 cursor-pointer"
+                                                >
+                                                    <EllipsisVertical className="h-3.5 w-3.5" />
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="start" className="min-w-[140px]">
+                                                {moreRanges.map(({ label, getRange }) => {
+                                                    const { start, end } = getRange();
+                                                    const isActive = selectedQuickRange === label;
+                                                    return (
+                                                        <DropdownMenuItem
+                                                            key={label}
+                                                            className={cn(
+                                                                'cursor-pointer text-xs',
+                                                                isActive && 'bg-primary/10 font-medium',
+                                                            )}
+                                                            onClick={() => applyQuickRange(label, start, end)}
+                                                        >
+                                                            {label}
+                                                        </DropdownMenuItem>
+                                                    );
+                                                })}
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </div>
+                                </div>
 
-                            </div>
+                                <div className="space-y-2">
+                                    {selectedQuickRange && (
+                                        <div className="flex items-center gap-1.5 mb-1">
+                                            <span className="text-xs font-medium text-muted-foreground">Range:</span>
+                                            <span className="inline-flex items-center rounded-md bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary ring-1 ring-inset ring-primary/20">
+                                                {selectedQuickRange}
+                                            </span>
+                                        </div>
+                                    )}
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <p><strong>Start Date:</strong><DateBox form={form} autoFocus={true} name={'startDate'} onEnterNext={focusNextInput} /></p>
+                                        <p><strong>End Date:</strong><DateBox form={form} name={'endDate'} onEnterNext={submitForm} /></p>
+                                    </div>
+                                </div>
+                            </>
                         ) : (
                             <p>No accounting period set.</p>
                         )}
