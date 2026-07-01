@@ -1,0 +1,158 @@
+import {
+  Archive,
+  Book,
+  Building2,
+  ChartBar,
+  ChartNoAxesColumn,
+  CheckCheck,
+  CheckCircle,
+  ClipboardList,
+  ClipboardPen,
+  ClipboardType,
+  FileText,
+  Globe,
+  HandCoins,
+  Home,
+  Landmark,
+  LayoutDashboard,
+  List,
+  ListChecks,
+  ListOrdered,
+  Map,
+  MessageSquare,
+  MessagesSquare,
+  MoreHorizontal,
+  Notebook,
+  NotebookTabs,
+  Package,
+  PackageOpen,
+  PiggyBank,
+  Radar,
+  Receipt,
+  ReceiptText,
+  Route,
+  Settings,
+  ShoppingBag,
+  ShoppingCart,
+  Star,
+  Truck,
+  TrendingUp,
+  User,
+  Users,
+  Warehouse,
+} from 'lucide-react'
+
+// ── Tabler icons ─────────────────────────────────────────────────────────────
+// Many icon names from the seeder use @tabler/icons-react naming conventions.
+import {
+  IconApps,
+  IconBuildingWarehouse,
+  IconCoin,
+  IconDoorEnter,
+  IconFileInvoice,
+  IconHelp,
+  IconListDetails,
+  IconLocationBolt,
+  IconMapPin,
+  IconMichelinStar,
+  IconPaperBag,
+  IconPremiumRights,
+  IconRadar2,
+  IconReport,
+  IconRoute2,
+  IconScale,
+  IconTruckDelivery,
+  IconTool,
+  IconNotification,
+  IconBrowserCheck,
+  IconPalette,
+  IconUserCheck,
+  IconChecklist,
+} from '@tabler/icons-react'
+import type { ElementType } from 'react'
+
+/**
+ * Maps icon name strings (as stored in the Menus table)
+ * to actual React icon components.
+ *
+ * Supports both Lucide and Tabler icon libraries.
+ * Add new icons here as they are used in the seeder / menu manager UI.
+ */
+const iconMap: Record<string, ElementType> = {
+  // ── Lucide icons ────────────────────────────────────────────────────────
+  LayoutDashboard,
+  Book,
+  ChartBar,
+  ChartNoAxesColumn,
+  TrendingUp,
+  List,
+  ListChecks,
+  ListOrdered,
+  Building2,
+  Landmark,
+  Warehouse,
+  Home,
+  Users,
+  User,
+  HandCoins,
+  PiggyBank,
+  Receipt,
+  ReceiptText,
+  Package,
+  PackageOpen,
+  Truck,
+  ShoppingBag,
+  ShoppingCart,
+  MessageSquare,
+  MessagesSquare,
+  ClipboardList,
+  ClipboardPen,
+  ClipboardType,
+  FileText,
+  Notebook,
+  NotebookTabs,
+  Map,
+  Route,
+  CheckCheck,
+  CheckCircle,
+  Star,
+  Settings,
+  Radar,
+  MoreHorizontal,
+  Globe,
+  Archive,
+
+  // ── Tabler icons (for names matching tabler conventions) ────────────────
+  BuildingWarehouse: IconBuildingWarehouse,
+  Coin: IconCoin,
+  DoorEnter: IconDoorEnter,
+  TruckDelivery: IconTruckDelivery,
+  Route2: IconRoute2,
+  LocationBolt: IconLocationBolt,
+  Report: IconReport,
+  MichelinStar: IconMichelinStar,
+  PremiumRights: IconPremiumRights,
+  PaperBag: IconPaperBag,
+  Apps: IconApps,
+  Radar2: IconRadar2,
+  FileInvoice: IconFileInvoice,
+  Help: IconHelp,
+  MapPin: IconMapPin,
+  Scale: IconScale,
+  UserCheck: IconUserCheck,
+  Checklist: IconChecklist,
+  ListDetails: IconListDetails,
+  Tool: IconTool,
+  Notification: IconNotification,
+  BrowserCheck: IconBrowserCheck,
+  PaintBucket: IconPalette,
+}
+
+/**
+ * Resolve an icon name string to a React icon component.
+ * Falls back to `Package` (Lucide) if the icon name is not recognised.
+ */
+export function resolveIcon(name: string | null | undefined): ElementType {
+  if (!name) return Package
+  return iconMap[name] ?? Package
+}

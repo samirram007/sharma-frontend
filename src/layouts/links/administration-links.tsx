@@ -1,6 +1,6 @@
 
 
-import { IconApps, IconPaperBag, IconPremiumRights, IconRadar2, IconStatusChange, IconUserCog } from "@tabler/icons-react";
+import { IconApps, IconListDetails, IconPaperBag, IconPremiumRights, IconRadar2, IconStatusChange, IconUserCog } from "@tabler/icons-react";
 
 export const AdministrationLinks = [
     {
@@ -38,6 +38,12 @@ export const AdministrationLinks = [
         url: '/administration/app_module_feature',
         visible: true,
         icon: IconPaperBag,
+    },
+    {
+        title: 'App Menu Features',
+        url: '/administration/Menu',
+        visible: true,
+        icon: IconListDetails,
     },
 ]
 

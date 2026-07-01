@@ -22,6 +22,7 @@ interface BaseNavItem {
   icon?: React.ElementType
   color?: string
   visible?: boolean
+  requiredFeature?: string
 }
 
 type NavLink = BaseNavItem & {
@@ -40,6 +41,7 @@ interface NavGroup {
   title: string
   visible: boolean
   items: NavItem[]
+  requiredFeature?: string
 }
 interface Header {
   logo: React.ElementType

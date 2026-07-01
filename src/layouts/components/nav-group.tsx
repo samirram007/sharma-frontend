@@ -30,9 +30,15 @@ import { Link, useLocation } from '@tanstack/react-router'
 import type { ReactNode } from 'react'
 import { type NavCollapsible, type NavGroup, type NavItem, type NavLink } from './types'
 import { useAuth } from '@/features/auth/contexts/AuthContext'
-import { FEATURES } from '../../data/features';
 
 // ── Icon color map ───────────────────────────────────────────────────────────
+// ── Helpers ───────────────────────────────────────────────────────────────────
+/** Check if the user has the required feature permission */
+function hasPermission(permissions: string[], requiredFeature?: string): boolean {
+  if (!requiredFeature) return true
+  return permissions.includes(requiredFeature)
+}
+
 const iconColorMap: Record<string, { idle: string; active: string }> = {
   blue: { idle: '!text-blue-500 dark:!text-blue-400', active: '!text-blue-600 dark:!text-blue-300' },
   indigo: { idle: '!text-indigo-500 dark:!text-indigo-400', active: '!text-indigo-600 dark:!text-indigo-300' },
@@ -62,17 +68,32 @@ const NavIcon = ({
 }
 // ────────────────────────────────────────────────────────────────────────────
 
-export function NavGroup({ title, items }: NavGroup) {
+export function NavGroup({ title, items, requiredFeature }: NavGroup) {
   const { state } = useSidebar()
   const location = useLocation()
   const { permissions } = useAuth()
 
   const href = location.pathname
 
-  if (title === 'Administration' && !permissions.includes(FEATURES.ADMINISTRATION_MENU_VIEW)) {
+  // Role-based access: hide entire group if user lacks required feature
+  if (!hasPermission(permissions, requiredFeature)) {
     return null
   }
-  if (title === 'Transactions' && !permissions.includes(FEATURES.TRANSACTION_MENU_VIEW)) {
+
+  // Filter items based on user's permissions
+  const filteredItems = items.filter(item => {
+    // For collapsible items, check if at least one child is accessible
+    if (item.items) {
+      const hasAccessibleChildren = item.items.some(
+        child => hasPermission(permissions, child.requiredFeature)
+      )
+      return hasAccessibleChildren || hasPermission(permissions, item.requiredFeature)
+    }
+    // For direct link items
+    return hasPermission(permissions, item.requiredFeature)
+  })
+
+  if (filteredItems.length === 0) {
     return null
   }
 
@@ -80,7 +101,7 @@ export function NavGroup({ title, items }: NavGroup) {
     <SidebarGroup>
       <SidebarGroupLabel>{title}</SidebarGroupLabel>
       <SidebarMenu>
-        {items.map((item) => {
+        {filteredItems.map((item) => {
           const key = `${item.title}-${item.url}`
 
           if (!item.items)
@@ -88,10 +109,10 @@ export function NavGroup({ title, items }: NavGroup) {
 
           if (state === 'collapsed')
             return (
-              <SidebarMenuCollapsedDropdown key={key} item={item} href={href} />
+              <SidebarMenuCollapsedDropdown key={key} item={item} href={href} permissions={permissions} />
             )
 
-          return <SidebarMenuCollapsible key={key} item={item} href={href} />
+          return <SidebarMenuCollapsible key={key} item={item} href={href} permissions={permissions} />
         })}
       </SidebarMenu>
     </SidebarGroup>
@@ -124,12 +145,24 @@ const SidebarMenuLink = ({ item, href }: { item: NavLink; href: string }) => {
 const SidebarMenuCollapsible = ({
   item,
   href,
+  permissions = [],
 }: {
   item: NavCollapsible
   href: string
+  permissions?: string[]
 }) => {
   const { setOpenMobile } = useSidebar()
   const isParentActive = checkIsActive(href, item, true)
+
+  // Filter child items by permissions
+  const visibleChildren = item.items.filter(subItem =>
+    hasPermission(permissions, subItem.requiredFeature)
+  )
+
+  if (visibleChildren.length === 0) {
+    return null
+  }
+
   return (
     <Collapsible
       asChild
@@ -149,7 +182,7 @@ const SidebarMenuCollapsible = ({
         </CollapsibleTrigger>
         <CollapsibleContent className='CollapsibleContent'>
           <SidebarMenuSub>
-            {item.items.map((subItem) => {
+            {visibleChildren.map((subItem) => {
               const isSubActive = checkIsActive(href, subItem)
               return (
                 <SidebarMenuSubItem key={subItem.title}>
@@ -175,11 +208,23 @@ const SidebarMenuCollapsible = ({
 const SidebarMenuCollapsedDropdown = ({
   item,
   href,
+  permissions = [],
 }: {
   item: NavCollapsible
   href: string
+  permissions?: string[]
 }) => {
   const isParentActive = checkIsActive(href, item)
+
+  // Filter children by permissions
+  const visibleChildren = item.items.filter(sub =>
+    hasPermission(permissions, sub.requiredFeature)
+  )
+
+  if (visibleChildren.length === 0) {
+    return null
+  }
+
   return (
     <SidebarMenuItem>
       <DropdownMenu>
@@ -198,7 +243,7 @@ const SidebarMenuCollapsedDropdown = ({
             {item.title} {item.badge ? `(${item.badge})` : ''}
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
-          {item.items.map((sub) => {
+          {visibleChildren.map((sub) => {
             const isSubActive = checkIsActive(href, sub)
             return (
               <DropdownMenuItem key={`${sub.title}-${sub.url}`} asChild>

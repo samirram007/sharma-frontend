@@ -1,4 +1,27 @@
 // src/lib/auth.ts
+
+import { redirect } from '@tanstack/react-router'
+import type { MyRouterContext } from '@/core/contexts/MyRouterContext'
+
+/**
+ * Creates a reusable TanStack Router `beforeLoad` guard that checks if the
+ * authenticated user has the given permission.
+ *
+ * @param permission - The permission code to check (e.g. 'USER_MENU_VIEW')
+ * @param fallback - Optional redirect path when permission is missing (default: '/')
+ *
+ * @example
+ * // In a route file:
+ * beforeLoad: requirePermission('USER_MENU_VIEW')
+ */
+export function requirePermission(permission: string, fallback: string = '/403') {
+  return async ({ context }: { context: MyRouterContext }) => {
+    if (!context.auth?.permissions?.includes(permission)) {
+      throw redirect({ to: fallback })
+    }
+  }
+}
+
 // import { betterAuth, } from "better-auth";
 // import { cookiesPlugin } from "better-auth/plugins/cookies";
 

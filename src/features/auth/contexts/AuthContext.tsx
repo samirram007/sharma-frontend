@@ -1,12 +1,14 @@
 // src/context/AuthContext.tsx
 import type { UserFiscalYear } from '@/features/modules/user_fiscal_year/data/schema';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { fetchUserProfileService, loginService, logoutService } from '../services/apis';
 import type { UserWithRole } from '../data/schema';
 import type { Permission } from '@/features/modules/permission/data/schema';
 import type { Role } from '@/features/modules/role/data/schema';
+import type { MenuTreeItem } from '@/layouts/components/data/menu-tree-types';
+import { menuTreeQueryOptions } from '@/layouts/components/data/services';
 export type LoginProps = {
     email: string;
     password: string;
@@ -25,6 +27,7 @@ export interface AuthContextType {
     logout: () => Promise<void>;
     fetchProfile: () => Promise<void>;
     permissions: string[];
+    menuTree: MenuTreeItem[];
     period: PeriodType | null;
     setPeriod: (period: PeriodType | null) => void;
 }
@@ -38,8 +41,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [userFiscalYear, setUserFiscalYear] = useState<UserFiscalYear | null>(null);
     const [period, setPeriod] = useState<PeriodType | null>(null);
     const [permissions, setpermissions] = useState<string[]>([]);
+    const [menuTree, setMenuTree] = useState<MenuTreeItem[]>([]);
     const [isLoading, setIsLoading] = useState(true)
     const queryClient = useQueryClient();
+
+    // Fetch the menu tree via TanStack Query
+    const { data: menuTreeData } = useQuery({
+        ...menuTreeQueryOptions(),
+        enabled: !!user, // only fetch once we have a user
+    })
+
+    // Sync menu tree data into context state
+    useEffect(() => {
+        if (menuTreeData?.data) {
+            setMenuTree(menuTreeData.data)
+        }
+    }, [menuTreeData])
+
     const fetchProfile = async () => {
         setIsLoading(true);
         // check cookie key "token" is set  else redirect to login
@@ -149,7 +167,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }, []);
     return (
         <AuthContext.Provider
-            value={{ user, isLoading, userFiscalYear, period, setPeriod, isAuthenticated: !!user, login, logout, fetchProfile, permissions }}>
+            value={{ user, isLoading, userFiscalYear, period, setPeriod, isAuthenticated: !!user, login, logout, fetchProfile, permissions, menuTree }}>
             {children}
         </AuthContext.Provider>
     )

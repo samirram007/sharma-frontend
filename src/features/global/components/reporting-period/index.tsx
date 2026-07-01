@@ -141,25 +141,18 @@ export const PeriodDetailsDialog = ({ open, setopen, hideTrigger }: { open: bool
             },
         },
         {
-            label: 'Last 7 Days',
-            getRange: () => {
-                const today = startOfDay(new Date());
-                return { start: subDays(today, 7), end: today };
-            },
-        },
-        {
-            label: 'Last 7 days',
-            getRange: () => {
-                const today = startOfDay(new Date());
-                return { start: subDays(today, 7), end: today };
-            },
-        },
-        {
             label: 'Current Month',
             getRange: () => {
                 const today = startOfDay(new Date());
                 const monthStart = startOfMonth(today);
                 return { start: monthStart, end: today };
+            },
+        },
+        {
+            label: 'Last 7 Days',
+            getRange: () => {
+                const today = startOfDay(new Date());
+                return { start: subDays(today, 7), end: today };
             },
         },
     ];

@@ -10,7 +10,7 @@ export const Route = createFileRoute('/_protected')({
     }
     if (!context.auth?.permissions || context.auth.permissions.length === 0) {
       console.log("Redirecting from protected Route: no permissions assigned")
-      throw redirect({ to: '/restrict' });
+      throw redirect({ to: '/403' });
     }
   },
 

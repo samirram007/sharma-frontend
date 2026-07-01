@@ -2,6 +2,7 @@ import LongText from '@/components/long-text'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
 import { cn } from '@/lib/utils'
+import { IconLock, IconLockOpen } from '@tabler/icons-react'
 import type { ColumnDef } from '@tanstack/react-table'
 
 
@@ -59,6 +60,38 @@ export const columns: ColumnDef<FiscalYear>[] = [
     enableHiding: false,
   },
 
+  {
+    accessorKey: 'closedAt',
+    id: 'closeStatus',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Close Status' />
+    ),
+    cell: ({ row }) => {
+      const closedAt = row.original.closedAt
+      const isClosed = !!closedAt
+      return isClosed ? (
+        <div className='flex items-center gap-1.5'>
+          <IconLock className='h-3.5 w-3.5 text-destructive' />
+          <Badge variant='destructive' className='text-xs'>Closed</Badge>
+          <span className='text-xs text-muted-foreground ml-1'>
+            {new Date(closedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+          </span>
+        </div>
+      ) : (
+        <div className='flex items-center gap-1.5'>
+          <IconLockOpen className='h-3.5 w-3.5 text-green-600' />
+          <Badge variant='outline' className='border-green-300 text-green-700 dark:text-green-400 text-xs'>Open</Badge>
+        </div>
+      )
+    },
+    filterFn: (row, _id, value) => {
+      const closedAt = row.original.closedAt
+      const isClosed = !!closedAt
+      return value.includes(isClosed ? 'closed' : 'open')
+    },
+    enableSorting: true,
+    enableHiding: false,
+  },
 
   {
     accessorKey: 'companyId',

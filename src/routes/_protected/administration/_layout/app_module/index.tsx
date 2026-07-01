@@ -1,3 +1,4 @@
+import { requirePermission } from '@/lib/auth';
 import AppModule from '@/features/modules/app_module';
 import { appModuleQueryOptions } from '@/features/modules/app_module/data/queryOptions';
 import { useSuspenseQuery } from '@tanstack/react-query';
@@ -7,6 +8,7 @@ import { Loader } from 'lucide-react';
 export const Route = createFileRoute(
   '/_protected/administration/_layout/app_module/',
 )({
+  beforeLoad: requirePermission('APP_MODULE_MENU_VIEW'),
   loader: ({ context }) =>
     context.queryClient.ensureQueryData(appModuleQueryOptions()),
   component: () => {

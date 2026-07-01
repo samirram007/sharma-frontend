@@ -2,6 +2,7 @@ import Permission from '@/features/modules/permission';
 import { permissionQueryOptions } from '@/features/modules/permission/data/queryOptions';
 
 
+import { requirePermission } from '@/lib/auth';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
 import { Loader } from 'lucide-react';
@@ -9,6 +10,7 @@ import { Loader } from 'lucide-react';
 export const Route = createFileRoute(
   '/_protected/administration/_layout/permission/',
 )({
+  beforeLoad: requirePermission('PERMISSION_MENU_VIEW'),
   loader: ({ context }) =>
     context.queryClient.ensureQueryData(permissionQueryOptions()),
   component: () => {

@@ -2,6 +2,7 @@ import { Outlet } from '@tanstack/react-router'
 
 import {
     IconApps,
+    IconMenu2,
     IconPuzzle,
     IconShield,
     IconShieldCheck,
@@ -46,6 +47,13 @@ const sidebarNavItems = [
         href: '/administration/app_module_feature',
         visible: true,
         icon: <IconPuzzle size={22} stroke={1.9} />,
+    },
+    {
+        title: 'Menu Manager',
+        description: 'Control which menu items each role can see in the sidebar.',
+        href: '/administration/menu_manager',
+        visible: true,
+        icon: <IconMenu2 size={22} stroke={1.9} />,
     },
 ]
 export default function Administration() {

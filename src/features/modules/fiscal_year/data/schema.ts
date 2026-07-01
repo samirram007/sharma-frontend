@@ -13,6 +13,7 @@ const baseFiscalYearSchema = z.object({
   companyId: z.number().int().positive(),
   company: companySchema.nullish(),
   assessmentYear: z.string().nullish(),
+  closedAt: z.string().nullable().optional(),
 });
 
 export const fiscalYearSchema = baseFiscalYearSchema.refine((data) => data.endDate > data.startDate, {
