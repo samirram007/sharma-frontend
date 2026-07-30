@@ -37,6 +37,8 @@ import { Route as ProtectedSettingsAppearanceRouteImport } from './routes/_prote
 import { Route as ProtectedSettingsAccountRouteImport } from './routes/_protected/settings/account'
 import { Route as ProtectedAdministrationLayoutRouteImport } from './routes/_protected/administration/_layout'
 import { Route as ProtectedauthChangePasswordRouteImport } from './routes/_protected/(auth)/change-password'
+import { Route as ProtectedTransactionsOpeningBalanceIndexRouteImport } from './routes/_protected/transactions/opening-balance/index'
+import { Route as ProtectedReportsRunningBalanceIndexRouteImport } from './routes/_protected/reports/running-balance/index'
 import { Route as ProtectedReportsReceipt_note_reportIndexRouteImport } from './routes/_protected/reports/receipt_note_report/index'
 import { Route as ProtectedReportsProfit_and_lossIndexRouteImport } from './routes/_protected/reports/profit_and_loss/index'
 import { Route as ProtectedReportsOpening_entryIndexRouteImport } from './routes/_protected/reports/opening_entry/index'
@@ -240,6 +242,9 @@ import { Route as ProtectedMastersOrganizationLayoutFiscal_yearLayoutIdCloseRout
 import { Route as ProtectedMastersInventoryLayoutStock_itemLayoutIdConfigurationRouteImport } from './routes/_protected/masters/inventory/_layout/stock_item/_layout/$id/configuration'
 import { Route as ProtectedAdministrationLayoutRoleLayoutIdModuleModuleidRouteImport } from './routes/_protected/administration/_layout/role/_layout/$id/_module/$moduleid'
 
+const ProtectedForbiddenLazyRouteImport = createFileRoute(
+  '/_protected/forbidden',
+)()
 const guestSigninLazyRouteImport = createFileRoute('/(guest)/signin')()
 const guestSignUpLazyRouteImport = createFileRoute('/(guest)/sign-up')()
 const guestSignIn2LazyRouteImport = createFileRoute('/(guest)/sign-in-2')()
@@ -251,6 +256,21 @@ const errors500LazyRouteImport = createFileRoute('/(errors)/500')()
 const errors404LazyRouteImport = createFileRoute('/(errors)/404')()
 const errors403LazyRouteImport = createFileRoute('/(errors)/403')()
 const errors401LazyRouteImport = createFileRoute('/(errors)/401')()
+const ProtectedErrors503LazyRouteImport = createFileRoute(
+  '/_protected/errors/503',
+)()
+const ProtectedErrors500LazyRouteImport = createFileRoute(
+  '/_protected/errors/500',
+)()
+const ProtectedErrors404LazyRouteImport = createFileRoute(
+  '/_protected/errors/404',
+)()
+const ProtectedErrors403LazyRouteImport = createFileRoute(
+  '/_protected/errors/403',
+)()
+const ProtectedErrors401LazyRouteImport = createFileRoute(
+  '/_protected/errors/401',
+)()
 
 const ProtectedRoute = ProtectedRouteImport.update({
   id: '/_protected',
@@ -261,6 +281,13 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProtectedForbiddenLazyRoute = ProtectedForbiddenLazyRouteImport.update({
+  id: '/forbidden',
+  path: '/forbidden',
+  getParentRoute: () => ProtectedRoute,
+} as any).lazy(() =>
+  import('./routes/_protected/forbidden.lazy').then((d) => d.Route),
+)
 const guestSigninLazyRoute = guestSigninLazyRouteImport
   .update({
     id: '/(guest)/signin',
@@ -414,6 +441,41 @@ const ProtectedAppsIndexRoute = ProtectedAppsIndexRouteImport.update({
   path: '/apps/',
   getParentRoute: () => ProtectedRoute,
 } as any)
+const ProtectedErrors503LazyRoute = ProtectedErrors503LazyRouteImport.update({
+  id: '/errors/503',
+  path: '/errors/503',
+  getParentRoute: () => ProtectedRoute,
+} as any).lazy(() =>
+  import('./routes/_protected/errors/503.lazy').then((d) => d.Route),
+)
+const ProtectedErrors500LazyRoute = ProtectedErrors500LazyRouteImport.update({
+  id: '/errors/500',
+  path: '/errors/500',
+  getParentRoute: () => ProtectedRoute,
+} as any).lazy(() =>
+  import('./routes/_protected/errors/500.lazy').then((d) => d.Route),
+)
+const ProtectedErrors404LazyRoute = ProtectedErrors404LazyRouteImport.update({
+  id: '/errors/404',
+  path: '/errors/404',
+  getParentRoute: () => ProtectedRoute,
+} as any).lazy(() =>
+  import('./routes/_protected/errors/404.lazy').then((d) => d.Route),
+)
+const ProtectedErrors403LazyRoute = ProtectedErrors403LazyRouteImport.update({
+  id: '/errors/403',
+  path: '/errors/403',
+  getParentRoute: () => ProtectedRoute,
+} as any).lazy(() =>
+  import('./routes/_protected/errors/403.lazy').then((d) => d.Route),
+)
+const ProtectedErrors401LazyRoute = ProtectedErrors401LazyRouteImport.update({
+  id: '/errors/401',
+  path: '/errors/401',
+  getParentRoute: () => ProtectedRoute,
+} as any).lazy(() =>
+  import('./routes/_protected/errors/401.lazy').then((d) => d.Route),
+)
 const ProtectedTransactionsProviderRoute =
   ProtectedTransactionsProviderRouteImport.update({
     id: '/transactions/_provider',
@@ -454,6 +516,18 @@ const ProtectedauthChangePasswordRoute =
   ProtectedauthChangePasswordRouteImport.update({
     id: '/(auth)/change-password',
     path: '/change-password',
+    getParentRoute: () => ProtectedRoute,
+  } as any)
+const ProtectedTransactionsOpeningBalanceIndexRoute =
+  ProtectedTransactionsOpeningBalanceIndexRouteImport.update({
+    id: '/transactions/opening-balance/',
+    path: '/transactions/opening-balance/',
+    getParentRoute: () => ProtectedRoute,
+  } as any)
+const ProtectedReportsRunningBalanceIndexRoute =
+  ProtectedReportsRunningBalanceIndexRouteImport.update({
+    id: '/reports/running-balance/',
+    path: '/reports/running-balance/',
     getParentRoute: () => ProtectedRoute,
   } as any)
 const ProtectedReportsReceipt_note_reportIndexRoute =
@@ -1773,6 +1847,7 @@ export interface FileRoutesByFullPath {
   '/sign-in-2': typeof guestSignIn2LazyRoute
   '/sign-up': typeof guestSignUpLazyRoute
   '/signin': typeof guestSigninLazyRoute
+  '/forbidden': typeof ProtectedForbiddenLazyRoute
   '/change-password': typeof ProtectedauthChangePasswordRoute
   '/administration': typeof ProtectedAdministrationLayoutRouteWithChildren
   '/settings/account': typeof ProtectedSettingsAccountRoute
@@ -1780,6 +1855,11 @@ export interface FileRoutesByFullPath {
   '/settings/display': typeof ProtectedSettingsDisplayRoute
   '/settings/notifications': typeof ProtectedSettingsNotificationsRoute
   '/transactions': typeof ProtectedTransactionsProviderRouteWithChildren
+  '/errors/401': typeof ProtectedErrors401LazyRoute
+  '/errors/403': typeof ProtectedErrors403LazyRoute
+  '/errors/404': typeof ProtectedErrors404LazyRoute
+  '/errors/500': typeof ProtectedErrors500LazyRoute
+  '/errors/503': typeof ProtectedErrors503LazyRoute
   '/apps/': typeof ProtectedAppsIndexRoute
   '/chats/': typeof ProtectedChatsIndexRoute
   '/help-center/': typeof ProtectedHelpCenterIndexRoute
@@ -1807,6 +1887,8 @@ export interface FileRoutesByFullPath {
   '/reports/opening_entry/': typeof ProtectedReportsOpening_entryIndexRoute
   '/reports/profit_and_loss/': typeof ProtectedReportsProfit_and_lossIndexRoute
   '/reports/receipt_note_report/': typeof ProtectedReportsReceipt_note_reportIndexRoute
+  '/reports/running-balance/': typeof ProtectedReportsRunningBalanceIndexRoute
+  '/transactions/opening-balance/': typeof ProtectedTransactionsOpeningBalanceIndexRoute
   '/administration/role': typeof ProtectedAdministrationLayoutRoleLayoutRouteWithChildren
   '/administration/user': typeof ProtectedAdministrationLayoutUserLayoutRouteWithChildren
   '/masters/miscellaneous/delivery_places': typeof ProtectedMastersMiscellaneousLayoutDelivery_placesRoute
@@ -2010,6 +2092,7 @@ export interface FileRoutesByTo {
   '/sign-in-2': typeof guestSignIn2LazyRoute
   '/sign-up': typeof guestSignUpLazyRoute
   '/signin': typeof guestSigninLazyRoute
+  '/forbidden': typeof ProtectedForbiddenLazyRoute
   '/change-password': typeof ProtectedauthChangePasswordRoute
   '/administration': typeof ProtectedAdministrationLayoutRouteWithChildren
   '/settings/account': typeof ProtectedSettingsAccountRoute
@@ -2017,6 +2100,11 @@ export interface FileRoutesByTo {
   '/settings/display': typeof ProtectedSettingsDisplayRoute
   '/settings/notifications': typeof ProtectedSettingsNotificationsRoute
   '/transactions': typeof ProtectedTransactionsIndexRoute
+  '/errors/401': typeof ProtectedErrors401LazyRoute
+  '/errors/403': typeof ProtectedErrors403LazyRoute
+  '/errors/404': typeof ProtectedErrors404LazyRoute
+  '/errors/500': typeof ProtectedErrors500LazyRoute
+  '/errors/503': typeof ProtectedErrors503LazyRoute
   '/apps': typeof ProtectedAppsIndexRoute
   '/chats': typeof ProtectedChatsIndexRoute
   '/help-center': typeof ProtectedHelpCenterIndexRoute
@@ -2032,6 +2120,8 @@ export interface FileRoutesByTo {
   '/reports/opening_entry': typeof ProtectedReportsOpening_entryIndexRoute
   '/reports/profit_and_loss': typeof ProtectedReportsProfit_and_lossIndexRoute
   '/reports/receipt_note_report': typeof ProtectedReportsReceipt_note_reportIndexRoute
+  '/reports/running-balance': typeof ProtectedReportsRunningBalanceIndexRoute
+  '/transactions/opening-balance': typeof ProtectedTransactionsOpeningBalanceIndexRoute
   '/masters/miscellaneous/delivery_places': typeof ProtectedMastersMiscellaneousLayoutDelivery_placesRoute
   '/masters/miscellaneous/delivery_routes': typeof ProtectedMastersMiscellaneousLayoutDelivery_routesRoute
   '/masters/miscellaneous/delivery_vehicles': typeof ProtectedMastersMiscellaneousLayoutDelivery_vehiclesRouteWithChildren
@@ -2208,6 +2298,7 @@ export interface FileRoutesById {
   '/(guest)/sign-in-2': typeof guestSignIn2LazyRoute
   '/(guest)/sign-up': typeof guestSignUpLazyRoute
   '/(guest)/signin': typeof guestSigninLazyRoute
+  '/_protected/forbidden': typeof ProtectedForbiddenLazyRoute
   '/_protected/(auth)/change-password': typeof ProtectedauthChangePasswordRoute
   '/_protected/administration/_layout': typeof ProtectedAdministrationLayoutRouteWithChildren
   '/_protected/settings/account': typeof ProtectedSettingsAccountRoute
@@ -2215,6 +2306,11 @@ export interface FileRoutesById {
   '/_protected/settings/display': typeof ProtectedSettingsDisplayRoute
   '/_protected/settings/notifications': typeof ProtectedSettingsNotificationsRoute
   '/_protected/transactions/_provider': typeof ProtectedTransactionsProviderRouteWithChildren
+  '/_protected/errors/401': typeof ProtectedErrors401LazyRoute
+  '/_protected/errors/403': typeof ProtectedErrors403LazyRoute
+  '/_protected/errors/404': typeof ProtectedErrors404LazyRoute
+  '/_protected/errors/500': typeof ProtectedErrors500LazyRoute
+  '/_protected/errors/503': typeof ProtectedErrors503LazyRoute
   '/_protected/apps/': typeof ProtectedAppsIndexRoute
   '/_protected/chats/': typeof ProtectedChatsIndexRoute
   '/_protected/help-center/': typeof ProtectedHelpCenterIndexRoute
@@ -2242,6 +2338,8 @@ export interface FileRoutesById {
   '/_protected/reports/opening_entry/': typeof ProtectedReportsOpening_entryIndexRoute
   '/_protected/reports/profit_and_loss/': typeof ProtectedReportsProfit_and_lossIndexRoute
   '/_protected/reports/receipt_note_report/': typeof ProtectedReportsReceipt_note_reportIndexRoute
+  '/_protected/reports/running-balance/': typeof ProtectedReportsRunningBalanceIndexRoute
+  '/_protected/transactions/opening-balance/': typeof ProtectedTransactionsOpeningBalanceIndexRoute
   '/_protected/administration/_layout/role/_layout': typeof ProtectedAdministrationLayoutRoleLayoutRouteWithChildren
   '/_protected/administration/_layout/user/_layout': typeof ProtectedAdministrationLayoutUserLayoutRouteWithChildren
   '/_protected/masters/miscellaneous/_layout/delivery_places': typeof ProtectedMastersMiscellaneousLayoutDelivery_placesRoute
@@ -2448,6 +2546,7 @@ export interface FileRouteTypes {
     | '/sign-in-2'
     | '/sign-up'
     | '/signin'
+    | '/forbidden'
     | '/change-password'
     | '/administration'
     | '/settings/account'
@@ -2455,6 +2554,11 @@ export interface FileRouteTypes {
     | '/settings/display'
     | '/settings/notifications'
     | '/transactions'
+    | '/errors/401'
+    | '/errors/403'
+    | '/errors/404'
+    | '/errors/500'
+    | '/errors/503'
     | '/apps/'
     | '/chats/'
     | '/help-center/'
@@ -2482,6 +2586,8 @@ export interface FileRouteTypes {
     | '/reports/opening_entry/'
     | '/reports/profit_and_loss/'
     | '/reports/receipt_note_report/'
+    | '/reports/running-balance/'
+    | '/transactions/opening-balance/'
     | '/administration/role'
     | '/administration/user'
     | '/masters/miscellaneous/delivery_places'
@@ -2685,6 +2791,7 @@ export interface FileRouteTypes {
     | '/sign-in-2'
     | '/sign-up'
     | '/signin'
+    | '/forbidden'
     | '/change-password'
     | '/administration'
     | '/settings/account'
@@ -2692,6 +2799,11 @@ export interface FileRouteTypes {
     | '/settings/display'
     | '/settings/notifications'
     | '/transactions'
+    | '/errors/401'
+    | '/errors/403'
+    | '/errors/404'
+    | '/errors/500'
+    | '/errors/503'
     | '/apps'
     | '/chats'
     | '/help-center'
@@ -2707,6 +2819,8 @@ export interface FileRouteTypes {
     | '/reports/opening_entry'
     | '/reports/profit_and_loss'
     | '/reports/receipt_note_report'
+    | '/reports/running-balance'
+    | '/transactions/opening-balance'
     | '/masters/miscellaneous/delivery_places'
     | '/masters/miscellaneous/delivery_routes'
     | '/masters/miscellaneous/delivery_vehicles'
@@ -2882,6 +2996,7 @@ export interface FileRouteTypes {
     | '/(guest)/sign-in-2'
     | '/(guest)/sign-up'
     | '/(guest)/signin'
+    | '/_protected/forbidden'
     | '/_protected/(auth)/change-password'
     | '/_protected/administration/_layout'
     | '/_protected/settings/account'
@@ -2889,6 +3004,11 @@ export interface FileRouteTypes {
     | '/_protected/settings/display'
     | '/_protected/settings/notifications'
     | '/_protected/transactions/_provider'
+    | '/_protected/errors/401'
+    | '/_protected/errors/403'
+    | '/_protected/errors/404'
+    | '/_protected/errors/500'
+    | '/_protected/errors/503'
     | '/_protected/apps/'
     | '/_protected/chats/'
     | '/_protected/help-center/'
@@ -2916,6 +3036,8 @@ export interface FileRouteTypes {
     | '/_protected/reports/opening_entry/'
     | '/_protected/reports/profit_and_loss/'
     | '/_protected/reports/receipt_note_report/'
+    | '/_protected/reports/running-balance/'
+    | '/_protected/transactions/opening-balance/'
     | '/_protected/administration/_layout/role/_layout'
     | '/_protected/administration/_layout/user/_layout'
     | '/_protected/masters/miscellaneous/_layout/delivery_places'
@@ -3137,6 +3259,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_protected/forbidden': {
+      id: '/_protected/forbidden'
+      path: '/forbidden'
+      fullPath: '/forbidden'
+      preLoaderRoute: typeof ProtectedForbiddenLazyRouteImport
+      parentRoute: typeof ProtectedRoute
+    }
     '/(guest)/signin': {
       id: '/(guest)/signin'
       path: '/signin'
@@ -3319,6 +3448,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProtectedAppsIndexRouteImport
       parentRoute: typeof ProtectedRoute
     }
+    '/_protected/errors/503': {
+      id: '/_protected/errors/503'
+      path: '/errors/503'
+      fullPath: '/errors/503'
+      preLoaderRoute: typeof ProtectedErrors503LazyRouteImport
+      parentRoute: typeof ProtectedRoute
+    }
+    '/_protected/errors/500': {
+      id: '/_protected/errors/500'
+      path: '/errors/500'
+      fullPath: '/errors/500'
+      preLoaderRoute: typeof ProtectedErrors500LazyRouteImport
+      parentRoute: typeof ProtectedRoute
+    }
+    '/_protected/errors/404': {
+      id: '/_protected/errors/404'
+      path: '/errors/404'
+      fullPath: '/errors/404'
+      preLoaderRoute: typeof ProtectedErrors404LazyRouteImport
+      parentRoute: typeof ProtectedRoute
+    }
+    '/_protected/errors/403': {
+      id: '/_protected/errors/403'
+      path: '/errors/403'
+      fullPath: '/errors/403'
+      preLoaderRoute: typeof ProtectedErrors403LazyRouteImport
+      parentRoute: typeof ProtectedRoute
+    }
+    '/_protected/errors/401': {
+      id: '/_protected/errors/401'
+      path: '/errors/401'
+      fullPath: '/errors/401'
+      preLoaderRoute: typeof ProtectedErrors401LazyRouteImport
+      parentRoute: typeof ProtectedRoute
+    }
     '/_protected/transactions/_provider': {
       id: '/_protected/transactions/_provider'
       path: '/transactions'
@@ -3366,6 +3530,20 @@ declare module '@tanstack/react-router' {
       path: '/change-password'
       fullPath: '/change-password'
       preLoaderRoute: typeof ProtectedauthChangePasswordRouteImport
+      parentRoute: typeof ProtectedRoute
+    }
+    '/_protected/transactions/opening-balance/': {
+      id: '/_protected/transactions/opening-balance/'
+      path: '/transactions/opening-balance'
+      fullPath: '/transactions/opening-balance/'
+      preLoaderRoute: typeof ProtectedTransactionsOpeningBalanceIndexRouteImport
+      parentRoute: typeof ProtectedRoute
+    }
+    '/_protected/reports/running-balance/': {
+      id: '/_protected/reports/running-balance/'
+      path: '/reports/running-balance'
+      fullPath: '/reports/running-balance/'
+      preLoaderRoute: typeof ProtectedReportsRunningBalanceIndexRouteImport
       parentRoute: typeof ProtectedRoute
     }
     '/_protected/reports/receipt_note_report/': {
@@ -5915,9 +6093,15 @@ interface ProtectedRouteChildren {
   ProtectedSettingsRouteRoute: typeof ProtectedSettingsRouteRouteWithChildren
   ProtectedChartsRoute: typeof ProtectedChartsRoute
   ProtectedDashboardRoute: typeof ProtectedDashboardRoute
+  ProtectedForbiddenLazyRoute: typeof ProtectedForbiddenLazyRoute
   ProtectedauthChangePasswordRoute: typeof ProtectedauthChangePasswordRoute
   ProtectedAdministrationLayoutRoute: typeof ProtectedAdministrationLayoutRouteWithChildren
   ProtectedTransactionsProviderRoute: typeof ProtectedTransactionsProviderRouteWithChildren
+  ProtectedErrors401LazyRoute: typeof ProtectedErrors401LazyRoute
+  ProtectedErrors403LazyRoute: typeof ProtectedErrors403LazyRoute
+  ProtectedErrors404LazyRoute: typeof ProtectedErrors404LazyRoute
+  ProtectedErrors500LazyRoute: typeof ProtectedErrors500LazyRoute
+  ProtectedErrors503LazyRoute: typeof ProtectedErrors503LazyRoute
   ProtectedAppsIndexRoute: typeof ProtectedAppsIndexRoute
   ProtectedChatsIndexRoute: typeof ProtectedChatsIndexRoute
   ProtectedHelpCenterIndexRoute: typeof ProtectedHelpCenterIndexRoute
@@ -5944,17 +6128,25 @@ interface ProtectedRouteChildren {
   ProtectedReportsOpening_entryIndexRoute: typeof ProtectedReportsOpening_entryIndexRoute
   ProtectedReportsProfit_and_lossIndexRoute: typeof ProtectedReportsProfit_and_lossIndexRoute
   ProtectedReportsReceipt_note_reportIndexRoute: typeof ProtectedReportsReceipt_note_reportIndexRoute
+  ProtectedReportsRunningBalanceIndexRoute: typeof ProtectedReportsRunningBalanceIndexRoute
+  ProtectedTransactionsOpeningBalanceIndexRoute: typeof ProtectedTransactionsOpeningBalanceIndexRoute
 }
 
 const ProtectedRouteChildren: ProtectedRouteChildren = {
   ProtectedSettingsRouteRoute: ProtectedSettingsRouteRouteWithChildren,
   ProtectedChartsRoute: ProtectedChartsRoute,
   ProtectedDashboardRoute: ProtectedDashboardRoute,
+  ProtectedForbiddenLazyRoute: ProtectedForbiddenLazyRoute,
   ProtectedauthChangePasswordRoute: ProtectedauthChangePasswordRoute,
   ProtectedAdministrationLayoutRoute:
     ProtectedAdministrationLayoutRouteWithChildren,
   ProtectedTransactionsProviderRoute:
     ProtectedTransactionsProviderRouteWithChildren,
+  ProtectedErrors401LazyRoute: ProtectedErrors401LazyRoute,
+  ProtectedErrors403LazyRoute: ProtectedErrors403LazyRoute,
+  ProtectedErrors404LazyRoute: ProtectedErrors404LazyRoute,
+  ProtectedErrors500LazyRoute: ProtectedErrors500LazyRoute,
+  ProtectedErrors503LazyRoute: ProtectedErrors503LazyRoute,
   ProtectedAppsIndexRoute: ProtectedAppsIndexRoute,
   ProtectedChatsIndexRoute: ProtectedChatsIndexRoute,
   ProtectedHelpCenterIndexRoute: ProtectedHelpCenterIndexRoute,
@@ -5997,6 +6189,10 @@ const ProtectedRouteChildren: ProtectedRouteChildren = {
     ProtectedReportsProfit_and_lossIndexRoute,
   ProtectedReportsReceipt_note_reportIndexRoute:
     ProtectedReportsReceipt_note_reportIndexRoute,
+  ProtectedReportsRunningBalanceIndexRoute:
+    ProtectedReportsRunningBalanceIndexRoute,
+  ProtectedTransactionsOpeningBalanceIndexRoute:
+    ProtectedTransactionsOpeningBalanceIndexRoute,
 }
 
 const ProtectedRouteWithChildren = ProtectedRoute._addFileChildren(

@@ -4,7 +4,6 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { cn } from '@/lib/utils'
 import type { ColumnDef } from '@tanstack/react-table'
 
-
 import Icon from '@/components/icon'
 
 import { DataTableColumnHeader } from '@/features/global/components/data-table/data-table-column-header'
@@ -45,8 +44,8 @@ export const columns: ColumnDef<AppModuleFeature>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "icon",
-    header: "Icon",
+    accessorKey: 'icon',
+    header: 'Icon',
     cell: ({ row }) => <Icon name={row.getValue('icon')} />
   },
   {

@@ -32,6 +32,10 @@ const ProtectedLayout = () => {
                     <SkipToMain />
 
                     <div className="flex">
+                        {/* <div className="fixed top-0 left-0 w-screen h-svh bg-red-400/5 z-50 flex items-center justify-center shadow-4xl">
+
+                        <h1 className=" w-screen bg-red-400  p-5 shadow-4xl text-4xl text-red-200">PROTECTED LAYOUT</h1>
+                        </div> */}
                         {/* <!-- ===== Page Wrapper Start ===== --> */}
                         <div className="max-w-screen w-full relative flex  h-screen overflow-hidden ">
 

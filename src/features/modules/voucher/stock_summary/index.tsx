@@ -45,13 +45,12 @@ export default function StockSummary() {
         );
     }, []);
     useLayoutEffect(() => {
-
-
         const currentLink =
             allLinksPlucked.find(
                 item =>
                     location.pathname === item.href ||
-                    location.pathname.startsWith(`${item.href}/`)
+                    (location.pathname.startsWith(item.href) &&
+                        location.pathname[item.href.length] === '/')
             ) ?? { href: '', title: '' };
 
         const reportName = currentLink.title.split('/').pop() || '';
@@ -146,7 +145,7 @@ const DropdownItem = ({ label, link, visible }: { label: string, link: string, v
             }))
         );
 
-        const currentLink = allLinksPlucked.find((href) => href.href.includes(link)) || { href: '', title: '' };
+        const currentLink = allLinksPlucked.find((item) => item.href === link) || { href: '', title: '' };
 
         setCurrentReport(currentLink.title.split('/').pop() || '');
         navigate({ to: `${link}` });

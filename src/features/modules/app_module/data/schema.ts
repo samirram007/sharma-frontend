@@ -9,9 +9,8 @@ export const appModuleSchema: z.ZodType<any> = z.object({
   code: z.string().optional().nullish(),
   description: z.string().nullish(),
   status: ActiveInactiveStatusSchema.default('active'),
+  icon: z.string().optional().nullish(),
   features: z.lazy(() => appModuleFeatureListSchema).optional().nullable(),
-
-
 })
 
 export type AppModule = z.infer<typeof appModuleSchema>
@@ -24,8 +23,7 @@ export const formSchema = z.object({
   name: z.string().min(1, { message: 'Name is required.' }),
   code: z.string().min(1, { message: 'Code is required.' }).nullish(),
   status: z.string().min(1, { message: 'Status is required.' }),
-
   description: z.string().min(1, { message: 'Description is required.' }).nullish(),
-
+  icon: z.string().optional().nullish(),
   isEdit: z.boolean(),
 })

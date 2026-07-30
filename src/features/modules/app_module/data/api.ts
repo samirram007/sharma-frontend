@@ -1,4 +1,4 @@
-import { getData, postData, putData } from "@/utils/dataClient";
+import { deleteData, getData, postData, putData } from "@/utils/dataClient";
 
 
 const API_PATH = "/app_modules"
@@ -14,7 +14,7 @@ async function updateAppModuleService(payload: any) {
     return await putData(`${API_PATH}/${payload.id}`, payload)
 }
 async function deleteAppModuleService(payload: any) {
-    return await putData(`${API_PATH}/${payload.id}`, payload)
+    return await deleteData(`${API_PATH}/${payload.id}`)
 }
 
 export { deleteAppModuleService, fetchAppModuleService, storeAppModuleService, updateAppModuleService };

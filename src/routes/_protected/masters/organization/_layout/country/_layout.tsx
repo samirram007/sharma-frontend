@@ -1,3 +1,4 @@
+import GeneralError from '@/features/errors/general-error'
 import CountryProvider from '@/features/modules/country/contexts/country-context'
 import { createFileRoute, Outlet } from '@tanstack/react-router'
 import { Loader } from 'lucide-react'
@@ -14,8 +15,7 @@ export const Route = createFileRoute(
       </CountryProvider >
     )
   },
-  errorComponent: () => <div> <span className='bg-red-400  '>Layout:</span> Error loading country data[]. </div>
-  ,
+  errorComponent: () => <GeneralError minimal />,
   pendingComponent: () => <Loader className="animate-spin" />,
 })
 

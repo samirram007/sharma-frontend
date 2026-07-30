@@ -19,6 +19,7 @@ import {
 import { useEffect, useState } from 'react'
 
 import { cn } from '@/lib/utils'
+import FormulaBar from '../components/formula-bar'
 import type { StockInHandGodownWiseSchema, StockInHandZoneWiseSchema } from '../data/schema'
 import { DataTableToolbar } from './data-table-toolbar'
 import { Link } from '@tanstack/react-router'
@@ -127,13 +128,9 @@ const ReportHeader = () => {
             <div className='border-l-2'>Qty</div>
             <div className='border-l-2'>Val</div>
           </div>
+        </div>            </div>
         </div>
-
-
-
-      </div>
-    </div>
-  )
+    )
 }
 
 
@@ -380,48 +377,52 @@ const ReportFooter = ({ table }: { table: any }) => {
       setNoOfDecimalPlaces(2);
     }
 
-  }, []);
+  }, []);    return (
+      <>
+        <div className=' grid grid-cols-[1fr_2fr] border-amber-950! bg-gray-100  text-center font-bold  '>
+            <div className='text-accent-foreground border-2 text-right flex items-center pr-2 h-full justify-between'>
+                <div className='pl-4 italic text-sm font-mono'>
+                    Item count: {table.getRowModel().rows.length}
+                </div>
+                <div>
+                    Total:
+                </div>
+            </div>
+            <div className='grid grid-cols-4 border-b-2 border-l-0'>
+                <div className=''>
+                    <div className='grid grid-cols-2'>
+                        <div className=' text-right pr-2'>{total.openingQuantity === 0 ? '-' : (total.openingQuantity.toFixed(noOfDecimalPlaces) + ' ' + unitCode)}  </div>
+                        <div className='border-l-2'>{total.openingAmount === 0 ? '-' : total.openingAmount}</div>
+                    </div>
+                </div>
+                <div>
+                    <div className='grid grid-cols-2'>
+                        <div className='border-l-2  text-right pr-2'>{total.inwardQuantity === 0 ? '-' : (total.inwardQuantity.toFixed(noOfDecimalPlaces) + ' ' + unitCode)}</div>
+                        <div className='border-l-2'>{total.inwardAmount === 0 ? '-' : total.inwardAmount}</div>
+                    </div>
+                </div>
 
-  return (
-    <div className=' grid grid-cols-[1fr_2fr] border-amber-950! bg-gray-100  text-center font-bold  '>
-      <div className='text-accent-foreground border-2 text-right flex items-center pr-2 h-full justify-between'>
-        <div className='pl-4 italic text-sm font-mono'>
-          Item count: {table.getRowModel().rows.length}
+                <div>
+                    <div className='grid grid-cols-2'>
+                        <div className='border-l-2  text-right pr-2'>{total.outwardQuantity === 0 ? '-' : (total.outwardQuantity.toFixed(noOfDecimalPlaces) + ' ' + unitCode)}</div>
+                        <div className='border-l-2'>{total.outwardAmount === 0 ? '-' : total.outwardAmount}</div>
+                    </div>
+                </div>
+                <div>
+                    <div className='grid grid-cols-2'>
+                        <div className='border-l-2 text-right pr-2'>{total.closingQuantity === 0 ? '-' : (total.closingQuantity.toFixed(noOfDecimalPlaces) + ' ' + unitCode)}</div>
+                        <div className='border-l-2'>{total.closingAmount === 0 ? '-' : total.closingAmount}</div>
+                    </div>
+                </div>            </div>
         </div>
-        <div>
-          Total:
-        </div>
-      </div>
-      <div className='grid grid-cols-4 border-b-2 border-l-0'>
-        <div className=''>
-          <div className='grid grid-cols-2'>
-            <div className=' text-right pr-2'>{total.openingQuantity === 0 ? '-' : (total.openingQuantity.toFixed(noOfDecimalPlaces) + ' ' + unitCode)}  </div>
-            <div className='border-l-2'>{total.openingAmount === 0 ? '-' : total.openingAmount}</div>
-          </div>
-        </div>
-        <div>
-          <div className='grid grid-cols-2'>
-            <div className='border-l-2  text-right pr-2'>{total.inwardQuantity === 0 ? '-' : (total.inwardQuantity.toFixed(noOfDecimalPlaces) + ' ' + unitCode)}</div>
-            <div className='border-l-2'>{total.inwardAmount === 0 ? '-' : total.inwardAmount}</div>
-          </div>
-        </div>
-
-        <div>
-          <div className='grid grid-cols-2'>
-            <div className='border-l-2  text-right pr-2'>{total.outwardQuantity === 0 ? '-' : (total.outwardQuantity.toFixed(noOfDecimalPlaces) + ' ' + unitCode)}</div>
-            <div className='border-l-2'>{total.outwardAmount === 0 ? '-' : total.outwardAmount}</div>
-          </div>
-        </div>
-        <div>
-          <div className='grid grid-cols-2'>
-            <div className='border-l-2 text-right pr-2'>{total.closingQuantity === 0 ? '-' : (total.closingQuantity.toFixed(noOfDecimalPlaces) + ' ' + unitCode)}</div>
-            <div className='border-l-2'>{total.closingAmount === 0 ? '-' : total.closingAmount}</div>
-          </div>
-        </div>
-
-
-
-      </div>
-    </div>
-  )
+        <FormulaBar
+          openingQuantity={total.openingQuantity}
+          inwardQuantity={total.inwardQuantity}
+          outwardQuantity={total.outwardQuantity}
+          closingQuantity={total.closingQuantity}
+          noOfDecimalPlaces={noOfDecimalPlaces}
+          unitCode={unitCode}
+        />
+      </>
+    )
 }

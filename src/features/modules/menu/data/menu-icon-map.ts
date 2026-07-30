@@ -42,8 +42,6 @@ import {
   Warehouse,
 } from 'lucide-react'
 
-// ── Tabler icons ─────────────────────────────────────────────────────────────
-// Many icon names from the seeder use @tabler/icons-react naming conventions.
 import {
   IconApps,
   IconBuildingWarehouse,

@@ -1,3 +1,4 @@
+import GeneralError from '@/features/errors/general-error'
 import CompanyProvider from '@/features/modules/company/contexts/company-context'
 import { createFileRoute, Outlet } from '@tanstack/react-router'
 import { Loader } from 'lucide-react'
@@ -14,8 +15,7 @@ export const Route = createFileRoute(
       </CompanyProvider >
     )
   },
-  errorComponent: () => <div> <span className='bg-red-400  '>Layout:</span> Error loading company data[]. </div>
-  ,
+  errorComponent: () => <GeneralError minimal />,
   pendingComponent: () => <Loader className="animate-spin" />,
 })
 

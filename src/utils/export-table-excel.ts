@@ -1,5 +1,3 @@
-import ExcelJS from 'exceljs'
-import { saveAs } from 'file-saver'
 import { toSentenceCase } from './removeEmptyStrings'
 import { generateChartImage } from './export-common'
 
@@ -45,6 +43,11 @@ export default async function exportTableToExcel<T>({
     data,
     sheets,
 }: ExportToExcelProps<T>) {
+    const [ExcelJS, { saveAs }] = await Promise.all([
+        import('exceljs').then((m) => m.default),
+        import('file-saver'),
+    ])
+
     const workbook = new ExcelJS.Workbook()
 
     const sheetDefinitions: ExcelSheet[] = sheets || [

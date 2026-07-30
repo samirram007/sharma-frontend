@@ -7,8 +7,8 @@ import { fetchUserProfileService, loginService, logoutService } from '../service
 import type { UserWithRole } from '../data/schema';
 import type { Permission } from '@/features/modules/permission/data/schema';
 import type { Role } from '@/features/modules/role/data/schema';
-import type { MenuTreeItem } from '@/layouts/components/data/menu-tree-types';
-import { menuTreeQueryOptions } from '@/layouts/components/data/services';
+import type { MenuTreeItem } from '@/features/modules/menu/data/menu-tree-types';
+import { menuTreeQueryOptions } from '@/features/modules/menu/data/services';
 export type LoginProps = {
     email: string;
     password: string;
@@ -32,8 +32,53 @@ export interface AuthContextType {
     setPeriod: (period: PeriodType | null) => void;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
+import { AUTH_TOKEN_KEY } from '@/lib/auth'
 
+// ---------------------------------------------------------------------------
+//  Token storage helpers — driven by VITE_AUTH_STORAGE env var
+// ---------------------------------------------------------------------------
+
+/** Configured storage driver: localStorage, sessionStorage, or 'cookie' */
+const authDriver = import.meta.env.VITE_AUTH_STORAGE || 'localStorage';
+
+function getStorage(): Storage | null {
+    if (authDriver === 'sessionStorage') return sessionStorage;
+    if (authDriver === 'localStorage')   return localStorage;
+    return null; // 'cookie' or unknown — no client-side storage, rely on HTTP-only cookie
+}
+
+function getToken(): string | null {
+    const store = getStorage();
+    if (store) return store.getItem(AUTH_TOKEN_KEY);
+    // Cookie-based storage: try reading the 'token' cookie.
+    // NOTE: httpOnly cookies set by the server are NOT readable from
+    // document.cookie — this path only works with non-httpOnly cookies.
+    const match = document.cookie.match(new RegExp('(^| )token=([^;]+)'));
+    return match ? match[2] : null;
+}
+
+function setToken(token: string): void {
+    const store = getStorage();
+    if (store) {
+        store.setItem(AUTH_TOKEN_KEY, token);
+    } else {
+        // Fallback to cookie if no web storage is configured
+        document.cookie = `token=${token}; path=/; secure; SameSite=None`;
+    }
+}
+
+function removeToken(): void {
+    const store = getStorage();
+    if (store) {
+        store.removeItem(AUTH_TOKEN_KEY);
+    } else {
+        document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
+    }
+}
+
+export { getToken, setToken, removeToken };
+
+export const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // const navigate = useNavigate();
     // const [isAuthenticated, setIsAuthenticated] = useState(true)
@@ -106,6 +151,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 setUserFiscalYear(null);
 
             })
+            // Token is invalid/expired — clear it from storage
+            removeToken();
         } finally {
             // console.log('Profile fetch completed');
 
@@ -116,7 +163,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setIsLoading(true);
         const response = await loginService({ email, password })
         if (response?.status === 'success') {
-
+            // Store bearer token if the backend returned one
+            if (response?.token) {
+                setToken(response.token);
+            }
             await fetchProfile();
         }
         else {
@@ -127,31 +177,26 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             })
         }
         setIsLoading(false);
-        // axiosClient.get('/cookie-test').then(console.log);
-        // await fetchProfile();
-
     }, [])
 
     const logout = React.useCallback(async () => {
         console.log('Logging out...');
         setIsLoading(true);
         try {
-            // Optionally hit a logout endpoint to clear server-side auth
             await logoutService();
 
-            // Clear all client-side cache (e.g. React Query)
             flushSync(() => {
                 queryClient.clear();
                 setUser(null);
+                // Clear stored bearer token
+                removeToken();
 
             })
 
-
-            // Optionally clear auth cookies manually, if not HTTP-only
-            // document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=aipt-api.local; secure";
-
         } catch (error) {
             console.error("Logout failed:", error);
+            // Still clear local state even if server call fails
+            removeToken();
         }
         finally {
             setIsLoading(false);

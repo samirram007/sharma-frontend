@@ -1,6 +1,6 @@
 
+import ForbiddenError from '@/features/errors/403'
 import GeneralError from '@/features/errors/general-error'
-import NotFoundError from '@/features/errors/not-found-error'
 
 import Miscellaneous from '@/features/masters/miscellanous'
 import MiscellanousProvider from '@/features/masters/miscellanous/context/miscellanous-context'
@@ -15,7 +15,7 @@ export const Route = createFileRoute('/_protected/masters/miscellaneous/_layout'
             </MiscellanousProvider>
         )
     },
-    notFoundComponent: NotFoundError,
-    errorComponent: GeneralError,
+    notFoundComponent: () => <ForbiddenError minimal />,
+    errorComponent: () => <GeneralError minimal />,
 })
 

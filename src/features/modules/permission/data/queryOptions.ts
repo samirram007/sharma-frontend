@@ -1,8 +1,9 @@
 import { queryOptions, useMutation, useQueryClient } from "@tanstack/react-query"
-import { fetchPermissionService, storePermissionService, updatePermissionService } from "./api"
+import { fetchPermissionService, fetchFeaturesWithRolePermissionsService, storePermissionService, updatePermissionService } from "./api"
 import type { PermissionForm } from "./schema"
-//queryOptions.ts
+
 const Key = "permissions"
+
 export const permissionQueryOptions = (key: string = Key) => {
     return queryOptions({
         queryKey: [key],
@@ -11,16 +12,25 @@ export const permissionQueryOptions = (key: string = Key) => {
         retry: 1,
     })
 }
+
+export const featuresWithRolePermissionsQueryOptions = (roleId?: number) => {
+    return queryOptions({
+        queryKey: [Key, 'role-features', roleId],
+        queryFn: () => fetchFeaturesWithRolePermissionsService(roleId!),
+        enabled: !!roleId,
+        staleTime: 1000 * 60 * 5,
+        retry: 1,
+    })
+}
+
 export function usePermissionMutation() {
     const queryClient = useQueryClient()
 
     return useMutation({
         mutationFn: async (data: PermissionForm & { id?: number }) => {
             if (data.id) {
-                // Update if id exists
                 return await updatePermissionService(data)
             }
-            // Otherwise create
             return await storePermissionService(data)
         },
         onSuccess: () => {

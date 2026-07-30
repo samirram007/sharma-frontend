@@ -1,4 +1,5 @@
 
+import GeneralError from '@/features/errors/general-error'
 import StockItemProvider from '@/features/modules/stock_item/contexts/stock_item-context'
 import { createFileRoute, Outlet } from '@tanstack/react-router'
 import { Loader } from 'lucide-react'
@@ -15,8 +16,7 @@ export const Route = createFileRoute(
       </StockItemProvider >
     )
   },
-  errorComponent: () => <div> <span className='bg-red-400  '>Layout:</span> Error loading stock item data[]. </div>
-  ,
+  errorComponent: () => <GeneralError minimal />,
   pendingComponent: () => <Loader className="animate-spin" />,
 })
 

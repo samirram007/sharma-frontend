@@ -1,3 +1,4 @@
+import GeneralError from '@/features/errors/general-error'
 import VoucherTypeProvider from '@/features/modules/voucher_type/contexts/voucher-type-context'
 import { createFileRoute, Outlet } from '@tanstack/react-router'
 import { Loader } from 'lucide-react'
@@ -13,8 +14,7 @@ export const Route = createFileRoute(
       </VoucherTypeProvider>
     )
   },
-  errorComponent: () => <div> <span className='bg-red-400  '>Layout:</span> Error loading voucher type data[]. </div>
-  ,
+  errorComponent: () => <GeneralError minimal />,
   pendingComponent: () => <Loader className="animate-spin" />,
 })
 

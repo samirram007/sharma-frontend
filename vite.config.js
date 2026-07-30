@@ -13,21 +13,19 @@ export default defineConfig(({ mode }) => {
     // base: isProd ? '/frontend/' : '/',
     base: env.VITE_BASE_URL,
     server: {
-  // port: 3000,
       proxy: {
         '/api': {
-          target: env.VITE_API_BASE_URL, // Your Laravel backend URL
-          changeOrigin: true, // Ensures the host header is rewritten to the target
-          secure: env.VITE_API_SECURE === 'true', // For local HTTP servers (set to true for HTTPS in production)
-          rewrite: (path) => path.replace(/^\/api/, ''), // Optional: removes /api prefix if needed
+          target: env.VITE_BACKEND_URL || 'http://localhost:8000',
+          changeOrigin: true,
+          secure: env.VITE_API_SECURE === 'true',
+          // Do NOT rewrite /api — Laravel routes are already prefixed with /api
         },
       },
-
     },
     build: {
       // ssr: 'src/entry-server.tsx', // for server rendering
       // outDir: 'dist-ssr',
-      chunkSizeWarningLimit: 1000,
+      chunkSizeWarningLimit: 1500,
       rollupOptions: {
         output: {
           manualChunks(id) {
@@ -44,6 +42,19 @@ export default defineConfig(({ mode }) => {
       },
     },
     plugins: [
+      {
+        name: 'suppress-eval-warning',
+        configResolved(config) {
+          const originalWarn = console.warn
+          console.warn = (...args) => {
+            const message = typeof args[0] === 'string' ? args[0] : ''
+            if (message.includes('direct `eval`') || message.includes('direct eval')) {
+              return
+            }
+            originalWarn.apply(console, args)
+          }
+        },
+      },
       tanstackRouter({
         target: 'react',
         autoCodeSplitting: true,
@@ -67,15 +78,7 @@ export default defineConfig(({ mode }) => {
       globals: true,
       environment: 'jsdom',
     },
-    // server: { 
-    //   proxy: {
-    //     '/api': {
-    //       target: 'https://aipt-api.local',
-    //       changeOrigin: true,
-    //       rewrite: (path) => path.replace(/^\/api/, ''),
-    //     },
-    //   },
-    // },
+    
 
     resolve: {
       tsconfigPaths: true,

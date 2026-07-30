@@ -1,3 +1,4 @@
+import GeneralError from '@/features/errors/general-error'
 import DistributorProvider from '@/features/modules/distributor/contexts/distributor-context'
 import { createFileRoute, Outlet } from '@tanstack/react-router'
 import { Loader } from 'lucide-react'
@@ -14,8 +15,7 @@ export const Route = createFileRoute(
       </DistributorProvider>
     )
   },
-  errorComponent: () => <div> <span className='bg-red-400  '>Layout:</span> Error loading supplier data[]. </div>
-  ,
+  errorComponent: () => <GeneralError minimal />,
   pendingComponent: () => <Loader className="animate-spin" />,
 })
 

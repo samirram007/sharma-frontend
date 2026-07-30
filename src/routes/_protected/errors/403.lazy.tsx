@@ -1,0 +1,6 @@
+import ForbiddenError from '@/features/errors/403'
+import { createLazyFileRoute } from '@tanstack/react-router'
+
+export const Route = createLazyFileRoute('/_protected/errors/403')({
+  component: () => <ForbiddenError minimal />,
+})

@@ -1,8 +1,8 @@
+import type { AxiosError } from 'axios'
 import axios, {
-    AxiosError,
     type AxiosInstance,
     type AxiosResponse,
-    type InternalAxiosRequestConfig
+    type InternalAxiosRequestConfig,
 } from 'axios'
 
 interface RetryableRequestConfig extends InternalAxiosRequestConfig {
@@ -33,12 +33,28 @@ async function refreshToken(): Promise<void> {
     }
 }
 
-// Request interceptor (optional if you want to attach tokens manually)
+// Keep in sync with AUTH_TOKEN_KEY exported from @/lib/auth — circular deps
+// prevent a direct import from this module.
+const STORAGE_KEY = 'auth_token'
+
+/** Read the bearer token from whichever storage VITE_AUTH_STORAGE configures */
+function getStoredToken(): string | null {
+    const driver = import.meta.env.VITE_AUTH_STORAGE || 'localStorage'
+    if (driver === 'sessionStorage') return sessionStorage.getItem(STORAGE_KEY)
+    if (driver === 'localStorage')   return localStorage.getItem(STORAGE_KEY)
+    // Cookie fallback — NOTE: httpOnly cookies set by the server are not
+    // readable from document.cookie, so this path only works with non-httpOnly cookies.
+    const match = document.cookie.match(new RegExp('(^| )token=([^;]+)'))
+    return match ? match[2] : null
+}
+
 axiosClient.interceptors.request.use(
     (config) => {
-        // Optional: attach tokens manually from cookies/localStorage/context
-        // const token = getToken()
-        // if (token) config.headers.Authorization = `Bearer ${token}`
+        // Attach bearer token from VITE_AUTH_STORAGE when available
+        const token = getStoredToken();
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
         return config
     },
     (error) => Promise.reject(error)
@@ -66,7 +82,12 @@ axiosClient.interceptors.response.use(
                 await refreshToken()
                 return axiosClient(originalRequest)
             } catch (refreshError) {
-                console.error('❌ Token refresh failed, redirecting to sign-in.')
+                console.error('❌ Token refresh failed, clearing token and redirecting to sign-in.')
+                // Clear stale token from whatever storage VITE_AUTH_STORAGE configured
+                const driver = import.meta.env.VITE_AUTH_STORAGE || 'localStorage'
+                if (driver === 'sessionStorage') sessionStorage.removeItem(STORAGE_KEY)
+                else if (driver === 'localStorage') localStorage.removeItem(STORAGE_KEY)
+                document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/'
                 window.location.href = '/sign-in'
                 return Promise.reject(refreshError)
             }

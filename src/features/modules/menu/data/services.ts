@@ -6,9 +6,10 @@ const MENU_TREE_KEY = 'MenuTree'
 
 /**
  * Fetch the role-filtered hierarchical menu tree from the backend.
+ * Route: GET /api/auth/menus  (consolidated in Menu module)
  */
 export async function fetchMenuTreeService(): Promise<MenuTreeResponse> {
-  return getData('/auth/menu')
+  return getData('/auth/menus')
 }
 
 /**

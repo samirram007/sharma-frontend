@@ -1,3 +1,4 @@
+import GeneralError from '@/features/errors/general-error'
 import NotFoundError from '@/features/errors/not-found-error'
 import { appModuleQueryOptions } from '@/features/modules/app_module/data/queryOptions'
 import RolePermissionProvider from '@/features/modules/role/components/permission/contexts/role_permission-context'
@@ -42,8 +43,7 @@ export const Route = createFileRoute(
             </RolePermissionProvider>
         )
     },
-    errorComponent: () => <div> <span className='bg-red-400  '>Layout:</span> Error loading module data[]. </div>
-    ,
+    errorComponent: () => <GeneralError minimal />,
     pendingComponent: () => <Loader className="animate-spin" />,
 })
 

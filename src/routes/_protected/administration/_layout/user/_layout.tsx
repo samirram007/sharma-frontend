@@ -1,3 +1,4 @@
+import GeneralError from '@/features/errors/general-error'
 import { requirePermission } from '@/lib/auth';
 import UserProvider from '@/features/modules/user/contexts/user-context'
 import { createFileRoute, Outlet } from '@tanstack/react-router'
@@ -15,8 +16,7 @@ export const Route = createFileRoute(
       </UserProvider>
     )
   },
-  errorComponent: () => <div> <span className='bg-red-400  '>Layout:</span> Error loading supplier data[]. </div>
-  ,
+  errorComponent: () => <GeneralError minimal />,
   pendingComponent: () => <Loader className="animate-spin" />,
 })
 

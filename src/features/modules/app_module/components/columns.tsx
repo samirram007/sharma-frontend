@@ -4,14 +4,14 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { cn } from '@/lib/utils'
 import type { ColumnDef } from '@tanstack/react-table'
 
+import Icon from '@/components/icon'
+
 import { DataTableColumnHeader } from '@/features/global/components/data-table/data-table-column-header'
 import { ActiveInactiveStatusTypes } from '@/types/active-inactive-status'
 import type { AppModule } from '../data/schema'
 import RowActions from './row-actions'
 
 import { ActionDialog as ModuleFeatureActionDialog } from '../../app_module_feature/components/action-dialog'
-
-
 
 import type { AppModuleFeature } from '../../app_module_feature/data/schema'
 import React from 'react'
@@ -51,6 +51,11 @@ export const columns: ColumnDef<AppModule>[] = [
     enableHiding: false,
   },
 
+  {
+    accessorKey: 'icon',
+    header: 'Icon',
+    cell: ({ row }) => <Icon name={row.getValue('icon')} />
+  },
   {
     accessorKey: 'name',
     header: ({ column }) => (
@@ -147,7 +152,7 @@ export const columns: ColumnDef<AppModule>[] = [
 ]
 
 
-const AppModuleFeatureAddButton = ({ currentRow }: { currentRow: AppModuleFeature }) => {
+const AppModuleFeatureAddButton = ({ currentRow }: { currentRow: AppModule }) => {
   const [open, setOpen] = React.useState(false)
   const keyName = 'app-module-feature'
   return (
@@ -157,13 +162,11 @@ const AppModuleFeatureAddButton = ({ currentRow }: { currentRow: AppModuleFeatur
       </Badge>
       <ModuleFeatureActionDialog
         key={`${keyName}-add-${currentRow?.id}`}
-        currentRow={currentRow}
         open={open}
+        defaultModuleId={currentRow?.id}
         onOpenChange={() => {
           setOpen(!open)
-
         }}
-
       />
     </>)
 

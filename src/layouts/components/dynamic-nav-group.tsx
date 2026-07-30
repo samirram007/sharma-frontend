@@ -26,8 +26,8 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Link, useLocation } from '@tanstack/react-router'
 import type { ElementType } from 'react'
-import type { MenuTreeItem } from './data/menu-tree-types'
-import { resolveIcon } from './data/menu-icon-map'
+import type { MenuTreeItem } from '@/features/modules/menu/data/menu-tree-types'
+import { resolveIcon } from '@/features/modules/menu/data/menu-icon-map'
 
 // ── Icon color map ───────────────────────────────────────────────────────────
 const iconColorMap: Record<string, { idle: string; active: string }> = {

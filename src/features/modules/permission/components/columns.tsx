@@ -2,14 +2,14 @@ import LongText from '@/components/long-text'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
 import { cn } from '@/lib/utils'
-import type { ColumnDef, FilterFn, Row } from '@tanstack/react-table'
+import type { ColumnDef, FilterFn } from '@tanstack/react-table'
 
 
 
 import { DataTableColumnHeader } from '../../../global/components/data-table/data-table-column-header'
 import type { Permission } from '../data/schema'
 import RowActions from './row-actions'
-declare module '@tanstack/table-core' {
+declare module '@tanstack/react-table' {
   interface FilterFns {
     fuzzy: FilterFn<any>
   }
@@ -88,32 +88,3 @@ export const columns: ColumnDef<Permission>[] = [
     cell: RowActions,
   },
 ]
-
-
-function getNestedValue(obj: any, path: string) {
-  return path.split('.').reduce((acc, key) => acc?.[key], obj)
-}
-
-export const filterFns = {
-  fuzzy: (row: Row<any>, columnId: string | string[], value: string) => {
-    if (!value) return true
-    const searchValue = value.toLowerCase()
-
-    // Support both single and multiple column keys
-    const columns = Array.isArray(columnId) ? columnId : [columnId]
-
-    // Check if any of the columns match the search value
-    return columns.some((col) => {
-      const columnValue =
-        col.includes('.') ? getNestedValue(row.original, col) : row.getValue(col)
-
-      if (Array.isArray(columnValue)) {
-        return columnValue.some((v) =>
-          v?.toString().toLowerCase().includes(searchValue)
-        )
-      }
-
-      return columnValue?.toString().toLowerCase().includes(searchValue)
-    })
-  },
-}

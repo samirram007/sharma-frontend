@@ -4,6 +4,13 @@ import { redirect } from '@tanstack/react-router'
 import type { MyRouterContext } from '@/core/contexts/MyRouterContext'
 
 /**
+ * Shared storage key for the bearer token used across auth modules.
+ * Both AuthContext and the axios interceptor read/write from this key.
+ * Keep in sync if changed — circular deps prevent a direct import.
+ */
+export const AUTH_TOKEN_KEY = 'auth_token'
+
+/**
  * Creates a reusable TanStack Router `beforeLoad` guard that checks if the
  * authenticated user has the given permission.
  *
@@ -14,36 +21,10 @@ import type { MyRouterContext } from '@/core/contexts/MyRouterContext'
  * // In a route file:
  * beforeLoad: requirePermission('USER_MENU_VIEW')
  */
-export function requirePermission(permission: string, fallback: string = '/403') {
+export function requirePermission(permission: string, fallback: string = '/forbidden') {
   return async ({ context }: { context: MyRouterContext }) => {
     if (!context.auth?.permissions?.includes(permission)) {
       throw redirect({ to: fallback })
     }
   }
 }
-
-// import { betterAuth, } from "better-auth";
-// import { cookiesPlugin } from "better-auth/plugins/cookies";
-
-// export const auth = betterAuth({
-//     // We don't need a database — we just read your Laravel JWT cookie
-//     database: null,
-
-//     session: {
-//         expiresIn: "30d",
-//         updateAge: "1d",
-//     },
-
-//     plugins: [
-//         cookiesPlugin({
-//             cookieName: "token",                    // ← matches your Laravel cookie
-//             cookieOptions: {
-//                 httpOnly: true,
-//                 secure: true,                          // true in production, false in http localhost
-//                 sameSite: "none",                      // required for cross-site (aipt.local ↔ aipt-api.local)
-//                 path: "/",
-//                 domain: import.meta.env.PROD ? ".aipt-api.local" : undefined,
-//             },
-//         }),
-//     ],
-// });

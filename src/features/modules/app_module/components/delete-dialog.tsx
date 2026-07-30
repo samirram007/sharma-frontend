@@ -3,8 +3,10 @@
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 
-import { showSubmittedData } from '@/utils/show-submitted-data'
 import { IconAlertTriangle } from '@tabler/icons-react'
+
+import { showSubmittedData } from '@/utils/show-submitted-data'
+import { useAppModuleDeleteMutation } from '../data/queryOptions'
 import type { AppModule } from '../data/schema'
 
 
@@ -15,13 +17,18 @@ interface Props {
 }
 
 export function DeleteDialog({ open, onOpenChange, currentRow }: Props) {
-
+  const { mutate: deleteAppModule } = useAppModuleDeleteMutation()
 
   const handleDelete = () => {
-
-
-    onOpenChange(false)
     showSubmittedData(currentRow, 'The following module has been deleted:')
+    deleteAppModule(currentRow.id, {
+      onSuccess: () => {
+        onOpenChange(false)
+      },
+      onError: (error) => {
+        console.error('Delete failed:', error)
+      },
+    })
   }
 
   return (

@@ -8,6 +8,7 @@ import { StockInHandVoucherWiseListSchema } from '../data/schema';
 import { cn } from '@/lib/utils'
 import { date_format } from '@/utils/removeEmptyStrings';
 import { Link, useNavigate } from '@tanstack/react-router'
+import FormulaBar from '../components/formula-bar'
 import { useEffect, useState } from 'react'
 import { VoucherTypeColorMapping } from '../../day_book/data/data';
 import { lowerCase } from 'lodash';
@@ -55,7 +56,7 @@ const ReportView = ({ data }: { data: StockInHandVoucherWiseListSchema }) => {
                         </div>
                         <div className='grid grid-cols-4 '>
 
-                            <div className='hidden grid-cols-2'>
+                            <div className='grid grid-cols-2'>
                                 <div className='text-right pr-2'>
                                     {item.openingQuantity === 0 ? '-' :
                                         `${item.openingQuantity?.toFixed(item.noOfDecimalPlaces)} ${item.unitCode}`}
@@ -86,7 +87,7 @@ const ReportView = ({ data }: { data: StockInHandVoucherWiseListSchema }) => {
                             </div>
 
 
-                            <div className=' hidden grid-cols-2'>
+                            <div className='grid grid-cols-2'>
                                 <div className='text-right pr-2'>
 
                                     {item.closingQuantity === 0 ? '-' :
@@ -137,7 +138,7 @@ const ReportView = ({ data }: { data: StockInHandVoucherWiseListSchema }) => {
                                                 </Link>
                                             </div>
                                             <div className='grid grid-cols-4 '>
-                                                <div className=' hidden  grid-cols-2'>
+                                                <div className='grid grid-cols-2'>
                                                     <div className='text-right pr-2'>
                                                         {voucher.openingQuantity === 0 ? '-' :
                                                             `${voucher.openingQuantity?.toFixed(item.noOfDecimalPlaces)} ${item.unitCode}`}
@@ -162,7 +163,7 @@ const ReportView = ({ data }: { data: StockInHandVoucherWiseListSchema }) => {
                                                     </div>
                                                     <div>{voucher.outwardAmount === 0 ? '-' : voucher.outwardAmount?.toFixed(2)}</div>
                                                 </div>
-                                                <div className=' hidden  grid-cols-2'>
+                                                <div className='grid grid-cols-2'>
                                                     <div className='text-right pr-2'>
 
                                                         {voucher.closingQuantity === 0 ? '-' :
@@ -209,15 +210,15 @@ const ReportHeader = () => {
         <div className=' grid grid-cols-[1fr_2fr] border-amber-950! bg-gray-100  text-center font-bold  '>
             <div className='text-accent-foreground border-2 text-left pl-2 font-stretch-ultra-expanded  h-full flex items-center'>PARTICULARS</div>
             <div className='grid grid-cols-4 border-2 border-l-0'>
-                <div className='hidden'>
-                    <div className='text-accent-foreground  border-b-2'>Opening</div>
+                <div>
+                    <div className='text-accent-foreground border-b-2 border-l-2'>Opening</div>
                     <div className='grid grid-cols-2'>
-                        <div>Qty</div>
+                        <div className='border-l-2'>Qty</div>
                         <div className='border-l-2'>Val</div>
                     </div>
                 </div>
                 <div>
-                    <div className='text-accent-foreground border-b-2 border-l-2   ' >Inward</div>
+                    <div className='text-accent-foreground border-b-2 border-l-2'>Inward</div>
                     <div className='grid grid-cols-2'>
                         <div className='border-l-2'>Qty</div>
                         <div className='border-l-2'>Val</div>
@@ -231,7 +232,7 @@ const ReportHeader = () => {
                         <div className='border-l-2'>Val</div>
                     </div>
                 </div>
-                <div className='hidden'>
+                <div>
                     <div className='text-accent-foreground border-b-2 border-l-2'>Closing</div>
                     <div className='grid grid-cols-2'>
                         <div className='border-l-2'>Qty</div>
@@ -297,6 +298,7 @@ const ReportFooter = ({ data }: { data: StockInHandVoucherWiseListSchema }) => {
     }, []);
 
     return (
+      <>
         <div className=' grid grid-cols-[1fr_2fr] border-amber-950! bg-gray-100  text-center font-bold  '>
             <div className='text-accent-foreground border-2 text-right flex items-center pr-2 h-full justify-between'>
                 <div className='pl-4 italic text-sm font-mono'>
@@ -307,9 +309,9 @@ const ReportFooter = ({ data }: { data: StockInHandVoucherWiseListSchema }) => {
                 </div>
             </div>
             <div className='grid grid-cols-4 border-b-2 border-l-0'>
-                <div className='hidden'>
+                <div>
                     <div className='grid grid-cols-2'>
-                        <div className=' text-right pr-2'>{total.openingQuantity === 0 ? '-' : (total.openingQuantity.toFixed(noOfDecimalPlaces) + ' ' + unitCode)}  </div>
+                        <div className='border-l-2 text-right pr-2'>{total.openingQuantity === 0 ? '-' : (total.openingQuantity.toFixed(noOfDecimalPlaces) + ' ' + unitCode)}  </div>
                         <div className='border-l-2'>{total.openingAmount === 0 ? '-' : total.openingAmount}</div>
                     </div>
                 </div>
@@ -326,7 +328,7 @@ const ReportFooter = ({ data }: { data: StockInHandVoucherWiseListSchema }) => {
                         <div className='border-l-2'>{total.outwardAmount === 0 ? '-' : total.outwardAmount}</div>
                     </div>
                 </div>
-                <div className='hidden'>
+                <div>
                     <div className='grid grid-cols-2'>
                         <div className='border-l-2 text-right pr-2'>{total.closingQuantity === 0 ? '-' : (total.closingQuantity.toFixed(noOfDecimalPlaces) + ' ' + unitCode)}</div>
                         <div className='border-l-2'>{total.closingAmount === 0 ? '-' : total.closingAmount}</div>
@@ -337,5 +339,14 @@ const ReportFooter = ({ data }: { data: StockInHandVoucherWiseListSchema }) => {
 
             </div>
         </div>
+        <FormulaBar
+          openingQuantity={total.openingQuantity}
+          inwardQuantity={total.inwardQuantity}
+          outwardQuantity={total.outwardQuantity}
+          closingQuantity={total.closingQuantity}
+          noOfDecimalPlaces={noOfDecimalPlaces}
+          unitCode={unitCode}
+        />
+      </>
     )
 }

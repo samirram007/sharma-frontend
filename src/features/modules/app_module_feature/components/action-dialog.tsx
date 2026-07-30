@@ -20,6 +20,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm, type Resolver } from 'react-hook-form'
 
 import FormInputField from '@/components/form-input-field'
+import { IconPicker } from '@/components/icon-picker'
 
 import { Badge } from '@/components/ui/badge'
 import { Loader2 } from 'lucide-react'
@@ -38,9 +39,10 @@ interface Props {
   currentRow?: AppModuleFeature
   open: boolean
   onOpenChange: (open: boolean) => void
+  defaultModuleId?: number
 }
 
-export function ActionDialog({ currentRow, open, onOpenChange }: Props) {
+export function ActionDialog({ currentRow, open, onOpenChange, defaultModuleId }: Props) {
 
   const { mutate: saveAppModuleFeature, isPending } = useAppModuleFeatureMutation()
   const isEdit = !!currentRow
@@ -56,7 +58,7 @@ export function ActionDialog({ currentRow, open, onOpenChange }: Props) {
         code: '',
         description: '',
         status: 'active',
-        appModuleId: undefined,
+        appModuleId: defaultModuleId ?? undefined,
         isEdit,
       },
     mode: 'onChange',
@@ -127,6 +129,7 @@ export function ActionDialog({ currentRow, open, onOpenChange }: Props) {
                 </div>
               </div>
               <FormInputField type='text' form={form} name='code' label='Code' />
+              <IconPicker form={form} name='icon' label='Icon' />
 
               <FormInputField type='textarea' form={form} name='description' label='Description (optional)' />
 

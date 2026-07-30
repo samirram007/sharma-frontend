@@ -1,3 +1,4 @@
+import GeneralError from '@/features/errors/general-error'
 import CurrencyProvider from '@/features/modules/currency/contexts/currency-context'
 import { createFileRoute, Outlet } from '@tanstack/react-router'
 import { Loader } from 'lucide-react'
@@ -14,8 +15,7 @@ export const Route = createFileRoute(
       </CurrencyProvider >
     )
   },
-  errorComponent: () => <div> <span className='bg-red-400  '>Layout:</span> Error loading currency data[]. </div>
-  ,
+  errorComponent: () => <GeneralError minimal />,
   pendingComponent: () => <Loader className="animate-spin" />,
 })
 

@@ -7,6 +7,7 @@
 import { type StockInHandItemWiseListSchema } from '../data/schema'
 import { cn } from '@/lib/utils'
 import { Link } from '@tanstack/react-router'
+import FormulaBar from '../components/formula-bar'
 import { useEffect, useState } from 'react'
 
 
@@ -258,6 +259,7 @@ const ReportFooter = ({ data }: { data: StockInHandItemWiseListSchema }) => {
     }, []);
 
     return (
+      <>
         <div className=' grid grid-cols-[1fr_2fr] border-amber-950! bg-gray-100  text-center font-bold  '>
             <div className='text-accent-foreground border-2 text-right flex items-center pr-2 h-full justify-between'>
                 <div className='pl-4 italic text-sm font-mono'>
@@ -298,5 +300,14 @@ const ReportFooter = ({ data }: { data: StockInHandItemWiseListSchema }) => {
 
             </div>
         </div>
+        <FormulaBar
+          openingQuantity={total.openingQuantity}
+          inwardQuantity={total.inwardQuantity}
+          outwardQuantity={total.outwardQuantity}
+          closingQuantity={total.closingQuantity}
+          noOfDecimalPlaces={noOfDecimalPlaces}
+          unitCode={unitCode}
+        />
+      </>
     )
 }

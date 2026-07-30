@@ -99,6 +99,7 @@
     "@types/react-is": "^19.2.0",
     "@vitejs/plugin-react": "^6.0.1",
     "baseline-browser-mapping": "^2.10.15",
+    "eslint": "^10.8.0",
     "jsdom": "^29.0.1",
     "prettier": "^3.8.1",
     "tailwindcss-animate": "^1.0.7",

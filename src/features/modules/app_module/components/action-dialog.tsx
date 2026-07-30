@@ -20,6 +20,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 
 import FormInputField from '@/components/form-input-field'
+import { IconPicker } from '@/components/icon-picker'
 
 import { Loader2 } from 'lucide-react'
 import { useEffect, useMemo } from 'react'
@@ -53,6 +54,7 @@ export function ActionDialog({ currentRow, open, onOpenChange }: Props) {
         name: '',
         code: '',
         description: '',
+        icon: '',
         status: 'active',
         isEdit,
       },
@@ -114,6 +116,8 @@ export function ActionDialog({ currentRow, open, onOpenChange }: Props) {
               <FormInputField type='text' form={form} name='name' label='Name' />
 
               <FormInputField type='text' form={form} name='code' label='Code' />
+
+              <IconPicker form={form} name='icon' label='Icon' />
 
               <FormInputField type='textarea' form={form} name='description' label='Description (optional)' />
 

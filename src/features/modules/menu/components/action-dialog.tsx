@@ -15,6 +15,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm, type Resolver } from 'react-hook-form'
 
 import FormInputField from '@/components/form-input-field'
+import { IconPicker } from '@/components/icon-picker'
 
 import { Loader2 } from 'lucide-react'
 import { useMenu } from '../contexts/menu-context'
@@ -103,7 +104,7 @@ export function ActionDialog({ currentRow, open, onOpenChange }: Props) {
               <FormInputField type='text' form={form} name='menuName' label='Menu Name' />
               <ParentMenuDropdown form={form} />
               <FormInputField type='text' form={form} name='route' label='Route (path)' />
-              <FormInputField type='text' form={form} name='icon' label='Icon Name' />
+              <IconPicker form={form} name='icon' label='Icon' />
               <div className='grid grid-cols-2 gap-4'>
                 <FormInputField type='number' form={form} name='sortOrder' label='Sort Order' />
                 <FormInputField

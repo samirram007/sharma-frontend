@@ -299,7 +299,7 @@ export function GridTable({
                 </TableRow>
               ))
             ) : (
-              <TableRow>
+              <TableRow key="empty">
                 <TableCell
                   colSpan={table.getVisibleLeafColumns().length}
                   className='h-24 text-center'
