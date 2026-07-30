@@ -82,7 +82,7 @@ export function ActionDialog({ currentRow, open, onOpenChange }: Props) {
   const moduleName = "Transporter"
   const onSubmit = (values: TransporterForm) => {
     form.reset()
-    //showSubmittedData(values)
+    // showSubmittedData(values)
     saveTransporter(
       currentRow ? { ...values, id: currentRow.id } : values
     )

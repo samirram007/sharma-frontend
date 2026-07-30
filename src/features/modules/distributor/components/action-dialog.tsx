@@ -85,7 +85,7 @@ export function ActionDialog({ currentRow, open, onOpenChange }: Props) {
 
   const onSubmit = (values: DistributorForm) => {
     // form.reset()
-    //showSubmittedData(values)
+    // showSubmittedData(values)
 
     saveDistributor(
       currentRow ? { ...values, id: currentRow.id } : values,

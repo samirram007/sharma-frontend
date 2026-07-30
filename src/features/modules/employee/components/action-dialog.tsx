@@ -67,7 +67,7 @@ export function ActionDialog({ currentRow, open, onOpenChange }: Props) {
   const moduleName = "Employee"
   const onSubmit = (values: EmployeeForm) => {
     form.reset()
-    //showSubmittedData(values)
+    // showSubmittedData(values)
     saveEmployee(
       currentRow ? { ...values, id: currentRow.id } : values
     )

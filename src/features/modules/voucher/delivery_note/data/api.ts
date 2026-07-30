@@ -6,7 +6,7 @@ export async function fetchDeliveryNoteService() {
     return await getData(API_PATH)
 }
 export async function fetchDeliveryNoteByIdService(id: number) {
-    //console.log(`${API_PATH} / ${id}`)
+    // console.log(`${API_PATH} / ${id}`)
     return await getData(`${API_PATH}/${id}`)
 }
 

@@ -8,7 +8,7 @@ export const Route = createFileRoute(
 )({
 
   component: () => {
-    //const { data: company } = useSuspenseQuery(companyQueryOptions())
+    // const { data: company } = useSuspenseQuery(companyQueryOptions())
     return (
       <CompanyProvider>
         <Outlet />

@@ -23,7 +23,7 @@ const StateDropdown = (props: Props) => {
         queryFn: fetchStateService,
     });
 
-    //const stateId = form.watch('stateId') as string | number | undefined;; // Watch form value for reactivity
+    // const stateId = form.watch('stateId') as string | number | undefined;; // Watch form value for reactivity
     const handleValueChange = (value: string) => {
         form.setValue('address.stateId', Number(value));
 

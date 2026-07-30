@@ -23,7 +23,7 @@ const DepartmentDropdown = (props: Props) => {
         queryFn: fetchDepartmentService,
     });
 
-    //const departmentId = form.watch('departmentId') as string | number | undefined;; // Watch form value for reactivity
+    // const departmentId = form.watch('departmentId') as string | number | undefined;; // Watch form value for reactivity
     const handleValueChange = (value: string) => {
         form.setValue('departmentId', Number(value));
 

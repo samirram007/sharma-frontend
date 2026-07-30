@@ -68,7 +68,7 @@ export function ActionDialog({ currentRow, open, onOpenChange }: Props) {
         isEdit,
       },
   })
-  //const accountNatureStatusOptions: ActiveInactiveStatus[] = ['active', 'inactive'];
+  // const accountNatureStatusOptions: ActiveInactiveStatus[] = ['active', 'inactive'];
 
   const moduleName = "Account Nature"
   const onSubmit = (values: AccountNatureForm) => {

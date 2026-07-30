@@ -63,7 +63,7 @@ const BatchSelection = (props: BatchSelectionProps) => {
 
     };
     const handleBlur = () => {
-        //if framework count is 1 set that value
+        // if framework count is 1 set that value
         if (form.watch(`batchNo`) === undefined || form.watch(`batchNo`) === '') {
             form.setValue(`batchNo`, frameworks[0].value)
             // return;

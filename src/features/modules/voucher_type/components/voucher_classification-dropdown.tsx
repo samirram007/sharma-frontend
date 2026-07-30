@@ -17,7 +17,7 @@ import type { UseFormReturn } from 'react-hook-form'
 import { fetchVoucherClassificationService } from '../../voucher_classification/data/api'
 
 interface VoucherClassificationDropdownProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   form: UseFormReturn<any>
 }
 

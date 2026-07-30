@@ -1,7 +1,7 @@
 import { queryOptions, useMutation, useQueryClient } from "@tanstack/react-query"
 import { fetchShiftService, storeShiftService, updateShiftService } from "./api"
 import type { ShiftForm } from "./schema"
-//queryOptions.ts
+// queryOptions.ts
 const Key = "shifts"
 export const shiftQueryOptions = (key: string = Key) => {
     return queryOptions({

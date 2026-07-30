@@ -24,7 +24,7 @@ export function clean_logout() {
         .catch((error) => {
             console.error('Error during logout:', error);
         });
-    //localStorage.removeItem('auth_token');
+    // localStorage.removeItem('auth_token');
     // localStorage.removeItem('user_data');
 }
 export function clearAllCookies() {

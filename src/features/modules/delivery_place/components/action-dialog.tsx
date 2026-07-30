@@ -45,7 +45,7 @@ export function ActionDialog({ currentRow, open, onOpenChange }: Props) {
       }
     },
     onSuccess: () => {
-    //console.log('Delivery Place saved successfully!')
+    // console.log('Delivery Place saved successfully!')
       queryClient.invalidateQueries({ queryKey: ['deliveryPlaces'] })
       form.reset()
       onOpenChange(false)
@@ -70,7 +70,7 @@ export function ActionDialog({ currentRow, open, onOpenChange }: Props) {
         isEdit,
       },
   })
-  //const deliveryPlaceStatusOptions: ActiveInactiveStatus[] = ['active', 'inactive'];
+  // const deliveryPlaceStatusOptions: ActiveInactiveStatus[] = ['active', 'inactive'];
   const name = useWatch({
     control: form.control,
     name: 'name',

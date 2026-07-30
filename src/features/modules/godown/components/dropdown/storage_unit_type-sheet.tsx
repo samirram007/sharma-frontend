@@ -28,7 +28,7 @@ const StorageUnitTypeSheet = (props: Props) => {
     const name = "storageUnitType"
 
     const { data: storageUnitTypes } = useEnum("storage_unit_type");
-    //const storageunitTypeId = form.watch('storageunitTypeId') as string | number | undefined;; // Watch form value for reactivity
+    // const storageunitTypeId = form.watch('storageunitTypeId') as string | number | undefined;; // Watch form value for reactivity
     console.log(storageUnitTypes);
 
     const handleValueChange = (value: string) => {

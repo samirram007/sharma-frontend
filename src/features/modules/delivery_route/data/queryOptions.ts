@@ -1,7 +1,7 @@
 import { queryOptions, useMutation, useQueryClient } from "@tanstack/react-query"
 import { fetchDeliveryRouteService, storeDeliveryRouteService, updateDeliveryRouteService, } from "./api"
 import type { DeliveryRouteForm } from "./schema"
-//queryOptions.ts
+// queryOptions.ts
 const Key = "deliveryRoutes"
 export const deliveryRouteQueryOptions = (key: string = Key) => {
     return queryOptions({

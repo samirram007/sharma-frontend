@@ -22,7 +22,7 @@ const StockCategoryDropdown = (props: Props) => {
         queryFn: fetchStockCategoryService,
     });
 
-    //const currencyId = form.watch('currencyId') as string | number | undefined;; // Watch form value for reactivity
+    // const currencyId = form.watch('currencyId') as string | number | undefined;; // Watch form value for reactivity
     const handleValueChange = (value: string) => {
         form.setValue('stockCategoryId', Number(value));
 

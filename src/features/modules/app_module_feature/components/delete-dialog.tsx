@@ -23,7 +23,7 @@ export function DeleteDialog({ open, onOpenChange, currentRow }: Props) {
   const handleDelete = () => {
     // if (value.trim() !== String(currentRow.id)) return
 
-    //(false)
+    // (false)
     showSubmittedData(currentRow, 'The following user has been deleted:')
     deleteAppModuleFeature(currentRow.id, {
       onSuccess: () => {

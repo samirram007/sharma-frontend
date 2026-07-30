@@ -1,7 +1,7 @@
 import { queryOptions, useMutation, useQueryClient } from "@tanstack/react-query"
 import { fetchGstRegistrationTypeByIdService, fetchGstRegistrationTypeService, storeGstRegistrationTypeService, updateGstRegistrationTypeService } from "./api"
 import type { GstRegistrationTypeForm } from "./schema"
-//queryOptions.ts
+// queryOptions.ts
 const BASE_KEY = "gstRegistrationTypes"
 export const gstRegistrationTypeQueryOptions = (id?: number) => {
 

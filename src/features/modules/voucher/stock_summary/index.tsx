@@ -136,7 +136,7 @@ const DropdownItem = ({ label, link, visible }: { label: string, link: string, v
     const { currentReport, setCurrentReport } = useStockSummary();
 
     const handleOnclick = () => {
-        //get links and title from reportLinks
+        // get links and title from reportLinks
 
         const allLinksPlucked = reportLinks.flatMap(report =>
             report.menus.map(menu => ({

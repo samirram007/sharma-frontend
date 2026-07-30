@@ -4,7 +4,7 @@
 
 
 
-import { StockInHandVoucherWiseListSchema } from '../data/schema';
+import type { StockInHandVoucherWiseListSchema } from '../data/schema';
 import { cn } from '@/lib/utils'
 import { date_format } from '@/utils/removeEmptyStrings';
 import { Link, useNavigate } from '@tanstack/react-router'

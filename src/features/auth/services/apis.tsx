@@ -16,7 +16,7 @@ export async function fetchUserProfileService() {
 export async function loginService(payload: any) {
     // console.log('loginService called', payload);
     const data = await postData("/auth/login", payload)
-    //console.log(data);
+    // console.log(data);
     return data;
 
     // return (await axiosClient.post("/auth/login", payload)).data
@@ -31,7 +31,7 @@ export async function logoutService() {
     const data = await postData("/auth/logout", [])
     console.log(data);
     return data;
-    //return  (await axiosClient.post("/logout", []))
+    // return  (await axiosClient.post("/logout", []))
 }
 
 

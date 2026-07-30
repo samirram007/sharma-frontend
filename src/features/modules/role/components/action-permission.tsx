@@ -48,7 +48,7 @@ export default ActionPermission
 
 const ModalButton = ({ role }: { role: Role }) => {
     const [open, setOpen] = React.useState(false);
-    //console.log(role)
+    // console.log(role)
     return (
         <>
             <Button onClick={() => { setOpen(true) }} className="space-x-1" size={'sm'} variant={'outline'} title='Role Permission'>

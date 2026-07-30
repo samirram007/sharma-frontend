@@ -51,7 +51,7 @@ type Props = {
 const FormInputField = (props: Props) => {
   const { type } = props
 
-  //switch case for different input types
+  // switch case for different input types
   if (type === 'checkbox') {
     return <CheckBox {...props} />
   } else if (type === 'textarea') {

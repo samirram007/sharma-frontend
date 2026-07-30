@@ -22,7 +22,7 @@ const UqcDropdown = (props: Props) => {
         queryFn: fetchUniqueQuantityCodeService,
     });
 
-    //const stateId = form.watch('stateId') as string | number | undefined;; // Watch form value for reactivity
+    // const stateId = form.watch('stateId') as string | number | undefined;; // Watch form value for reactivity
     const handleValueChange = (value: string) => {
         form.setValue('uniqueQuantityCodeId', Number(value));
 

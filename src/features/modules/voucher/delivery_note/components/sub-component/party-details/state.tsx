@@ -43,7 +43,7 @@ export const StateCombobox = ({ form }: Props) => {
         const country = states?.data.find((state: State) => state.id === Number(value))?.country
         form.setValue("countryId", country ? country.id : undefined)
         setCountry(country ? country.name : 'INDIA')
-        //setValue(value)
+        // setValue(value)
         setOpen(false)
     }
     const frameworks = states?.data.map((state: State) => ({

@@ -1,7 +1,7 @@
 import { queryOptions, useMutation, useQueryClient } from "@tanstack/react-query"
 import { fetchGodownService, storeGodownService, updateGodownService } from "./api"
 import type { GodownForm } from "./schema"
-//queryOptions.ts
+// queryOptions.ts
 const Key = "godowns"
 export const godownQueryOptions = (key: string = Key) => {
     return queryOptions({

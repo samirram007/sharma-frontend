@@ -3,7 +3,7 @@ import { getData, postData, putData } from "@/utils/dataClient"
 
 const API_PATH = "/countries"
 export async function fetchCountryService() {
-    //console.log("first", API_PATH)
+    // console.log("first", API_PATH)
     return await getData(API_PATH)
 }
 export async function fetchCountryByIdService(id: number) {

@@ -1,7 +1,7 @@
 import { queryOptions, useMutation, useQueryClient } from "@tanstack/react-query"
 import { fetchDeliveryVehicleByIdService, fetchDeliveryVehicleService, storeDeliveryVehicleService, updateDeliveryVehicleService, } from "./api"
 import type { DeliveryVehicleForm } from "./schema"
-//queryOptions.ts
+// queryOptions.ts
 const BASE_KEY = "delivery_vehicles"
 // export const deliveryVehicleQueryOptions = (key: string = BASE_KEY) => {
 //     return queryOptions({

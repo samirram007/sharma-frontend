@@ -20,7 +20,7 @@ const CompanyDropdown = (props: Props) => {
     //     queryFn: fetchCompanyService,
     // });
 
-    //const companyId = form.watch('companyId') as string | number | undefined;; // Watch form value for reactivity
+    // const companyId = form.watch('companyId') as string | number | undefined;; // Watch form value for reactivity
     const handleValueChange = (value: string) => {
         form.setValue('companyId', Number(value));
         form.setValue('company', companyList?.find((company: Company) => company.id === Number(value)) || null);

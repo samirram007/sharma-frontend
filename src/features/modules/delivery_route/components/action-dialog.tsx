@@ -56,7 +56,7 @@ export function ActionDialog({ currentRow, open, onOpenChange }: Props) {
         isEdit,
       },
   })
-  //const deliveryRouteStatusOptions: ActiveInactiveStatus[] = ['active', 'inactive'];
+  // const deliveryRouteStatusOptions: ActiveInactiveStatus[] = ['active', 'inactive'];
 
   const moduleName = "Transporter Route"
   const onSubmit = (values: DeliveryRouteForm) => {
@@ -64,7 +64,7 @@ export function ActionDialog({ currentRow, open, onOpenChange }: Props) {
 
     mutateDeliveryRoute(currentRow ? { ...values, id: currentRow.id } : values)
     form.reset()
-    //showSubmittedData(values)
+    // showSubmittedData(values)
     onOpenChange(false)
   }
 

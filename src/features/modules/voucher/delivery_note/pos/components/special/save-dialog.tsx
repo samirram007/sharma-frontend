@@ -21,7 +21,7 @@ const SaveDialog = ({ mainForm, isSaving, setSaving }: SaveDialogProps) => {
     const [checking, setChecking] = useState(true);
     const [valid, setValid] = useState(false);  // for success animation
     const handleSaving = () => {
-        //console.log('Form submitted', mainForm.getValues());
+        // console.log('Form submitted', mainForm.getValues());
 
         createDeliveryNote(mainForm.getValues())
     }
@@ -65,7 +65,7 @@ const SaveDialog = ({ mainForm, isSaving, setSaving }: SaveDialogProps) => {
             if (!partyLedgerId) newErrors.push("Party Ledger is required.");
             if (!transactionLedgerId) newErrors.push("Stock Ledger is required.");
 
-            //Should check source and destination must not empty for 
+            // Should check source and destination must not empty for 
 
                 if (!data.voucherDispatchDetail!.source) newErrors.push("Source is required.");
                 if (!data.voucherDispatchDetail!.destination && !data.voucherDispatchDetail!.destinationSecondary) newErrors.push("Destination is required.");

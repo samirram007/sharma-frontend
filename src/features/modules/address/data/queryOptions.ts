@@ -1,7 +1,7 @@
 import { queryOptions, useMutation, useQueryClient } from "@tanstack/react-query"
 import { fetchAddressService, storeAddressService, updateAddressService } from "./api"
 import type { AddressForm } from "./schema"
-//queryOptions.ts
+// queryOptions.ts
 const Key = "addresss"
 export const addressQueryOptions = (key: string = Key) => {
     return queryOptions({

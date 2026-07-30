@@ -22,7 +22,7 @@ const StockGroupDropdown = (props: Props) => {
         queryFn: fetchStockGroupService,
     });
 
-    //const stockGroupId = form.watch('stockGroupId') as string | number | undefined;; // Watch form value for reactivity
+    // const stockGroupId = form.watch('stockGroupId') as string | number | undefined;; // Watch form value for reactivity
     const handleValueChange = (value: string) => {
         form.setValue('stockGroupId', Number(value));
 

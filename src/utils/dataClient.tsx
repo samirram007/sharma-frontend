@@ -96,7 +96,7 @@ const errorHandler = (error: any) => {
             });
         } else if (error.response.data.message) {
             // If there's a general message (e.g., non-validation error)
-            //toast.message(error.response.data.message);
+            // toast.message(error.response.data.message);
 
         } else {
             // Fallback for unexpected error responses

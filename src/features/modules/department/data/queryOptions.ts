@@ -1,7 +1,7 @@
 import { queryOptions, useMutation, useQueryClient } from "@tanstack/react-query"
 import { fetchDepartmentService, storeDepartmentService, updateDepartmentService } from "./api"
 import type { DepartmentForm } from "./schema"
-//queryOptions.ts
+// queryOptions.ts
 const Key = "departments"
 export const departmentQueryOptions = (key: string = Key) => {
     return queryOptions({

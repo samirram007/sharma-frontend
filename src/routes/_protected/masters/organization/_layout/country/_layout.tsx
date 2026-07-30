@@ -8,7 +8,7 @@ export const Route = createFileRoute(
 )({
 
   component: () => {
-    //const { data: country } = useSuspenseQuery(countryQueryOptions())
+    // const { data: country } = useSuspenseQuery(countryQueryOptions())
     return (
       <CountryProvider>
         <Outlet />

@@ -9,7 +9,7 @@ export const Route = createFileRoute(
 )({
   beforeLoad: requirePermission('USER_MENU_VIEW'),
   component: () => {
-    //const { data: supplier } = useSuspenseQuery(supplierQueryOptions())
+    // const { data: supplier } = useSuspenseQuery(supplierQueryOptions())
     return (
       <UserProvider>
         <Outlet />

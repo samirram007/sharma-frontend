@@ -35,7 +35,7 @@ export async function loginService(payload: any) {
 export async function logoutService() {
     const data = await postData("/auth/logout", [])
     return data;
-    //return  (await axiosClient.post("/logout", []))
+    // return  (await axiosClient.post("/logout", []))
 }
 
 

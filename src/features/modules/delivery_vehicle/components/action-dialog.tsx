@@ -52,7 +52,7 @@ export function ActionDialog({ currentRow, open, onOpenChange }: Props) {
       }
     },
     onSuccess: () => {
-      //console.log(data, 'Account Nature saved successfully!')
+      // console.log(data, 'Account Nature saved successfully!')
       queryClient.invalidateQueries({ queryKey: ['delivery_vehicles'] })
       form.reset()
       form.resetField('isEdit')

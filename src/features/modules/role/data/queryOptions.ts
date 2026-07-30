@@ -1,7 +1,7 @@
 import { queryOptions, useMutation, useQueryClient } from "@tanstack/react-query"
 import { fetchRoleByIdService, fetchRoleService, storeRoleService, updateRoleService } from "./api"
 import type { RoleForm } from "./schema"
-//queryOptions.ts
+// queryOptions.ts
 const BASE_KEY = "roles"
 export const roleQueryOptions = (id?: number) => {
 

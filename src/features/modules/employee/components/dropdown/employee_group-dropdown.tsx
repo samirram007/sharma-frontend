@@ -23,7 +23,7 @@ const EmployeeGroupDropdown = (props: Props) => {
         queryFn: fetchEmployeeGroupService,
     });
 
-    //const employeegroupId = form.watch('employeegroupId') as string | number | undefined;; // Watch form value for reactivity
+    // const employeegroupId = form.watch('employeegroupId') as string | number | undefined;; // Watch form value for reactivity
     const handleValueChange = (value: string) => {
         form.setValue('employeeGroupId', Number(value));
 

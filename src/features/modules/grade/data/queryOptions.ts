@@ -1,7 +1,7 @@
 import { queryOptions, useMutation, useQueryClient } from "@tanstack/react-query"
 import { fetchGradeService, storeGradeService, updateGradeService } from "./api"
 import type { GradeForm } from "./schema"
-//queryOptions.ts
+// queryOptions.ts
 const Key = "grades"
 export const gradeQueryOptions = (key: string = Key) => {
     return queryOptions({

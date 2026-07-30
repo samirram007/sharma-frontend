@@ -28,7 +28,7 @@ const NarrationBox = (props: Props) => {
     const { form, name, gapClass, rtl, label, noLabel, handleSaving, isSaving, setSaving, ...rest } = props
     const { remarksRef, isRemarksDisabled, setIsRemarksDisabled } = usePos();
 
-    //ondouble enter save
+    // ondouble enter save
     // const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     //     if (e.key === "Enter" && (e.shiftKey || e.ctrlKey)) {
     //         e.preventDefault();

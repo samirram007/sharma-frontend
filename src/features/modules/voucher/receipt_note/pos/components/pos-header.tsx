@@ -13,7 +13,7 @@ type PosHeaderProps = {
 
 const PosHeader = ({ mainForm: form }: PosHeaderProps) => {
 // const form = useFormContext<ReceiptNoteForm>()
-//const form = mainForm;
+// const form = mainForm;
 
 
     const voucherDate = form.watch("voucherDate")

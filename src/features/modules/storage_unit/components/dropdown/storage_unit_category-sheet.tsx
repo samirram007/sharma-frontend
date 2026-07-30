@@ -26,7 +26,7 @@ const StorageUnitCategorySheet = (props: Props) => {
     const name = "storageUnitCategory"
 
     const { data: storageUnitCategories } = useEnum("storage_unit_category");
-    //const storageunitCategoryId = form.watch('storageunitCategoryId') as string | number | undefined;; // Watch form value for reactivity
+    // const storageunitCategoryId = form.watch('storageunitCategoryId') as string | number | undefined;; // Watch form value for reactivity
     const handleValueChange = (value: string) => {
         form.setValue(name, value);
 

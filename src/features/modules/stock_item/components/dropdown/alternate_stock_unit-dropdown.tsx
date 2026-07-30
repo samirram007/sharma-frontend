@@ -26,7 +26,7 @@ const AlternateStockUnitDropdown = (props: Props) => {
         queryFn: fetchStockUnitService,
     });
 
-    //const stateId = form.watch('stateId') as string | number | undefined;; // Watch form value for reactivity
+    // const stateId = form.watch('stateId') as string | number | undefined;; // Watch form value for reactivity
 
     const handleValueChange = (value: string) => {
         if (value === "null") {

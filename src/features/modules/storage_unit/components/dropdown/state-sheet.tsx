@@ -26,7 +26,7 @@ const StateSheet = (props: Props) => {
 
     const { data: stateList } = useSuspenseQuery(stateQueryOptions())
 
-    //const stateId = form.watch('stateId') as string | number | undefined;; // Watch form value for reactivity
+    // const stateId = form.watch('stateId') as string | number | undefined;; // Watch form value for reactivity
     const handleValueChange = (value: string) => {
         form.setValue('stateId', Number(value))
         const selectedState = stateList?.data.find((state: State) => state.id === Number(value))

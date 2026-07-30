@@ -1,7 +1,7 @@
 import { queryOptions, useMutation, useQueryClient } from "@tanstack/react-query"
 import { fetchDeliveryPlaceService, storeDeliveryPlaceService, updateDeliveryPlaceService, } from "./api"
 import type { DeliveryPlaceForm } from "./schema"
-//queryOptions.ts
+// queryOptions.ts
 const Key = "deliveryPlaces"
 export const deliveryPlaceQueryOptions = (key: string = Key) => {
     return queryOptions({
