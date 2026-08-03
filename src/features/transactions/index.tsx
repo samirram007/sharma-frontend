@@ -63,6 +63,7 @@ const voucherIconOverrides = new Map<string, string>([
   ['rejection_out', 'FaBan'],
   ['transfer_voucher', 'FaExchangeAlt'],
   ['manufacturing_journal', 'FaIndustry'],
+  ['conversion_journal', 'FaExchangeAlt'],
   ['physical_stock', 'FaClipboardCheck'],
   ['purchase_order', 'FaShoppingBag'],
   ['sales_order', 'FaChartLine'],

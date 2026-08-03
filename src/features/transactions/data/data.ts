@@ -19,6 +19,7 @@ export const VoucherTypeColorMapping = new Map<string, string>([
     ['rejection_out', 'text-rose-700 dark:text-rose-400 border-rose-700 dark:border-rose-400'],
     ['transfer_voucher', 'text-indigo-700 dark:text-indigo-400 border-indigo-700 dark:border-indigo-400'],
     ['manufacturing_journal', 'text-yellow-700 dark:text-yellow-400 border-yellow-700 dark:border-yellow-400'],
+    ['conversion_journal', 'text-fuchsia-700 dark:text-fuchsia-400 border-fuchsia-700 dark:border-fuchsia-400'],
     ['physical_stock', 'text-lime-700 dark:text-lime-400 border-lime-700 dark:border-lime-400'],
 
     // stat

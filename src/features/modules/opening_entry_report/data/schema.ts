@@ -5,6 +5,9 @@ const godownEntrySchema = z.object({
   entryOrder: z.number().nullish(),
   godownId: z.number(),
   godownName: z.string().nullable(),
+  batchNo: z.string().nullable(),
+  mfgDate: z.string().nullable(),
+  expiryDate: z.string().nullable(),
   actualQuantity: z.number(),
   remarks: z.string().nullable(),
 })

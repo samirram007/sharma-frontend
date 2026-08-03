@@ -106,3 +106,14 @@ export const formSchema = z.object({
   isEdit: z.boolean(),
 })
 export type FreightForm = z.infer<typeof formSchema>
+
+/**
+ * Minimal pagination metadata returned by the API (SuccessCollection::paginationMeta).
+ * Only the fields needed for server-side pagination are exposed.
+ */
+export interface PaginationMeta {
+  current_page: number
+  last_page: number
+  per_page: number
+  total: number
+}

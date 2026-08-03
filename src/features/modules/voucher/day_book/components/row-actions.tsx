@@ -23,7 +23,7 @@ const RowActions = (props: DataTableRowActionsProps) => {
 
             {row?.original?.voucherType?.id === 1006 ? <PrintDialog data={row?.original} /> : <SkeletonButton />}
             {
-                [2001, 2002].includes(row?.original?.voucherType?.id) ?
+                [2001, 2002, 2006, 2008].includes(row?.original?.voucherType?.id) ?
 
                     <Button variant={'link'}
                         onClick={() => {

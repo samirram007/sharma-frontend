@@ -9,6 +9,7 @@ import {
     TransferVoucherVoucherListSchema,
     TRANSFER_VOUCHER_VOUCHER_TYPE_ID,
 } from './schema'
+import type { TransferVoucherVoucherForm } from './schema'
 
 const BASE_KEY = 'transfer-voucher-vouchers'
 
@@ -36,32 +37,9 @@ export const TransferVoucherQueryOptions = (id?: number) => {
     })
 }
 
-type TransferVoucherVoucherMutationPayload = {
-    id?: number
-    voucherDate: Date | string
-    voucherNo?: string | null
-    amount?: number | null
-    remarks?: string | null
-    module?: string | null
-    referenceNo?: string | null
-    referenceDate?: Date | string | null
-    voucherTypeId?: number
-    stockJournalId?: number | null
-    stockJournal?: unknown
-    party?: unknown
-    partyLedger?: unknown
-    transactionLedger?: unknown
-    voucherDispatchDetail?: unknown
-    voucherEntries?: Array<{
-        id?: number | null
-        voucherId?: number | null
-        entryOrder: number
-        accountLedgerId: number
-        debit: number
-        credit: number
-        remarks?: string | null
-    }>
-}
+// Same contract as the Receipt Note / Delivery Note pipeline: the mutation
+// accepts the full form values (with an optional id for updates).
+type TransferVoucherVoucherMutationPayload = TransferVoucherVoucherForm & { id?: number }
 
 export function useTransferVoucherVoucherMutation() {
     const queryClient = useQueryClient()

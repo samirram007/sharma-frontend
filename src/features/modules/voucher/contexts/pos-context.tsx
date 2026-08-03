@@ -12,6 +12,10 @@ interface PosContextType {
     setMovementType?: React.Dispatch<React.SetStateAction<string>>
     accountNature?: string
     setAccountNature?: React.Dispatch<React.SetStateAction<string>>
+    perRowMovementType?: boolean
+    setPerRowMovementType?: React.Dispatch<React.SetStateAction<boolean>>
+    perGodownRowMovementType?: boolean
+    setPerGodownRowMovementType?: React.Dispatch<React.SetStateAction<boolean>>
 
 }
 const PosContext = createContext<PosContextType | null>(null)
@@ -23,6 +27,8 @@ export const PosProvider = ({ children }: { children: React.ReactNode }) => {
     const [isRemarksDisabled, setIsRemarksDisabled] = React.useState(true);
     const [movementType, setMovementType] = React.useState<string>("");
     const [accountNature, setAccountNature] = React.useState<string>("");
+    const [perRowMovementType, setPerRowMovementType] = React.useState<boolean>(false);
+    const [perGodownRowMovementType, setPerGodownRowMovementType] = React.useState<boolean>(false);
     return (
         <PosContext.Provider
             value={{
@@ -30,7 +36,9 @@ export const PosProvider = ({ children }: { children: React.ReactNode }) => {
                 saveButtonVisible, setSaveButtonVisible,
                 isRemarksDisabled, setIsRemarksDisabled,
                 movementType, setMovementType,
-                accountNature, setAccountNature
+                accountNature, setAccountNature,
+                perRowMovementType, setPerRowMovementType,
+                perGodownRowMovementType, setPerGodownRowMovementType
             }}>
             {children}
         </PosContext.Provider>

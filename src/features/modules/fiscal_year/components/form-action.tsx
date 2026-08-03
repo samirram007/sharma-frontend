@@ -200,9 +200,9 @@ const DateBox = (props: DateBoxProps) => {
     const parseDate = () => {
         const parsed = parseAndFormatDate(displayValue!);
         if (parsed) {
-            form.setValue(name, parsed, { shouldValidate: true, shouldDirty: true });
             const formatted = parsed.toLocaleDateString("en-GB").replace(/\//g, '-'); // DD/MM/YYYY
             setDisplayValue(formatted);
+            // Store the ISO 'YYYY-MM-DD' string (matches the API shape), not a Date object.
             const DBFormat = `${parsed.getFullYear()}-${(parsed.getMonth() + 1).toString().padStart(2, '0')}-${parsed.getDate().toString().padStart(2, '0')}`
             form.setValue(name, DBFormat, { shouldValidate: true, shouldDirty: true });
         }

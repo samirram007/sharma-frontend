@@ -114,8 +114,10 @@ const StockJournalGodowns = (props: StockJournalGodownProps) => {
             return;
         }
 
+        // New godown rows inherit the movement type of their parent stock entry
+        const entryMovementType = stockJournalEntryForm.getValues('movementType') ?? movementType;
 
-        append({ ...stockJournalGodownEntryDefaultValues, movementType } as StockJournalGodownEntryForm);
+        append({ ...stockJournalGodownEntryDefaultValues, movementType: entryMovementType } as StockJournalGodownEntryForm);
         setAddGodownButtonVisible?.(false);
     }
 

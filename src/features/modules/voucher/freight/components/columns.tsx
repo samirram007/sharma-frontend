@@ -24,7 +24,7 @@ export const columns: Array<ColumnDef<VoucherSchema>> = [
     cell: ({ row }) => { 
       const date = row.getValue('voucherDate') as Date | string | undefined
       return (
-        <div className='text-slate-600 dark:text-slate-400'>
+        <div className='text-muted-foreground'>
           {date ? date_format(date) : '-'}
         </div>
       )
@@ -49,7 +49,7 @@ export const columns: Array<ColumnDef<VoucherSchema>> = [
     cell: ({ row }) => {
       const party = row.original.party
       return (
-        <div className='font-medium text-blue-700 dark:text-blue-400'>
+        <div className='font-medium text-foreground'>
           {party?.name ?? '-'}
         </div>
       )
@@ -65,7 +65,7 @@ export const columns: Array<ColumnDef<VoucherSchema>> = [
     cell: ({ row }) => {
       const d = row.original.voucherDispatchDetail
       return (
-        <div className='text-slate-600 dark:text-slate-400'>
+        <div className='text-muted-foreground'>
           {d?.billOfLadingNo ?? '-'}
         </div>
       )
@@ -81,7 +81,7 @@ export const columns: Array<ColumnDef<VoucherSchema>> = [
     cell: ({ row }) => {
       const d = row.original.voucherDispatchDetail
       return (
-        <div className='text-slate-600 dark:text-slate-400'>
+        <div className='text-muted-foreground'>
           {d?.source ?? '-'}
         </div>
       )
@@ -100,7 +100,7 @@ export const columns: Array<ColumnDef<VoucherSchema>> = [
         .filter(Boolean)
         .join(', ')
       return (
-        <div className='text-xs text-slate-600 dark:text-slate-400'>
+        <div className='text-xs text-muted-foreground'>
           {dest || '-'}
         </div>
       )
@@ -116,7 +116,7 @@ export const columns: Array<ColumnDef<VoucherSchema>> = [
     cell: ({ row }) => {
       const d = row.original.voucherDispatchDetail
       return (
-        <div className='text-slate-700 dark:text-slate-300'>
+        <div className='text-foreground/80'>
           {d?.carrierName ?? '-'}
         </div>
       )
@@ -132,7 +132,7 @@ export const columns: Array<ColumnDef<VoucherSchema>> = [
     cell: ({ row }) => {
       const d = row.original.voucherDispatchDetail
       return (
-        <div className='text-xs text-slate-600 dark:text-slate-400'>
+        <div className='text-xs text-muted-foreground'>
           {d?.motorVehicleNo ?? '-'}
         </div>
       )
@@ -150,7 +150,7 @@ export const columns: Array<ColumnDef<VoucherSchema>> = [
       
       const weight = d?.weight ? Number(d.weight).toFixed(d.weightUnit?.noOfDecimalPlaces ?? 2) : '-'
       return (
-        <div className='px-4 text-right text-slate-700 dark:text-slate-300 font-medium'>
+        <div className='px-4 text-right text-foreground/80 font-medium'>
           {weight}
         </div>
       )
@@ -166,7 +166,7 @@ export const columns: Array<ColumnDef<VoucherSchema>> = [
       const d = row.original.voucherDispatchDetail
       const rate = d?.rate ? Number(d.rate).toFixed(2) : '-'
       return (
-        <div className='pr-4 text-right text-slate-700 dark:text-slate-300 font-medium'>
+        <div className='pr-4 text-right text-foreground/80 font-medium'>
           {rate}
         </div>
       )
@@ -182,7 +182,7 @@ export const columns: Array<ColumnDef<VoucherSchema>> = [
       const d = row.original.voucherDispatchDetail
       const fare = d?.totalFare ? Number(d.totalFare).toFixed(2) : '-'
       return (
-        <div className='text-right pr-4 text-blue-700 dark:text-blue-300 font-semibold'>
+        <div className='text-right pr-4 font-semibold text-foreground'>
           {fare}
         </div>
       )

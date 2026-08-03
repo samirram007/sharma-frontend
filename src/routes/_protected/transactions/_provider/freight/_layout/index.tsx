@@ -12,9 +12,11 @@ import { Suspense, useEffect } from 'react';
 import { z } from 'zod'
 
 // Define search params schema for filters and pagination
+// NOTE: URL search values are always strings, so coerce to numbers — otherwise
+// z.number() fails validation and .catch() silently resets page/perPage.
 const freightSearchSchema = z.object({
-  page: z.number().int().positive().default(1).catch(1),
-  perPage: z.number().int().positive().default(10).catch(10),
+  page: z.coerce.number().int().positive().default(1).catch(1),
+  perPage: z.coerce.number().int().positive().default(10).catch(10),
   search: z.string().optional().catch(undefined),
   freightStatus: z.string().optional().catch(undefined),
 })
@@ -57,6 +59,8 @@ export const Route = createFileRoute('/_protected/transactions/_provider/freight
     )
 
     const overallTotalFare = freightResponse?.aggregates?.total_fare
+    // Only pass the minimal pagination meta down (current_page, last_page, per_page, total)
+    const paginationMeta = freightResponse?.meta
 
     // If a mutation removed the last item on this page, navigate to the previous page
     useEffect(() => {
@@ -74,7 +78,7 @@ export const Route = createFileRoute('/_protected/transactions/_provider/freight
       <Suspense fallback={<SkeletonTable />}>
         <Freight
           data={freightResponse?.data ?? []}
-          paginationMeta={freightResponse}
+          paginationMeta={paginationMeta}
           totalFareOverall={overallTotalFare}
           deliveryVehicles={deliveryVehicles}
           deliveryPlaces={deliveryPlaces}

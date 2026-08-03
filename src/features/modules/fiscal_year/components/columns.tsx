@@ -3,7 +3,8 @@ import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
 import { cn } from '@/lib/utils'
 import { IconLock, IconLockOpen } from '@tabler/icons-react'
-import type { ColumnDef } from '@tanstack/react-table'
+import { useAuth } from '@/features/auth/contexts/AuthContext'
+import type { ColumnDef, Row } from '@tanstack/react-table'
 
 
 
@@ -11,6 +12,23 @@ import type { FiscalYear } from '@/features/modules/fiscal_year/data/schema'
 
 import { DataTableColumnHeader } from '../../../global/components/data-table/data-table-column-header'
 import RowActions from './row-actions'
+
+/** Fiscal year name cell with a badge when it's the user's assigned fiscal year. */
+function FiscalYearNameCell({ row }: { row: Row<FiscalYear> }) {
+  const { userFiscalYear } = useAuth()
+  const isAssigned = userFiscalYear?.fiscalYearId === row.original.id
+
+  return (
+    <div className='flex items-center gap-2'>
+      <LongText className='max-w-full'>{row.getValue('name')}</LongText>
+      {isAssigned && (
+        <Badge variant='secondary' className='shrink-0 px-2 py-0 text-[11px] font-medium'>
+          Current FY
+        </Badge>
+      )}
+    </div>
+  )
+}
 export const columns: ColumnDef<FiscalYear>[] = [
   {
     id: 'select',
@@ -28,7 +46,8 @@ export const columns: ColumnDef<FiscalYear>[] = [
     meta: {
       className: cn(
         'sticky md:table-cell left-0 z-10 rounded-tl',
-        'bg-background transition-colors duration-200 group-hover/row:bg-muted group-data-[state=selected]/row:bg-muted'
+        'bg-background transition-colors duration-200 group-hover/row:bg-muted group-data-[state=selected]/row:bg-muted',
+        'group-data-[assigned]/row:bg-primary/5'
       ),
     },
     cell: ({ row }) => (
@@ -47,13 +66,12 @@ export const columns: ColumnDef<FiscalYear>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Name' />
     ),
-    cell: ({ row }) => (
-      <LongText className='max-w-full'>{row.getValue('name')}</LongText>
-    ),
+    cell: ({ row }) => <FiscalYearNameCell row={row} />,
     meta: {
       className: cn(
         'drop-shadow-[0_1px_2px_rgb(0_0_0_/_0.1)] dark:drop-shadow-[0_1px_2px_rgb(255_255_255_/_0.1)] lg:drop-shadow-none',
         'bg-background transition-colors duration-200 group-hover/row:bg-muted group-data-[state=selected]/row:bg-muted',
+        'group-data-[assigned]/row:bg-primary/5',
         'sticky left-0 md:table-cell'
       ),
     },

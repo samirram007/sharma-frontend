@@ -15,6 +15,7 @@ import { IconBrandFacebook, IconBrandGithub } from '@tabler/icons-react';
 import { Link, useRouter } from '@tanstack/react-router';
 import { type HTMLAttributes } from 'react';
 import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 import { z } from 'zod';
 import { useAuth } from '../../contexts/AuthContext';
 import { clean_logout, clearAllCookies } from '@/utils/protectedRoute';
@@ -53,20 +54,41 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
     // setIsLoading(true)
     await login(data)
       .then(() => router.invalidate())
-      .catch((error) => {
+      .catch((error: unknown) => {
         console.error("Login failed:...........", error)
 
-        // throw redirect({
-        //   to: '/sign-in',
-        // })
-        // handle error here
-      })
-     
-    // console.log(data)
+        const apiError = error as {
+          response?: { data?: { message?: string; errors?: Record<string, string[]> } }
+        }
 
-    // setTimeout(() => {
-    //   setIsLoading(false)
-    // }, 3000)
+        const fieldErrors = apiError?.response?.data?.errors
+
+        // Show backend validation errors inline under the matching form field
+        // (e.g. 422 invalid credentials → "The provided credentials are
+        // incorrect." appears under the email field via form.setError). The
+        // global errorHandler in dataClient.tsx already toasts these as red
+        // error toasts, so no duplicate toast is shown here.
+        if (fieldErrors) {
+          const formFields = ['email', 'password'] as const
+          for (const field of formFields) {
+            const messages = fieldErrors[field]
+            if (messages?.length) {
+              form.setError(field, { message: messages[0] }, { shouldFocus: true })
+            }
+          }
+          return
+        }
+
+        // The global errorHandler in dataClient.tsx already toasts unexpected
+        // and network errors — only toast here for message-only responses it
+        // doesn't show.
+        const message = apiError?.response?.data?.message
+        if (message) {
+          // Stable id so repeated failed attempts replace the previous toast;
+          // longer duration so the message stays visible long enough to notice
+          toast.error(message, { id: 'login-error', duration: 6000 })
+        }
+      })
   }
 
   return (
@@ -86,6 +108,12 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
                       placeholder='name@example.com'
                       className=' rounded-lg border border-slate-200 bg-white shadow-sm focus-within:border-cyan-500/60 focus-within:ring-2 focus-within:ring-cyan-500/40'
                       {...field}
+                      onChange={(e) => {
+                        field.onChange(e)
+                        // Clear the server-set inline error as the user types
+                        // so it doesn't linger until the next submit
+                        form.clearErrors('email')
+                      }}
                     />
                   </FormControl>
                   <FormMessage />
@@ -111,6 +139,12 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
                       placeholder='********'
                       className='border-slate-200 bg-white shadow-sm focus-visible:border-cyan-500/60 focus-visible:ring-cyan-500/40'
                       {...field}
+                      onChange={(e) => {
+                        field.onChange(e)
+                        // Clear the server-set inline error as the user types
+                        // so it doesn't linger until the next submit
+                        form.clearErrors('password')
+                      }}
                     />
                   </FormControl>
                   <FormMessage />

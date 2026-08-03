@@ -22,15 +22,18 @@ import {
   IconEye,
   IconPackage,
   IconRefresh,
+  IconReport,
   IconX,
 } from '@tabler/icons-react'
 import { Loader } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from '@tanstack/react-router'
+import { useAuth } from '@/features/auth/contexts/AuthContext'
 import { openPreviewQueryOptions, useOpenFiscalYearMutation } from './data/queryOptions'
 import type { OpenPreview, OpenResponse } from './data/schema'
 import { fiscalYearQueryOptions } from '@/features/modules/fiscal_year/data/queryOptions'
 import type { FiscalYearList } from '@/features/modules/fiscal_year/data/schema'
+import { getNatureBadge } from '@/utils/nature-badge'
 import {
   Select,
   SelectContent,
@@ -41,12 +44,33 @@ import {
 
 type Step = 'preview' | 'confirm' | 'success'
 
+function formatFyDate(value: string | Date | null | undefined): string {
+  if (!value) return 'N/A'
+  const d = new Date(value)
+  if (isNaN(d.getTime())) return typeof value === 'string' ? value : 'N/A'
+  return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
+}
+
 export default function FiscalYearOpen() {
   const navigate = useNavigate()
+  const { userFiscalYear } = useAuth()
   const { id } = useParams({ from: '/_protected/masters/organization/_layout/fiscal_year/_layout/$id/open' })
-  const newFiscalYearId = Number(id)
+  const isNewMode = id === 'new'
+  const newFiscalYearId = isNewMode ? Number.NaN : Number(id)
 
-  // If id is "new", we need to select a fiscal year
+  // When arriving via the generic /new/open picker, skip straight to the
+  // user's assigned (active) fiscal year instead of showing the picker hub.
+  // Falls back to the picker if the assigned FY is missing or not active.
+  useEffect(() => {
+    if (isNewMode && userFiscalYear?.fiscalYearId && userFiscalYear?.fiscalYear?.status === 'active') {
+      navigate({
+        to: '/masters/organization/fiscal_year/$id/open',
+        params: { id: userFiscalYear.fiscalYearId },
+        replace: true,
+      })
+    }
+  }, [isNewMode, userFiscalYear?.fiscalYearId, userFiscalYear?.fiscalYear?.status, navigate])
+
   const [step, setStep] = useState<Step>('preview')
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [result, setResult] = useState<OpenResponse | null>(null)
@@ -95,6 +119,93 @@ export default function FiscalYearOpen() {
   const handleRefresh = () => {
     setError(null)
     if (prevFyId) refetch()
+  }
+
+  // `new` mode — no fiscal year id in the URL yet, so show a picker hub that
+  // routes into the per-FY opening journal flow (/masters/.../fiscal_year/$id/open).
+  if (isNewMode) {
+    return (
+      <Main className='max-w-6xl mx-auto space-y-6 py-6'>
+        {/* Header */}
+        <div className='flex flex-wrap items-start justify-between gap-4'>
+          <div className='space-y-1'>
+            <div className='flex items-center gap-3'>
+              <h1 className='text-3xl font-bold tracking-tight'>
+                Opening Journal
+              </h1>
+              <Badge variant='secondary' className='px-3 py-1'>
+                <IconDoorEnter className='mr-1 h-3.5 w-3.5' />
+                Select Fiscal Year
+              </Badge>
+            </div>
+            <p className='text-muted-foreground'>
+              Choose the fiscal year to open. Balances from its previous closed fiscal year will be carried forward.
+            </p>
+          </div>
+          <Button variant='outline' onClick={() => navigate({ to: '/masters/organization/fiscal_year' })}>
+            <IconEye className='mr-2 h-4 w-4' />
+            Back to Fiscal Years
+          </Button>
+        </div>
+
+        <Separator />
+
+        {/* Fiscal Year picker grid */}
+        {!allFyData ? (
+          <div className='flex items-center justify-center py-16'>
+            <Loader className='h-8 w-8 animate-spin text-muted-foreground' />
+          </div>
+        ) : fiscalYears.length === 0 ? (
+          <div className='py-16 text-center text-muted-foreground'>
+            No fiscal years found.
+          </div>
+        ) : (
+          <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3'>
+            {fiscalYears.map((fy) => (
+              <Card key={fy.id} className='transition-shadow hover:shadow-md'>
+                <CardHeader className='pb-2'>
+                  <div className='flex items-center justify-between gap-2'>
+                    <CardTitle className='text-base'>{fy.name}</CardTitle>
+                    <Badge variant={fy.status === 'active' ? 'default' : 'destructive'}>
+                      {fy.status === 'active' ? 'Active' : 'Inactive'}
+                    </Badge>
+                  </div>
+                  <CardDescription>
+                    {formatFyDate(fy.startDate)} — {formatFyDate(fy.endDate)}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className='space-y-2'>
+                  <Button
+                    className='w-full'
+                    disabled={fy.status !== 'active'}
+                    title={
+                      fy.status === 'active'
+                        ? 'Open this fiscal year'
+                        : 'Only active fiscal years can be opened'
+                    }
+                    onClick={() =>
+                      fy.id &&
+                      navigate({
+                        to: '/masters/organization/fiscal_year/$id/open',
+                        params: { id: fy.id },
+                      })
+                    }
+                  >
+                    <IconDoorEnter className='mr-2 h-4 w-4' />
+                    Open Journal
+                  </Button>
+                  {fy.status !== 'active' && (
+                    <p className='text-center text-xs text-muted-foreground'>
+                      Only active fiscal years can be opened
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </Main>
+    )
   }
 
   if (!newFy && !isLoading) {
@@ -158,7 +269,7 @@ export default function FiscalYearOpen() {
                 <SelectContent>
                   {fiscalYears.map((fy) => (
                     <SelectItem key={fy.id} value={String(fy.id)}>
-                      {fy.name} ({fy.startDate?.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) ?? 'N/A'} — {fy.endDate?.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) ?? 'N/A'})
+                      {fy.name} ({formatFyDate(fy.startDate)} — {formatFyDate(fy.endDate)})
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -212,6 +323,20 @@ export default function FiscalYearOpen() {
                   # {result.newFiscalYearId}
                 </Badge>
               </div>
+            )}
+            {result.newFiscalYearId && (
+              <Button
+                className='w-full'
+                onClick={() =>
+                  navigate({
+                    to: '/reports/opening_entry',
+                    search: { fy: result.newFiscalYearId },
+                  })
+                }
+              >
+                <IconReport className='mr-2 h-4 w-4' />
+                View Opening Entry Report
+              </Button>
             )}
           </CardContent>
         </Card>
@@ -295,9 +420,9 @@ export default function FiscalYearOpen() {
                           <td className='py-2 text-muted-foreground'>{idx + 1}</td>
                           <td className='py-2 font-medium'>{ledger.ledgerName}</td>
                           <td className='py-2'>
-                            <Badge variant='outline' className={ledger.nature === 'ASSET' ? 'border-blue-300 text-blue-700 dark:text-blue-400' : 'border-amber-300 text-amber-700 dark:text-amber-400'}>
-                              {ledger.nature}
-                            </Badge>
+                          <Badge variant='outline' className={getNatureBadge(ledger.nature).className}>
+                            {getNatureBadge(ledger.nature).label}
+                          </Badge>
                           </td>
                           <td className='py-2 text-right font-mono'>{ledger.balance.toFixed(2)}</td>
                         </tr>
@@ -343,7 +468,14 @@ export default function FiscalYearOpen() {
                         <div className='ml-4 border-l-2 pl-3 space-y-1'>
                           {item.godowns.map((ge, gidx) => (
                             <div key={gidx} className='flex items-center justify-between text-sm text-muted-foreground'>
-                              <span>{ge.godownName ?? `Godown #${ge.godownId}`}</span>
+                              <span>
+                                {ge.godownName ?? `Godown #${ge.godownId}`}
+                                {ge.batchNo && (
+                                  <span className='ml-2 rounded border px-1.5 py-0 font-mono text-[11px]'>
+                                    {ge.batchNo}
+                                  </span>
+                                )}
+                              </span>
                               <span className='font-mono'>{ge.quantity.toFixed(2)}</span>
                             </div>
                           ))}

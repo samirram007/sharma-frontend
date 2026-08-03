@@ -2,6 +2,7 @@
   "name": "frontendts",
   "private": true,
   "type": "module",
+  "packageManager": "pnpm@11.10.0",
   "scripts": {
     "dev": "vite --port 5173",
     "start": "vite --port 3000",

@@ -2,7 +2,6 @@ import {
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
-  getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table'
@@ -41,7 +40,7 @@ import { date_format } from '@/utils/removeEmptyStrings'
 
 
 declare module '@tanstack/react-table' {
-   
+
   interface ColumnMeta<TData extends RowData, TValue> {
     className: string
   }
@@ -87,6 +86,9 @@ export function GridTable({
   const [globalFilter, _setGlobalFilter] = useState('')
   const [columnSizing, setColumnSizing] = useState({})
 
+  // Never let TanStack receive -1/0 page counts (shows "Page 1 of -1" otherwise)
+  const safePageCount = Math.max(pageCount && pageCount > 0 ? pageCount : 1, 1)
+
   const table = useReactTable({
     data,
     columns,
@@ -102,7 +104,7 @@ export function GridTable({
       },
     },
     manualPagination: true,
-    pageCount: pageCount ?? -1,
+    pageCount: safePageCount,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
@@ -115,7 +117,6 @@ export function GridTable({
     },
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     filterFns: {
       fuzzy: fuzzyFilter,
@@ -173,9 +174,9 @@ export function GridTable({
     return (
       <span className='ml-1 inline-flex'>
         {sorted === 'asc' ? (
-          <ChevronUp className='h-3 w-3 text-blue-600' />
+          <ChevronUp className='h-3 w-3 text-blue-600 dark:text-blue-400' />
         ) : (
-          <ChevronDown className='h-3 w-3 text-blue-600' />
+          <ChevronDown className='h-3 w-3 text-blue-600 dark:text-blue-400' />
         )}
       </span>
     )
@@ -183,58 +184,58 @@ export function GridTable({
 
   return (
     <div className='flex flex-col gap-3 p-1'>
-  {/* Toolbar with search, freight status filter, column visibility toggle + export buttons */}
-  <div className='flex flex-wrap items-center justify-between gap-3 px-2 pt-1'>
-    <div className='flex items-center gap-3'>
-      {/* Search input */}
-      <div className='relative w-[200px] flex items-center'>
-        <Input
-          placeholder='Search...'
-          value={search || ''}
-          className='h-8 w-full pr-9 text-xs border-slate-200'
-          onChange={(e) => onSearchChange?.(e.target.value)}
-        />
-        <Button
-          variant="ghost"
-          size="sm"
-          className="absolute right-0 h-8 w-8 p-0"
-          onClick={onSearch}
-        >
-          <Search className='h-3.5 w-3.5 text-slate-400' />
-        </Button>
-      </div>
+      {/* Toolbar with search, freight status filter, column visibility toggle + export buttons */}
+      <div className='flex flex-wrap items-center justify-between gap-3 px-2 pt-1'>
+        <div className='flex items-center gap-3'>
+          {/* Search input */}
+          <div className='relative flex w-[200px] items-center'>
+            <Input
+              placeholder='Search...'
+              value={search || ''}
+              className='h-8 w-full pr-9 text-xs'
+              onChange={(e) => onSearchChange?.(e.target.value)}
+            />
+            <Button
+              variant='ghost'
+              size='sm'
+              className='absolute right-0 top-1/2 h-8 w-8 -translate-y-1/2 p-0'
+              onClick={onSearch}
+            >
+              <Search className='h-3.5 w-3.5 text-muted-foreground' />
+            </Button>
+          </div>
 
-      {/* Freight status filter toggle */}
-      <div className='flex items-center gap-1 rounded-lg border border-slate-200 bg-slate-50/60 p-0.5 dark:border-slate-700 dark:bg-slate-800/40'>
-        {[
-          { value: 'pending', label: 'Pending' },
-          { value: 'prepared', label: 'Prepared' },
-          { value: 'all', label: 'All' },
-        ].map((option) => (
-          <button
-            key={option.value}
-            onClick={() => onFreightStatusChange?.(option.value)}
-            className={cn(
-              'rounded-md px-3 py-1 text-xs font-medium transition-all duration-150',
-              freightStatus === option.value
-                ? 'bg-white text-blue-700 shadow-sm dark:bg-blue-900/60 dark:text-blue-300'
-                : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300',
-            )}
-          >
-            {option.label}
-          </button>
-        ))}
-      </div>
-    </div>
+          {/* Freight status filter toggle */}
+          <div className='flex items-center gap-1 rounded-lg border border-border bg-muted/50 p-0.5 dark:bg-muted/40'>
+            {[
+              { value: 'pending', label: 'Pending' },
+              { value: 'prepared', label: 'Prepared' },
+              { value: 'all', label: 'All' },
+            ].map((option) => (
+              <button
+                key={option.value}
+                onClick={() => onFreightStatusChange?.(option.value)}
+                className={cn(
+                  'rounded-md px-3 py-1 text-xs font-medium transition-all duration-150',
+                  freightStatus === option.value
+                    ? 'bg-background text-blue-700 shadow-sm dark:bg-blue-500/15 dark:text-blue-300'
+                    : 'text-muted-foreground hover:text-foreground',
+                )}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        </div>
 
-    <div className='flex items-center gap-2'>
+        <div className='flex items-center gap-2'>
           {/* Export PDF */}
           {data.length > 0 && (
             <>
               <Button
                 variant='outline'
                 size='sm'
-                className='h-8 rounded-lg border-slate-200 text-xs text-slate-600 shadow-xs transition-colors hover:bg-slate-50 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-800'
+                className='h-8 rounded-lg text-xs text-muted-foreground shadow-xs transition-colors hover:bg-accent hover:text-accent-foreground'
                 onClick={async () => {
                   const { default: exportTableToPdf } = await import('@/utils/export-table-pdf')
                   exportTableToPdf({
@@ -252,7 +253,7 @@ export function GridTable({
               <Button
                 variant='outline'
                 size='sm'
-                className='h-8 rounded-lg border-slate-200 text-xs text-slate-600 shadow-xs transition-colors hover:bg-slate-50 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-800'
+                className='h-8 rounded-lg text-xs text-muted-foreground shadow-xs transition-colors hover:bg-accent hover:text-accent-foreground'
                 onClick={async () => {
                   const { default: exportTableToExcel } = await import('@/utils/export-table-excel')
                   exportTableToExcel({
@@ -274,7 +275,7 @@ export function GridTable({
               <Button
                 variant='outline'
                 size='sm'
-                className='h-8 rounded-lg border-slate-200 text-xs text-slate-600 shadow-xs transition-colors hover:bg-slate-50 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-800'
+                className='h-8 rounded-lg text-xs text-muted-foreground shadow-xs transition-colors hover:bg-accent hover:text-accent-foreground'
               >
                 <MixerHorizontalIcon className='mr-2 h-4 w-4' />
                 Columns
@@ -304,11 +305,11 @@ export function GridTable({
       </div>
 
       {/* Table container with horizontal scroll */}
-      <div className='overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-700'>
+      <div className='overflow-x-auto rounded-lg border border-border'>
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id} className='border-b border-slate-200 bg-slate-50/80 dark:border-slate-700 dark:bg-slate-900/50'>
+              <TableRow key={headerGroup.id} className='border-b border-border bg-muted/50'>
                 {headerGroup.headers.map((header) => (
                   <TableHead
                     key={header.id}
@@ -319,9 +320,9 @@ export function GridTable({
                       maxWidth: header.column.columnDef.maxSize,
                     }}
                     className={cn(
-                      'h-10 px-3 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400',
+                      'h-10 px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground',
                       header.column.columnDef.meta?.className ?? '',
-                      header.column.getCanSort() && 'cursor-pointer select-none hover:text-slate-700 dark:hover:text-slate-300',
+                      header.column.getCanSort() && 'cursor-pointer select-none hover:text-foreground',
                       'relative',
                     )}
                     onClick={
@@ -366,11 +367,11 @@ export function GridTable({
                   key={row.id}
                   data-state={row.getIsSelected() && 'selected'}
                   className={cn(
-                    'border-b border-slate-100 transition-colors duration-150 dark:border-slate-800',
+                    'border-b border-border/60 transition-colors duration-150',
                     rowIdx % 2 === 0
-                      ? 'bg-white dark:bg-transparent'
-                      : 'bg-slate-50/40 dark:bg-slate-900/20',
-                    'hover:bg-blue-50/60 dark:hover:bg-blue-950/20',
+                      ? 'bg-background'
+                      : 'bg-muted/20',
+                    'hover:bg-accent/50',
                   )}
                 >
                   {row.getVisibleCells().map((cell) => (
@@ -398,9 +399,9 @@ export function GridTable({
               <TableRow>
                 <TableCell
                   colSpan={table.getVisibleLeafColumns().length}
-                  className='h-32 text-center text-sm text-slate-400'
+                  className='h-32 text-center text-sm text-muted-foreground'
                 >
-                  No results.
+                  No results found.
                 </TableCell>
               </TableRow>
             )}
@@ -409,23 +410,23 @@ export function GridTable({
       </div>
 
       {/* Footer with totals and pagination */}
-      <div className='flex flex-wrap items-center justify-between gap-4 rounded-lg border border-slate-200 bg-slate-50/80 px-5 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-900/30'>
+      <div className='flex flex-wrap items-center justify-between gap-4 rounded-lg border border-border bg-muted/40 px-5 py-2.5 text-sm dark:bg-muted/30'>
         {data.length > 0 && (
           <div className='flex flex-wrap items-center gap-6'>
-            <span className='text-xs font-medium text-slate-600 dark:text-slate-400'>
+            <span className='text-xs font-medium text-muted-foreground'>
               Total Records:{' '}
               <span className='font-semibold text-blue-700 dark:text-blue-400'>
                 {totalRecords ?? data.length}
               </span>
             </span>
-            <span className='text-xs font-medium text-slate-600 dark:text-slate-400'>
+            <span className='text-xs font-medium text-muted-foreground'>
               This Page Fare:{' '}
               <span className='font-semibold text-blue-700 dark:text-blue-400'>
                 ₹{totalFare.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
             </span>
             {totalFareOverall !== undefined && (
-              <span className='text-xs font-medium text-slate-600 dark:text-slate-400'>
+              <span className='text-xs font-medium text-muted-foreground'>
                 Overall Fare:{' '}
                 <span className='font-semibold text-blue-700 dark:text-blue-400'>
                   ₹{totalFareOverall.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}

@@ -7,8 +7,10 @@ import { companySchema } from '../../company/data/schema';
 const baseFiscalYearSchema = z.object({
   id: z.number().int().positive().nullish(),
   name: z.string().min(1),
-  startDate: z.coerce.date(),
-  endDate: z.coerce.date(),
+  // The API (FiscalYearResource) serializes dates as 'YYYY-MM-DD' strings,
+  // so type them as strings — consumers must call new Date() explicitly.
+  startDate: z.string(),
+  endDate: z.string(),
   status: z.string(),
   companyId: z.number().int().positive(),
   company: companySchema.nullish(),
@@ -16,7 +18,7 @@ const baseFiscalYearSchema = z.object({
   closedAt: z.string().nullable().optional(),
 });
 
-export const fiscalYearSchema = baseFiscalYearSchema.refine((data) => data.endDate > data.startDate, {
+export const fiscalYearSchema = baseFiscalYearSchema.refine((data) => new Date(data.endDate) > new Date(data.startDate), {
   message: "End Date must be after Start Date",
   path: ["endDate"],
 })

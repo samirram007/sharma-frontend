@@ -135,9 +135,10 @@ export function GridTable({
     },
   })
 
-  const fromRecord = paginationMeta?.from ?? 0
-  const toRecord = paginationMeta?.to ?? 0
   const totalVouchers = paginationMeta?.total ?? 0
+  // Derive the visible record range client-side (backend now sends minimal meta only)
+  const fromRecord = totalVouchers > 0 ? (currentPage - 1) * pageSize + 1 : 0
+  const toRecord = totalVouchers > 0 ? Math.min(currentPage * pageSize, totalVouchers) : 0
 
   // Compute summary totals from current page data
   const summary = useMemo(() => {

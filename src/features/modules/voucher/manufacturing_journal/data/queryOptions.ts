@@ -9,6 +9,7 @@ import {
     ManufacturingJournalVoucherListSchema,
     MANUFACTURING_JOURNAL_VOUCHER_TYPE_ID,
 } from './schema'
+import type { ManufacturingJournalVoucherForm } from './schema'
 
 const BASE_KEY = 'manufacturing-journal-vouchers'
 
@@ -36,32 +37,9 @@ export const ManufacturingJournalQueryOptions = (id?: number) => {
     })
 }
 
-type ManufacturingJournalVoucherMutationPayload = {
-    id?: number
-    voucherDate: Date | string
-    voucherNo?: string | null
-    amount?: number | null
-    remarks?: string | null
-    module?: string | null
-    referenceNo?: string | null
-    referenceDate?: Date | string | null
-    voucherTypeId?: number
-    stockJournalId?: number | null
-    stockJournal?: unknown
-    party?: unknown
-    partyLedger?: unknown
-    transactionLedger?: unknown
-    voucherDispatchDetail?: unknown
-    voucherEntries?: Array<{
-        id?: number | null
-        voucherId?: number | null
-        entryOrder: number
-        accountLedgerId: number
-        debit: number
-        credit: number
-        remarks?: string | null
-    }>
-}
+// Same contract as the Receipt Note / Delivery Note pipeline: the mutation
+// accepts the full form values (with an optional id for updates).
+type ManufacturingJournalVoucherMutationPayload = ManufacturingJournalVoucherForm & { id?: number }
 
 export function useManufacturingJournalVoucherMutation() {
     const queryClient = useQueryClient()

@@ -1,7 +1,9 @@
 import { getData, postData, putData } from '@/utils/dataClient'
 import { TRANSFER_VOUCHER_VOUCHER_TYPE_ID } from './schema'
 
-const API_PATH = '/receipt_vouchers'
+// Transfer Voucher is a stock converter voucher — it flows through the
+// generic Voucher pipeline (same as Receipt Note / Delivery Note).
+const API_PATH = '/vouchers'
 
 const withTransferVoucherVoucherType = (payload: Record<string, unknown>) => ({
     ...payload,

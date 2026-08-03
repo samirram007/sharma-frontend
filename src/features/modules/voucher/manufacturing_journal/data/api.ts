@@ -1,7 +1,9 @@
 import { getData, postData, putData } from '@/utils/dataClient'
 import { MANUFACTURING_JOURNAL_VOUCHER_TYPE_ID } from './schema'
 
-const API_PATH = '/receipt_vouchers'
+// Manufacturing Journal is a stock converter voucher — it flows through the
+// generic Voucher pipeline (same as Receipt Note / Delivery Note).
+const API_PATH = '/vouchers'
 
 const withManufacturingJournalVoucherType = (payload: Record<string, unknown>) => ({
     ...payload,

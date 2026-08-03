@@ -13,6 +13,7 @@ import type { TransporterList } from '../../transporter/data/schema'
 import type { DeliveryVehicleList } from '../../delivery_vehicle/data/schema'
 import type { DeliveryPlaceList } from '../../delivery_place/data/schema'
 import type { DeliveryNoteList } from '../delivery_note/data/schema'
+import type { PaginationMeta } from './data/schema'
  
 import { Main } from '@/layouts/components/main'
 import ReportingPeriod from '@/features/global/components/reporting-period'
@@ -20,16 +21,7 @@ import ReportingPeriod from '@/features/global/components/reporting-period'
 interface FreightProps {
     data: DeliveryNoteList
     isLoading?: boolean
-    paginationMeta?: {
-      meta?: {
-        current_page?: number
-        last_page?: number
-        per_page?: number
-        total?: number
-        from?: number
-        to?: number
-      }
-    }
+    paginationMeta?: PaginationMeta
     totalFareOverall?: number
     deliveryPlaces?: DeliveryPlaceList
     deliveryVehicles?: DeliveryVehicleList
@@ -39,12 +31,12 @@ interface FreightProps {
 }
 
 export default function Freight({ data: freightListSchema, isLoading, paginationMeta, totalFareOverall, search, onSearchChange }: FreightProps) {
-    const meta = paginationMeta?.meta
+    const meta = paginationMeta
     const [localSearch, setLocalSearch] = useState(search?.search ?? '')
     const [localFreightStatus, setLocalFreightStatus] = useState(search?.freightStatus ?? 'pending')
 
     // Server-side pagination values from API response meta
-    const pageCount = meta?.last_page ?? -1
+    const pageCount = meta?.last_page ?? 1
     const pageIndex = meta?.current_page ? meta.current_page - 1 : 0
     const pageSize = meta?.per_page ?? 10
 
@@ -93,12 +85,12 @@ export default function Freight({ data: freightListSchema, isLoading, pagination
     return (
         <Main className='min-h-full min-w-full overflow-hidden'>
             {/* Header */}
-            <div className='mb-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200/70 bg-white/90 px-4 py-3 shadow-sm backdrop-blur-sm dark:border-white/[0.07] dark:bg-white/[0.04] sm:px-5'>
+            <div className='mb-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card/80 px-4 py-3 shadow-sm backdrop-blur-sm sm:px-5'>
                 <div className='space-y-0.5'>
-                    <h2 className='text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100 sm:text-2xl'>
+                    <h2 className='text-xl font-bold tracking-tight text-foreground sm:text-2xl'>
                         Freight
                     </h2>
-                    <p className='text-xs text-slate-500 dark:text-slate-400 sm:text-sm'>
+                    <p className='text-xs text-muted-foreground sm:text-sm'>
                         {meta?.total !== undefined
                           ? `${meta.total} delivery note${meta.total !== 1 ? 's' : ''} ${localFreightStatus === 'prepared' ? 'with freight bills' : localFreightStatus === 'all' ? 'found' : 'available for freight billing'}`
                           : localFreightStatus === 'prepared'
@@ -114,23 +106,23 @@ export default function Freight({ data: freightListSchema, isLoading, pagination
             </div>
 
             {/* Table */}
-            <div className='min-h-0 flex-1 overflow-auto rounded-xl border border-slate-200/60 bg-white shadow-xs dark:border-white/[0.06] dark:bg-white/[0.02] p-4'>
+            <div className='min-h-0 flex-1 overflow-auto rounded-xl border border-border bg-card shadow-xs p-4'>
                 {isLoading ? (
                     <SkeletonTable rowCount={10} colCount={6} />
                 ) : freightListSchema.length === 0 ? (
                     <div className='flex flex-col items-center justify-center px-4 py-16 text-center sm:py-24'>
                         {/* Empty state illustration */}
-                        <div className='mb-5 rounded-full bg-gradient-to-br from-slate-50 to-slate-100 p-6 shadow-inner dark:from-slate-800/80 dark:to-slate-900/80'>
-                            <PackageOpen className='h-12 w-12 text-slate-400 dark:text-slate-500' />
+                        <div className='mb-5 rounded-full bg-muted p-6 shadow-inner'>
+                            <PackageOpen className='h-12 w-12 text-muted-foreground' />
                         </div>
 
                         {/* Title */}
-                        <h3 className='text-lg font-semibold text-slate-700 dark:text-slate-300'>
+                        <h3 className='text-lg font-semibold text-foreground'>
                             No delivery notes available
                         </h3>
 
                         {/* Description */}
-                        <p className='mt-2 max-w-sm text-sm leading-relaxed text-slate-400 dark:text-slate-500'>
+                        <p className='mt-2 max-w-sm text-sm leading-relaxed text-muted-foreground'>
                             {localFreightStatus === 'prepared'
                               ? 'No delivery notes with freight bills found in this period.'
                               : localFreightStatus === 'all'

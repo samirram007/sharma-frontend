@@ -26,12 +26,14 @@ interface BaseNavItem {
 }
 
 type NavLink = BaseNavItem & {
-  url: LinkProps['to']
+  // Route paths may reference dynamic segments (e.g. '/masters/organization/fiscal_year/new/open'),
+  // so keep the typed union for autocomplete but allow arbitrary route strings.
+  url: LinkProps['to'] | (string & {})
   items?: never
 }
 
 type NavCollapsible = BaseNavItem & {
-  items: (BaseNavItem & { url: LinkProps['to'] })[]
+  items: (BaseNavItem & { url: LinkProps['to'] | (string & {}) })[]
   url?: never
 }
 

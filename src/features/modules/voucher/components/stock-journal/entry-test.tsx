@@ -36,7 +36,7 @@ type StockJournalEntryProps = {
 
 export const StockJournalEntry = (props: StockJournalEntryProps) => {
     const { index, remove, handleOnClickItemAddEntry, fieldsLength, stockJournalForm } = props;
-    const { remarksRef, setIsRemarksDisabled, movementType } = usePos()
+    const { remarksRef, setIsRemarksDisabled, movementType, perRowMovementType } = usePos()
     // 🔹 Access parent form context
     // const stockJournalForm = useFormContext<StockJournalForm>();
     const { config } = useTransaction()
@@ -111,12 +111,17 @@ export const StockJournalEntry = (props: StockJournalEntryProps) => {
                 <div className="grid grid-rows-1 grid-cols-[1fr_300px_150px_80px_80px_200px_120px] 
                                 text-center border-border justify-start items-start font-bold">
                     {/* Fl {stockJournalForm.watch("stockJournalEntries")?.length} */}
-                    <StockItemCombobox
-                        stockJournalEntryForm={stockJournalEntryForm}
-                        handleRemove={handleRemoveClick}
-                        rowIndex={index}
+                    <div className="flex flex-col items-stretch gap-1 pr-1">
+                        <StockItemCombobox
+                            stockJournalEntryForm={stockJournalEntryForm}
+                            handleRemove={handleRemoveClick}
+                            rowIndex={index}
 
-                        stockItems={stockItems?.data?.data} />
+                            stockItems={stockItems?.data?.data} />
+                        {perRowMovementType && (
+                            <MovementToggle stockJournalEntryForm={stockJournalEntryForm} />
+                        )}
+                    </div>
                     <div className="grid grid-cols-2 items-start  text-right">
                         <div className="pr-3">
                             {stockJournalEntryForm.watch('actualQuantity')! > 0 ? stockJournalEntryForm.watch('actualQuantity')! : '-'}
@@ -183,4 +188,57 @@ export const StockJournalEntry = (props: StockJournalEntryProps) => {
 
         </Form>
     );
-}; 
+};
+
+/**
+ * Per-line movement type toggle (used by Manufacturing Journal).
+ * Lets a single voucher consume raw materials (OUT) and produce
+ * finished goods (IN) on the same entry grid.
+ */
+export const MovementToggle = ({
+    stockJournalEntryForm,
+}: {
+    stockJournalEntryForm: UseFormReturn<StockJournalEntryForm>;
+}) => {
+    const movementType = stockJournalEntryForm.watch('movementType') ?? 'in'
+
+    const handleChange = (next: 'in' | 'out') => {
+        stockJournalEntryForm.setValue('movementType', next, { shouldDirty: true });
+
+        // Keep existing godown rows in sync with the new movement type
+        const godownEntries = stockJournalEntryForm.getValues('stockJournalGodownEntries') ?? [];
+        godownEntries.forEach((_, i) => {
+            stockJournalEntryForm.setValue(`stockJournalGodownEntries.${i}.movementType`, next, {
+                shouldDirty: true,
+            });
+        });
+    };
+
+    const baseClass = 'h-5 flex-1 rounded px-2 text-[10px] font-bold uppercase tracking-wide transition-colors';
+
+    return (
+        <div className="flex w-full items-center gap-1">
+            <span className="shrink-0 text-[9px] font-semibold uppercase tracking-wider text-slate-400">Mov</span>
+            <button
+                type="button"
+                onClick={() => handleChange('in')}
+                className={`${baseClass} ${movementType === 'in'
+                    ? 'bg-emerald-600 text-white'
+                    : 'bg-slate-100 text-slate-500 hover:bg-emerald-100 hover:text-emerald-700 dark:bg-slate-800 dark:text-slate-400'
+                    }`}
+            >
+                In
+            </button>
+            <button
+                type="button"
+                onClick={() => handleChange('out')}
+                className={`${baseClass} ${movementType === 'out'
+                    ? 'bg-orange-600 text-white'
+                    : 'bg-slate-100 text-slate-500 hover:bg-orange-100 hover:text-orange-700 dark:bg-slate-800 dark:text-slate-400'
+                    }`}
+            >
+                Out
+            </button>
+        </div>
+    )
+}

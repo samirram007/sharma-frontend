@@ -18,6 +18,9 @@ const godownEntrySchema = z.object({
   godownId: z.number(),
   godownName: z.string().nullable(),
   quantity: z.number(),
+  batchNo: z.string().nullable(),
+  mfgDate: z.string().nullable(),
+  expiryDate: z.string().nullable(),
 })
 
 const stockItemSchema = z.object({

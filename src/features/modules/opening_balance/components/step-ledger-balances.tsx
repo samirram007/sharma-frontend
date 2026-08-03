@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { IconArrowRight, IconCoin } from '@tabler/icons-react'
 import { useEffect, useState } from 'react'
 import type { LedgerSetup, LedgerEntry } from '../data/schema'
+import { getNatureBadge } from '@/utils/nature-badge'
 import { cn } from '@/lib/utils'
 
 interface StepLedgerBalancesProps {
@@ -118,14 +119,9 @@ export default function StepLedgerBalances({ ledgers, onNext, onBack }: StepLedg
                         <td className='p-2 text-center'>
                           <Badge
                             variant='outline'
-                            className={cn(
-                              'text-xs',
-                              entry.nature === 'ASSET'
-                                ? 'border-blue-300 text-blue-700 dark:text-blue-400'
-                                : 'border-amber-300 text-amber-700 dark:text-amber-400',
-                            )}
+                            className={cn('text-xs', getNatureBadge(entry.nature).className)}
                           >
-                            {entry.nature || entry.natureType || '-'}
+                            {getNatureBadge(entry.nature).label || entry.natureType || '-'}
                           </Badge>
                         </td>
                         <td className='p-2'>

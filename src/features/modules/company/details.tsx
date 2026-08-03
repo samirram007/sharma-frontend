@@ -29,7 +29,7 @@ export default function CompanyDetails(props: CompanyProps) {
 
                 <div className='flex-1 overflow-y-auto overflow-x-hidden py-1 lg:flex-row lg:space-y-0 lg:space-x-12'>
                     <ActionPages currentRow={data}
-                        key={`${keyName}-add`} />
+                        key={`${keyName}-${data?.id ?? 'add'}`} />
                 </div>
             </Main>
 

@@ -8,6 +8,7 @@ import {
 } from '@/components/ui/table'
 import { DataTablePagination } from '@/features/global/components/data-table/data-table-pagination'
 import { DataTableToolbar } from '@/features/global/components/data-table/data-table-toolbar'
+import { useAuth } from '@/features/auth/contexts/AuthContext'
 import type { FiscalYear } from '@/features/modules/fiscal_year/data/schema'
 import {
   flexRender,
@@ -40,6 +41,7 @@ interface DataTableProps {
 }
 
 export function GridTable({ columns, data }: DataTableProps) {
+  const { userFiscalYear } = useAuth()
   const [rowSelection, setRowSelection] = useState({})
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({ select: false })
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
@@ -105,25 +107,33 @@ export function GridTable({ columns, data }: DataTableProps) {
           </TableHeader>
           <TableBody>
             {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && 'selected'}
-                  className='group/row'
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell
-                      key={cell.id}
-                      className={cell.column.columnDef.meta?.className ?? ''}
-                    >
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
+              table.getRowModel().rows.map((row) => {
+                const isAssigned = userFiscalYear?.fiscalYearId === row.original.id
+                return (
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && 'selected'}
+                    data-assigned={isAssigned || undefined}
+                    className={`group/row ${
+                      isAssigned
+                        ? 'bg-primary/[0.05] hover:bg-primary/10 dark:bg-primary/10 dark:hover:bg-primary/15'
+                        : ''
+                    }`}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell
+                        key={cell.id}
+                        className={cell.column.columnDef.meta?.className ?? ''}
+                      >
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                )
+              })
             ) : (
               <TableRow>
                 <TableCell

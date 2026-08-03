@@ -554,17 +554,24 @@ export const sidebarData: SidebarData = {
       items: [
         {
           title: 'Close Fiscal Year',
-          url: '/masters/organization/fiscal_year',
+          url: '/masters/organization/fiscal_year/close',
           visible: true,
           icon: IconArchive,
           requiredFeature: 'CLOSE_FISCAL_YEAR_MENU_VIEW',
         },
         {
           title: 'Opening Journal',
-          url: '/masters/organization/fiscal_year',
+          url: '/masters/organization/fiscal_year/new/open',
           visible: true,
           icon: IconDoorEnter,
           requiredFeature: 'OPENING_JOURNAL_MENU_VIEW',
+        },
+        {
+          title: 'Opening Balance Setup',
+          url: '/transactions/opening-balance',
+          visible: true,
+          icon: IconScale,
+          requiredFeature: 'OPENING_BALANCE_MENU_VIEW',
         },
         {
           title: 'Opening Entry Report',

@@ -26,6 +26,11 @@ export async function changePasswordService(payload: any) {
   return await postData('/auth/change-password', payload)
 }
 
+export async function forgotPasswordService(payload: any) {
+
+  return await postData('/auth/forgot-password', payload)
+}
+
 export async function logoutService() {
     // console.log('logoutService called');
     const data = await postData("/auth/logout", [])

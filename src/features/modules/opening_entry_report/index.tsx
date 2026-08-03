@@ -33,11 +33,12 @@ import {
 } from '@tabler/icons-react'
 import { Loader, Download, FileSpreadsheet, FileText, FileJson, Clipboard, Printer, BarChart3 } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
-import { useNavigate } from '@tanstack/react-router'
+import { getRouteApi, useNavigate } from '@tanstack/react-router'
 import { format } from 'date-fns'
 import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { openingEntryReportQueryOptions, groupedByLedgerQueryOptions } from './data/queryOptions'
-import { fiscalYearQueryOptions } from '@/features/modules/fiscal_year/data/queryOptions'
+import { getNatureBadge } from '@/utils/nature-badge'
+import { useAuth } from '@/features/auth/contexts/AuthContext'
 import type { OpeningEntryReport } from './data/schema'
 
 function fmtDate(value: string | Date | null | undefined): string {
@@ -89,6 +90,7 @@ function formatItemDetailRows(vouchers: any[]): Record<string, string>[] {
         ledgerName: entries.map((e: any) => e.accountLedgerName).filter(Boolean).join('; ') || '—',
         stockItem: '',
         godown: '',
+        batchNo: '',
         quantity: '',
         rate: '',
         amount: '',
@@ -106,6 +108,7 @@ function formatItemDetailRows(vouchers: any[]): Record<string, string>[] {
           ledgerName: entries.map((e: any) => e.accountLedgerName).filter(Boolean).join('; ') || '—',
           stockItem: entry.stockItemName ?? `Item #${entry.stockItemId}`,
           godown: '',
+          batchNo: '',
           quantity: (entry.actualQuantity ?? 0).toFixed(2),
           rate: (entry.rate ?? 0).toFixed(2),
           amount: (entry.amount ?? 0).toFixed(2),
@@ -120,6 +123,7 @@ function formatItemDetailRows(vouchers: any[]): Record<string, string>[] {
           ledgerName: entries.map((e: any) => e.accountLedgerName).filter(Boolean).join('; ') || '—',
           stockItem: entry.stockItemName ?? `Item #${entry.stockItemId}`,
           godown: ge.godownName ?? '',
+          batchNo: ge.batchNo ?? '',
           quantity: (ge.actualQuantity ?? 0).toFixed(2),
           rate: (entry.rate ?? 0).toFixed(2),
           amount: (entry.amount ?? 0).toFixed(2),
@@ -130,25 +134,27 @@ function formatItemDetailRows(vouchers: any[]): Record<string, string>[] {
   return rows
 }
 
+const routeApi = getRouteApi('/_protected/reports/opening_entry/')
+
 export default function OpeningEntryReport() {
   const navigate = useNavigate()
-  const [selectedFyId, setSelectedFyId] = useState<number | null>(null)
+  const { userFiscalYear } = useAuth()
+  const { fy: searchFyId } = routeApi.useSearch()
+  // The report follows the user's assigned fiscal year (userFiscalYear). A ?fy=
+  // search param (e.g. from the fiscal year open success page) overrides it.
+  const fiscalYearId = searchFyId ?? userFiscalYear?.fiscalYearId ?? null
   const [expandedVouchers, setExpandedVouchers] = useState<Set<number>>(new Set())
   const [expandedEntries, setExpandedEntries] = useState<Set<number>>(new Set())
   const [activeTab, setActiveTab] = useState('list')
 
-  // Fetch all fiscal years for the selector
-  const { data: allFyData } = useQuery(fiscalYearQueryOptions())
-  const fiscalYears = (allFyData?.data ?? []) as Array<{ id: number; name: string; startDate: string; endDate: string }>
-
   const { data: reportData, isLoading, isError, refetch } = useQuery({
-    ...openingEntryReportQueryOptions(selectedFyId ?? 0),
-    enabled: !!selectedFyId,
+    ...openingEntryReportQueryOptions(fiscalYearId ?? 0),
+    enabled: !!fiscalYearId,
   })
 
   const { data: ledgerGrouped, isLoading: ledgerLoading } = useQuery({
-    ...groupedByLedgerQueryOptions(selectedFyId ?? 0),
-    enabled: activeTab === 'by-ledger' && !!selectedFyId,
+    ...groupedByLedgerQueryOptions(fiscalYearId ?? 0),
+    enabled: activeTab === 'by-ledger' && !!fiscalYearId,
   })
 
   const report = reportData?.data as OpeningEntryReport | undefined
@@ -206,6 +212,7 @@ export default function OpeningEntryReport() {
     { header: 'Ledger Names', accessor: 'ledgerName' as const },
     { header: 'Stock Item', accessor: 'stockItem' as const },
     { header: 'Godown', accessor: 'godown' as const },
+    { header: 'Batch No', accessor: 'batchNo' as const },
     { header: 'Quantity', accessor: 'quantity' as const },
     { header: 'Rate', accessor: 'rate' as const },
     { header: 'Amount', accessor: 'amount' as const },
@@ -287,7 +294,7 @@ export default function OpeningEntryReport() {
         </div>
         <div className='flex items-center gap-2'>
           {/* View Selector */}
-          {selectedFyId && report && (
+          {fiscalYearId && report && (
             <Select value={activeTab} onValueChange={setActiveTab}>
               <SelectTrigger className='h-8 w-[170px] border-0 bg-transparent shadow-none p-0 text-sm font-medium text-muted-foreground hover:text-foreground focus:ring-0'>
                 <SelectValue />
@@ -372,6 +379,10 @@ export default function OpeningEntryReport() {
               </DropdownMenu>
             </>
           )}
+          <Button onClick={() => navigate({ to: '/transactions/opening-balance' })}>
+            <IconDoorEnter className='mr-2 h-4 w-4' />
+            Opening Balance Setup
+          </Button>
           <Button variant='outline' onClick={() => navigate({ to: '/masters/organization/fiscal_year' })}>
             <IconEye className='mr-2 h-4 w-4' />
             Back
@@ -381,42 +392,26 @@ export default function OpeningEntryReport() {
 
       <Separator />
 
-      {/* Fiscal Year Selector */}
-      <Card>
-        <CardHeader className='pb-3'>
-          <CardTitle className='text-base'>Select Fiscal Year</CardTitle>
-          <CardDescription>Choose a fiscal year to view its opening entry details</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className='max-w-sm'>
-            <Select
-              value={selectedFyId?.toString() ?? ''}
-              onValueChange={(val) => setSelectedFyId(Number(val))}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder='Select a fiscal year...' />
-              </SelectTrigger>
-              <SelectContent>
-                {fiscalYears.map((fy) => (
-                  <SelectItem key={fy.id} value={String(fy.id)}>
-                    {fy.name} ({formatDate(fy.startDate)} — {formatDate(fy.endDate)})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-      </Card>
+      {/* No Fiscal Year Assigned */}
+      {!fiscalYearId && (
+        <Card>
+          <CardContent className='py-12 text-center text-muted-foreground'>
+            <IconDatabase className='h-12 w-12 mx-auto mb-3 opacity-40' />
+            <p className='text-lg font-medium'>No fiscal year assigned</p>
+            <p className='text-sm mt-1'>Assign a fiscal year to your account to view its opening entry details.</p>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Loading State */}
-      {selectedFyId && isLoading && (
+      {fiscalYearId && isLoading && (
         <div className='flex items-center justify-center py-16'>
           <Loader className='h-8 w-8 animate-spin text-muted-foreground' />
         </div>
       )}
 
       {/* Error State */}
-      {selectedFyId && isError && !report && (
+      {fiscalYearId && isError && !report && (
         <div className='flex items-center justify-center py-16'>
           <div className='text-center space-y-4'>
             <IconX className='h-12 w-12 text-destructive mx-auto' />
@@ -430,7 +425,7 @@ export default function OpeningEntryReport() {
       )}
 
       {/* Report Content — wrapped in Tabs */}
-      {selectedFyId && report && (
+      {fiscalYearId && report && (
         <>
           {/* Summary Cards */}
           <div className='grid grid-cols-1 gap-4 sm:grid-cols-3'>
@@ -544,13 +539,7 @@ export default function OpeningEntryReport() {
                                         <td className='p-2.5 text-muted-foreground'>{idx + 1}</td>
                                         <td className='p-2.5 font-medium'>{entry.accountLedgerName ?? `Ledger #${entry.accountLedgerId}`}</td>
                                         <td className='p-2.5'>
-                                          <Badge variant='outline' className={
-                                            entry.natureCode === 'ASSET'
-                                              ? 'border-blue-300 text-blue-700 dark:text-blue-400'
-                                              : entry.natureCode === 'LIABILITY'
-                                                ? 'border-amber-300 text-amber-700 dark:text-amber-400'
-                                                : 'border-green-300 text-green-700 dark:text-green-400'
-                                          }>
+                                          <Badge variant='outline' className={getNatureBadge(entry.natureCode).className}>
                                             {entry.nature ?? entry.natureCode ?? '—'}
                                           </Badge>
                                         </td>
@@ -607,6 +596,7 @@ export default function OpeningEntryReport() {
                                               <thead>
                                                 <tr className='border-b bg-muted/20'>
                                                   <th className='p-2 pl-6 text-left font-medium text-xs text-muted-foreground'>Godown</th>
+                                                  <th className='p-2 text-left font-medium text-xs text-muted-foreground'>Batch No</th>
                                                   <th className='p-2 text-right font-medium text-xs text-muted-foreground'>Quantity</th>
                                                   <th className='p-2 text-left font-medium text-xs text-muted-foreground'>Remarks</th>
                                                 </tr>
@@ -615,6 +605,18 @@ export default function OpeningEntryReport() {
                                                 {entry.godownEntries.map((ge) => (
                                                   <tr key={ge.id} className='border-b last:border-0'>
                                                     <td className='p-2 pl-6 font-medium'>{ge.godownName ?? `Godown #${ge.godownId}`}</td>
+                                                    <td className='p-2'>
+                                                      {ge.batchNo ? (
+                                                        <Badge variant='outline' className='text-[11px] px-1.5 py-0 font-mono'>
+                                                          {ge.batchNo}
+                                                          {ge.expiryDate && (
+                                                            <span className='ml-1 text-muted-foreground'>exp {formatDate(ge.expiryDate)}</span>
+                                                          )}
+                                                        </Badge>
+                                                      ) : (
+                                                        <span className='text-muted-foreground'>—</span>
+                                                      )}
+                                                    </td>
                                                     <td className='p-2 text-right font-mono tabular-nums'>{ge.actualQuantity.toFixed(2)}</td>
                                                     <td className='p-2 text-muted-foreground'>{ge.remarks ?? '—'}</td>
                                                   </tr>

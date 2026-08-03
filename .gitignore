@@ -5,3 +5,5 @@ dist-ssr
 *.local
 .env
 nul
+# pnpm is the standard package manager (see package.json packageManager field)
+package-lock.json

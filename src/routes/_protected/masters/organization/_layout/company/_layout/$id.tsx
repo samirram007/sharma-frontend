@@ -28,7 +28,10 @@ export const Route = createFileRoute(
     loader: ({ context, params: { id } }) => {
 
         if (id === "new") return null
-        return context.queryClient.ensureQueryData(companyQueryOptions(id))
+        // fetchQuery (vs ensureQueryData) refetches when the cached data is stale, so the
+        // detail page always renders the latest record (e.g. a freshly saved address)
+        // instead of a stale cached snapshot.
+        return context.queryClient.fetchQuery(companyQueryOptions(id))
     },
     component: () => {
         const { id } = Route.useParams()

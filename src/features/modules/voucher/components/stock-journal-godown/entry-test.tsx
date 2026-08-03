@@ -42,7 +42,9 @@ const StockJournalGodownEntry = (props: StockJournalGodownEntryFormProps) => {
 
     const godownEntryRef = useRef<HTMLDivElement>(null);
     const { config } = useTransaction()
-    const { movementType } = usePos()
+    const { movementType, perGodownRowMovementType } = usePos()
+    // Per-entry movement type (Manufacturing Journal) falls back to the voucher-level context type
+    const entryMovementType = stockJournalEntryForm.watch('movementType') ?? movementType
     const show_actual_and_billing_quantity = config.find(c => c.key === 'show_actual_and_billing_quantity')?.value
     // const show_alternate_unit = config.find(c => c.key === 'show_alternate_unit')?.value
     useFocusArea(godownEntryRef as React.RefObject<HTMLElement>);
@@ -57,6 +59,7 @@ const StockJournalGodownEntry = (props: StockJournalGodownEntryFormProps) => {
 
         return {
             ...base,
+            movementType: base.movementType ?? lowerCase(movementType),
             stockItem: base.stockItem ?? stockItem,
             actualQuantity: base.actualQuantity ?? 0,
             billingQuantity: base.billingQuantity ?? 0,
@@ -77,6 +80,12 @@ const StockJournalGodownEntry = (props: StockJournalGodownEntryFormProps) => {
         defaultValues,
         mode: "onChange",
     });
+    // Per-godown-row movement type (Transfer Voucher) falls back to the entry-level type.
+    // For other vouchers (Receipt/Delivery/Manufacturing) keep using the entry-level type
+    // so the entry movement toggle stays the single source of truth.
+    const rowMovementType = perGodownRowMovementType
+        ? (stockJournalGodownEntryForm.watch('movementType') ?? entryMovementType)
+        : entryMovementType
     const rateUnitRatio = stockJournalEntryForm.watch("rateUnitRatio") ?? 1;
     // const actualQuantity = stockJournalGodownEntryForm.watch("actualQuantity") ?? 1;
     // stockJournalGodownEntryForm.setValue("billingQuantity", actualQuantity * rateUnitRatio, { shouldValidate: true });
@@ -138,17 +147,24 @@ const StockJournalGodownEntry = (props: StockJournalGodownEntryFormProps) => {
 
                 <div className="grid grid-cols-[1fr_280px_300px_150px_80px_80px_200px_120px]  ">
 
-                    <div className="pr-2">
+                    <div className="flex flex-col items-stretch gap-1 pr-2">
                         <GodownCombobox
                             stockJournalGodownEntryForm={stockJournalGodownEntryForm}
                             stockItem={stockItem}
                             godowns={godowns}
                             handleRemove={handleRemove}
                         />
+                        {perGodownRowMovementType && (
+                            <GodownMovementToggle
+                                stockJournalGodownEntryForm={stockJournalGodownEntryForm}
+                                stockJournalEntryForm={stockJournalEntryForm}
+                                entryPath={entryPath}
+                            />
+                        )}
                     </div>
 
                     {
-                        lowerCase(movementType) === 'in' ?
+                        lowerCase(rowMovementType) === 'in' ?
 
                             (
                                 stockItem?.isMaintainBatch ?
@@ -919,5 +935,58 @@ const BillingQuantityBox = (props: QuantityBoxProps) => {
             )}
 
         </>
+    )
+}
+
+/**
+ * Per-godown-row movement type toggle (used by Transfer Voucher).
+ * Lets a single item entry move stock OUT of a source godown and
+ * IN to a destination godown on the same line.
+ */
+const GodownMovementToggle = ({
+    stockJournalGodownEntryForm,
+    stockJournalEntryForm,
+    entryPath,
+}: {
+    stockJournalGodownEntryForm: UseFormReturn<StockJournalGodownEntryForm>
+    stockJournalEntryForm: UseFormReturn<StockJournalEntryForm>
+    entryPath: `stockJournalGodownEntries.${number}`
+}) => {
+    const movementType = stockJournalGodownEntryForm.watch('movementType') ?? 'in'
+
+    const handleChange = (next: 'in' | 'out') => {
+        stockJournalGodownEntryForm.setValue('movementType', next, { shouldDirty: true });
+        // Push the row up to the parent entry form so the payload persists it
+        stockJournalEntryForm.setValue(entryPath, stockJournalGodownEntryForm.getValues(), {
+            shouldValidate: true,
+        });
+    };
+
+    const baseClass = 'h-5 flex-1 rounded px-2 text-[10px] font-bold uppercase tracking-wide transition-colors';
+
+    return (
+        <div className="flex w-full items-center gap-1">
+            <span className="shrink-0 text-[9px] font-semibold uppercase tracking-wider text-slate-400">Mov</span>
+            <button
+                type="button"
+                onClick={() => handleChange('in')}
+                className={`${baseClass} ${movementType === 'in'
+                    ? 'bg-emerald-600 text-white'
+                    : 'bg-slate-100 text-slate-500 hover:bg-emerald-100 hover:text-emerald-700 dark:bg-slate-800 dark:text-slate-400'
+                    }`}
+            >
+                In
+            </button>
+            <button
+                type="button"
+                onClick={() => handleChange('out')}
+                className={`${baseClass} ${movementType === 'out'
+                    ? 'bg-orange-600 text-white'
+                    : 'bg-slate-100 text-slate-500 hover:bg-orange-100 hover:text-orange-700 dark:bg-slate-800 dark:text-slate-400'
+                    }`}
+            >
+                Out
+            </button>
+        </div>
     )
 }

@@ -161,22 +161,28 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
     const login = React.useCallback(async ({ email, password }: LoginProps) => {
         setIsLoading(true);
-        const response = await loginService({ email, password })
-        if (response?.status === 'success') {
-            // Store bearer token if the backend returned one
-            if (response?.token) {
-                setToken(response.token);
+        try {
+            const response = await loginService({ email, password })
+            // Backend returns the unified envelope: success (boolean).
+            // Keep the legacy 'status' check for backward compatibility.
+            if (response?.success === true || response?.status === 'success') {
+                // Store bearer token if the backend returned one
+                if (response?.token) {
+                    setToken(response.token);
+                }
+                await fetchProfile();
             }
-            await fetchProfile();
-        }
-        else {
-            flushSync(() => {
-                setUser(null);
-                setUserFiscalYear(null);
+            else {
+                flushSync(() => {
+                    setUser(null);
+                    setUserFiscalYear(null);
 
-            })
+                })
+            }
+        } finally {
+            // Always reset loading state, even if loginService throws
+            setIsLoading(false);
         }
-        setIsLoading(false);
     }, [])
 
     const logout = React.useCallback(async () => {
