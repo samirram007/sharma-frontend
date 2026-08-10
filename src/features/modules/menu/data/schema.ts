@@ -13,6 +13,7 @@ export const MenuSchema = z.object({
   status: ActiveInactiveStatusSchema.default('active'),
   isVisible: z.boolean().default(true),
   isGroup: z.boolean().default(false),
+  isTopMenu: z.boolean().default(false),
   description: z.string().nullable().optional(),
   feature: appModuleFeatureSchema.nullable().optional(),
   parent: z.object({
@@ -49,6 +50,7 @@ export const formSchema = z.object({
   status: z.string().min(1, { message: 'Status is required.' }),
   isVisible: z.boolean().default(true),
   isGroup: z.boolean().default(false),
+  isTopMenu: z.boolean().default(false),
   description: z.string().nullable().optional(),
   isEdit: z.boolean(),
 })

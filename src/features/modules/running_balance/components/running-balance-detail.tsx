@@ -1,3 +1,4 @@
+import { Fragment } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -16,6 +17,7 @@ import {
   IconArrowLeft,
   IconArrowUpRight,
   IconArrowDownRight,
+  IconBuildingWarehouse,
   IconFileInvoice,
 } from '@tabler/icons-react'
 import type { RunningBalanceDetail } from '../data/schema'
@@ -190,9 +192,17 @@ export default function RunningBalanceDetailView({ data, onBack, godownId }: Run
                   const isIncrease = tx.runningBalance > prevBalance
                   const isDecrease = tx.runningBalance < prevBalance
 
+                  // Godowns with batch/serial detail lines (e.g. SKADJ physical-count
+                  // adjustments) — rendered as an expandable detail row under the
+                  // transaction. Godowns without detail lines are skipped entirely.
+                  const godownDetails =
+                    tx.godownDetails?.filter(
+                      (gd) => (gd.detailLines?.length ?? 0) > 0,
+                    ) ?? []
+
                   return (
+                    <Fragment key={`${tx.voucherId ?? 'opening'}-${idx}`}>
                     <tr
-                      key={`${tx.voucherId ?? 'opening'}-${idx}`}
                       className={cn(
                         'border-b last:border-0 transition-colors',
                         tx.isOpening && 'bg-blue-50/30 dark:bg-blue-950/10',
@@ -236,6 +246,73 @@ export default function RunningBalanceDetailView({ data, onBack, godownId }: Run
                         </span>
                       </td>
                     </tr>
+                    {godownDetails.length > 0 && (
+                      <tr className='border-b bg-muted/30'>
+                        <td colSpan={6} className='p-2'>
+                          <div className='space-y-2 pl-6'>
+                            {godownDetails.map((gd) => (
+                              <div
+                                key={`${gd.godownId}-${idx}`}
+                                className='text-xs'
+                              >
+                                <div className='mb-1 flex items-center gap-1.5 font-medium text-foreground/80'>
+                                  <IconBuildingWarehouse className='h-3.5 w-3.5 shrink-0 text-muted-foreground' />
+                                  <span>
+                                    {gd.godownName ?? `Godown #${gd.godownId}`}
+                                  </span>
+                                </div>
+                                <div className='space-y-1'>
+                                  {gd.detailLines?.map((line, lineIdx) => (
+                                    <div
+                                      key={`${line.batchNo}-${line.serialNo}-${lineIdx}`}
+                                      className='flex flex-wrap items-center gap-x-3 gap-y-0.5 text-muted-foreground'
+                                    >
+                                      <span className='font-mono font-semibold text-foreground/70'>
+                                        {line.batchNo ?? 'No batch'}
+                                      </span>
+                                      {line.serialNo && (
+                                        <span className='font-mono'>
+                                          {line.serialNo}
+                                        </span>
+                                      )}
+                                      <span
+                                        className={cn(
+                                          'font-semibold uppercase',
+                                          line.movementType === 'out'
+                                            ? 'text-red-600'
+                                            : 'text-green-600',
+                                        )}
+                                      >
+                                        {line.movementType === 'out'
+                                          ? 'OUT'
+                                          : 'IN'}
+                                      </span>
+                                      <span className='tabular-nums'>
+                                        {line.quantity.toFixed(dp)}
+                                      </span>
+                                      {line.rate != null && (
+                                        <span>
+                                          @ {line.rate.toFixed(dp)}
+                                        </span>
+                                      )}
+                                      {line.amount != null && (
+                                        <span className='tabular-nums'>
+                                          {line.amount.toLocaleString('en-IN', {
+                                            minimumFractionDigits: 2,
+                                            maximumFractionDigits: 2,
+                                          })}
+                                        </span>
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                    </Fragment>
                   )
                 })}
               </tbody>

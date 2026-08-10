@@ -89,6 +89,7 @@ import { Route as ProtectedReportsStock_summaryLayoutSalesOrderOutstandingRouteI
 import { Route as ProtectedReportsStock_summaryLayoutSalebleStockRouteImport } from './routes/_protected/reports/stock_summary/_layout/saleble-stock'
 import { Route as ProtectedReportsStock_summaryLayoutPurchaseOrderOutstandingRouteImport } from './routes/_protected/reports/stock_summary/_layout/purchase-order-outstanding'
 import { Route as ProtectedReportsStock_summaryLayoutNetStockRouteImport } from './routes/_protected/reports/stock_summary/_layout/net-stock'
+import { Route as ProtectedReportsStock_summaryLayoutClosingStockRouteImport } from './routes/_protected/reports/stock_summary/_layout/closing-stock'
 import { Route as ProtectedReportsFreightLayoutFreightZoneWiseRouteImport } from './routes/_protected/reports/freight/_layout/freight-zone-wise'
 import { Route as ProtectedReportsFreightLayoutFreightVoucherWiseRouteImport } from './routes/_protected/reports/freight/_layout/freight-voucher-wise'
 import { Route as ProtectedReportsFreightLayoutFreightTransporterWiseRouteImport } from './routes/_protected/reports/freight/_layout/freight-transporter-wise'
@@ -174,6 +175,7 @@ import { Route as ProtectedTransactionsProviderVouchersLayoutRejection_outIndexR
 import { Route as ProtectedTransactionsProviderVouchersLayoutRejection_inIndexRouteImport } from './routes/_protected/transactions/_provider/vouchers/_layout/rejection_in/index'
 import { Route as ProtectedTransactionsProviderVouchersLayoutReceiptIndexRouteImport } from './routes/_protected/transactions/_provider/vouchers/_layout/receipt/index'
 import { Route as ProtectedTransactionsProviderVouchersLayoutPhysical_stockIndexRouteImport } from './routes/_protected/transactions/_provider/vouchers/_layout/physical_stock/index'
+import { Route as ProtectedTransactionsProviderVouchersLayoutOpening_stockIndexRouteImport } from './routes/_protected/transactions/_provider/vouchers/_layout/opening_stock/index'
 import { Route as ProtectedTransactionsProviderVouchersLayoutManufacturing_journalIndexRouteImport } from './routes/_protected/transactions/_provider/vouchers/_layout/manufacturing_journal/index'
 import { Route as ProtectedTransactionsProviderVouchersLayoutDebit_noteIndexRouteImport } from './routes/_protected/transactions/_provider/vouchers/_layout/debit_note/index'
 import { Route as ProtectedTransactionsProviderVouchersLayoutCredit_noteIndexRouteImport } from './routes/_protected/transactions/_provider/vouchers/_layout/credit_note/index'
@@ -208,6 +210,7 @@ import { Route as ProtectedTransactionsProviderVouchersLayoutPurchase_orderLayou
 import { Route as ProtectedTransactionsProviderVouchersLayoutPurchaseLayoutRouteImport } from './routes/_protected/transactions/_provider/vouchers/_layout/purchase/_layout'
 import { Route as ProtectedTransactionsProviderVouchersLayoutPhysical_stockIdRouteImport } from './routes/_protected/transactions/_provider/vouchers/_layout/physical_stock/$id'
 import { Route as ProtectedTransactionsProviderVouchersLayoutPaymentLayoutRouteImport } from './routes/_protected/transactions/_provider/vouchers/_layout/payment/_layout'
+import { Route as ProtectedTransactionsProviderVouchersLayoutOpening_stockIdRouteImport } from './routes/_protected/transactions/_provider/vouchers/_layout/opening_stock/$id'
 import { Route as ProtectedTransactionsProviderVouchersLayoutManufacturing_journalIdRouteImport } from './routes/_protected/transactions/_provider/vouchers/_layout/manufacturing_journal/$id'
 import { Route as ProtectedTransactionsProviderVouchersLayoutJournalLayoutRouteImport } from './routes/_protected/transactions/_provider/vouchers/_layout/journal/_layout'
 import { Route as ProtectedTransactionsProviderVouchersLayoutDelivery_noteLayoutRouteImport } from './routes/_protected/transactions/_provider/vouchers/_layout/delivery_note/_layout'
@@ -841,6 +844,12 @@ const ProtectedReportsStock_summaryLayoutNetStockRoute =
     path: '/net-stock',
     getParentRoute: () => ProtectedReportsStock_summaryLayoutRoute,
   } as any)
+const ProtectedReportsStock_summaryLayoutClosingStockRoute =
+  ProtectedReportsStock_summaryLayoutClosingStockRouteImport.update({
+    id: '/closing-stock',
+    path: '/closing-stock',
+    getParentRoute: () => ProtectedReportsStock_summaryLayoutRoute,
+  } as any)
 const ProtectedReportsFreightLayoutFreightZoneWiseRoute =
   ProtectedReportsFreightLayoutFreightZoneWiseRouteImport.update({
     id: '/freight-zone-wise',
@@ -1368,6 +1377,14 @@ const ProtectedTransactionsProviderVouchersLayoutPhysical_stockIndexRoute =
       getParentRoute: () => ProtectedTransactionsProviderVouchersLayoutRoute,
     } as any,
   )
+const ProtectedTransactionsProviderVouchersLayoutOpening_stockIndexRoute =
+  ProtectedTransactionsProviderVouchersLayoutOpening_stockIndexRouteImport.update(
+    {
+      id: '/opening_stock/',
+      path: '/opening_stock/',
+      getParentRoute: () => ProtectedTransactionsProviderVouchersLayoutRoute,
+    } as any,
+  )
 const ProtectedTransactionsProviderVouchersLayoutManufacturing_journalIndexRoute =
   ProtectedTransactionsProviderVouchersLayoutManufacturing_journalIndexRouteImport.update(
     {
@@ -1593,6 +1610,12 @@ const ProtectedTransactionsProviderVouchersLayoutPaymentLayoutRoute =
   ProtectedTransactionsProviderVouchersLayoutPaymentLayoutRouteImport.update({
     id: '/payment/_layout',
     path: '/payment',
+    getParentRoute: () => ProtectedTransactionsProviderVouchersLayoutRoute,
+  } as any)
+const ProtectedTransactionsProviderVouchersLayoutOpening_stockIdRoute =
+  ProtectedTransactionsProviderVouchersLayoutOpening_stockIdRouteImport.update({
+    id: '/opening_stock/$id',
+    path: '/opening_stock/$id',
     getParentRoute: () => ProtectedTransactionsProviderVouchersLayoutRoute,
   } as any)
 const ProtectedTransactionsProviderVouchersLayoutManufacturing_journalIdRoute =
@@ -1983,6 +2006,7 @@ export interface FileRoutesByFullPath {
   '/reports/freight/freight-transporter-wise': typeof ProtectedReportsFreightLayoutFreightTransporterWiseRoute
   '/reports/freight/freight-voucher-wise': typeof ProtectedReportsFreightLayoutFreightVoucherWiseRoute
   '/reports/freight/freight-zone-wise': typeof ProtectedReportsFreightLayoutFreightZoneWiseRoute
+  '/reports/stock_summary/closing-stock': typeof ProtectedReportsStock_summaryLayoutClosingStockRoute
   '/reports/stock_summary/net-stock': typeof ProtectedReportsStock_summaryLayoutNetStockRoute
   '/reports/stock_summary/purchase-order-outstanding': typeof ProtectedReportsStock_summaryLayoutPurchaseOrderOutstandingRoute
   '/reports/stock_summary/saleble-stock': typeof ProtectedReportsStock_summaryLayoutSalebleStockRoute
@@ -2095,6 +2119,7 @@ export interface FileRoutesByFullPath {
   '/transactions/vouchers/delivery_note': typeof ProtectedTransactionsProviderVouchersLayoutDelivery_noteLayoutRouteWithChildren
   '/transactions/vouchers/journal': typeof ProtectedTransactionsProviderVouchersLayoutJournalLayoutRouteWithChildren
   '/transactions/vouchers/manufacturing_journal/$id': typeof ProtectedTransactionsProviderVouchersLayoutManufacturing_journalIdRoute
+  '/transactions/vouchers/opening_stock/$id': typeof ProtectedTransactionsProviderVouchersLayoutOpening_stockIdRoute
   '/transactions/vouchers/payment': typeof ProtectedTransactionsProviderVouchersLayoutPaymentLayoutRouteWithChildren
   '/transactions/vouchers/physical_stock/$id': typeof ProtectedTransactionsProviderVouchersLayoutPhysical_stockIdRoute
   '/transactions/vouchers/purchase': typeof ProtectedTransactionsProviderVouchersLayoutPurchaseLayoutRouteWithChildren
@@ -2129,6 +2154,7 @@ export interface FileRoutesByFullPath {
   '/transactions/vouchers/credit_note/': typeof ProtectedTransactionsProviderVouchersLayoutCredit_noteIndexRoute
   '/transactions/vouchers/debit_note/': typeof ProtectedTransactionsProviderVouchersLayoutDebit_noteIndexRoute
   '/transactions/vouchers/manufacturing_journal/': typeof ProtectedTransactionsProviderVouchersLayoutManufacturing_journalIndexRoute
+  '/transactions/vouchers/opening_stock/': typeof ProtectedTransactionsProviderVouchersLayoutOpening_stockIndexRoute
   '/transactions/vouchers/physical_stock/': typeof ProtectedTransactionsProviderVouchersLayoutPhysical_stockIndexRoute
   '/transactions/vouchers/receipt/': typeof ProtectedTransactionsProviderVouchersLayoutReceiptIndexRoute
   '/transactions/vouchers/rejection_in/': typeof ProtectedTransactionsProviderVouchersLayoutRejection_inIndexRoute
@@ -2223,6 +2249,7 @@ export interface FileRoutesByTo {
   '/reports/freight/freight-transporter-wise': typeof ProtectedReportsFreightLayoutFreightTransporterWiseRoute
   '/reports/freight/freight-voucher-wise': typeof ProtectedReportsFreightLayoutFreightVoucherWiseRoute
   '/reports/freight/freight-zone-wise': typeof ProtectedReportsFreightLayoutFreightZoneWiseRoute
+  '/reports/stock_summary/closing-stock': typeof ProtectedReportsStock_summaryLayoutClosingStockRoute
   '/reports/stock_summary/net-stock': typeof ProtectedReportsStock_summaryLayoutNetStockRoute
   '/reports/stock_summary/purchase-order-outstanding': typeof ProtectedReportsStock_summaryLayoutPurchaseOrderOutstandingRoute
   '/reports/stock_summary/saleble-stock': typeof ProtectedReportsStock_summaryLayoutSalebleStockRoute
@@ -2310,6 +2337,7 @@ export interface FileRoutesByTo {
   '/transactions/vouchers/credit_note/$id': typeof ProtectedTransactionsProviderVouchersLayoutCredit_noteIdRoute
   '/transactions/vouchers/debit_note/$id': typeof ProtectedTransactionsProviderVouchersLayoutDebit_noteIdRoute
   '/transactions/vouchers/manufacturing_journal/$id': typeof ProtectedTransactionsProviderVouchersLayoutManufacturing_journalIdRoute
+  '/transactions/vouchers/opening_stock/$id': typeof ProtectedTransactionsProviderVouchersLayoutOpening_stockIdRoute
   '/transactions/vouchers/physical_stock/$id': typeof ProtectedTransactionsProviderVouchersLayoutPhysical_stockIdRoute
   '/transactions/vouchers/rejection_in/$id': typeof ProtectedTransactionsProviderVouchersLayoutRejection_inIdRoute
   '/transactions/vouchers/rejection_out/$id': typeof ProtectedTransactionsProviderVouchersLayoutRejection_outIdRoute
@@ -2340,6 +2368,7 @@ export interface FileRoutesByTo {
   '/transactions/vouchers/credit_note': typeof ProtectedTransactionsProviderVouchersLayoutCredit_noteIndexRoute
   '/transactions/vouchers/debit_note': typeof ProtectedTransactionsProviderVouchersLayoutDebit_noteIndexRoute
   '/transactions/vouchers/manufacturing_journal': typeof ProtectedTransactionsProviderVouchersLayoutManufacturing_journalIndexRoute
+  '/transactions/vouchers/opening_stock': typeof ProtectedTransactionsProviderVouchersLayoutOpening_stockIndexRoute
   '/transactions/vouchers/physical_stock': typeof ProtectedTransactionsProviderVouchersLayoutPhysical_stockIndexRoute
   '/transactions/vouchers/receipt': typeof ProtectedTransactionsProviderVouchersLayoutReceiptIndexRoute
   '/transactions/vouchers/rejection_in': typeof ProtectedTransactionsProviderVouchersLayoutRejection_inIndexRoute
@@ -2452,6 +2481,7 @@ export interface FileRoutesById {
   '/_protected/reports/freight/_layout/freight-transporter-wise': typeof ProtectedReportsFreightLayoutFreightTransporterWiseRoute
   '/_protected/reports/freight/_layout/freight-voucher-wise': typeof ProtectedReportsFreightLayoutFreightVoucherWiseRoute
   '/_protected/reports/freight/_layout/freight-zone-wise': typeof ProtectedReportsFreightLayoutFreightZoneWiseRoute
+  '/_protected/reports/stock_summary/_layout/closing-stock': typeof ProtectedReportsStock_summaryLayoutClosingStockRoute
   '/_protected/reports/stock_summary/_layout/net-stock': typeof ProtectedReportsStock_summaryLayoutNetStockRoute
   '/_protected/reports/stock_summary/_layout/purchase-order-outstanding': typeof ProtectedReportsStock_summaryLayoutPurchaseOrderOutstandingRoute
   '/_protected/reports/stock_summary/_layout/saleble-stock': typeof ProtectedReportsStock_summaryLayoutSalebleStockRoute
@@ -2564,6 +2594,7 @@ export interface FileRoutesById {
   '/_protected/transactions/_provider/vouchers/_layout/delivery_note/_layout': typeof ProtectedTransactionsProviderVouchersLayoutDelivery_noteLayoutRouteWithChildren
   '/_protected/transactions/_provider/vouchers/_layout/journal/_layout': typeof ProtectedTransactionsProviderVouchersLayoutJournalLayoutRouteWithChildren
   '/_protected/transactions/_provider/vouchers/_layout/manufacturing_journal/$id': typeof ProtectedTransactionsProviderVouchersLayoutManufacturing_journalIdRoute
+  '/_protected/transactions/_provider/vouchers/_layout/opening_stock/$id': typeof ProtectedTransactionsProviderVouchersLayoutOpening_stockIdRoute
   '/_protected/transactions/_provider/vouchers/_layout/payment/_layout': typeof ProtectedTransactionsProviderVouchersLayoutPaymentLayoutRouteWithChildren
   '/_protected/transactions/_provider/vouchers/_layout/physical_stock/$id': typeof ProtectedTransactionsProviderVouchersLayoutPhysical_stockIdRoute
   '/_protected/transactions/_provider/vouchers/_layout/purchase/_layout': typeof ProtectedTransactionsProviderVouchersLayoutPurchaseLayoutRouteWithChildren
@@ -2598,6 +2629,7 @@ export interface FileRoutesById {
   '/_protected/transactions/_provider/vouchers/_layout/credit_note/': typeof ProtectedTransactionsProviderVouchersLayoutCredit_noteIndexRoute
   '/_protected/transactions/_provider/vouchers/_layout/debit_note/': typeof ProtectedTransactionsProviderVouchersLayoutDebit_noteIndexRoute
   '/_protected/transactions/_provider/vouchers/_layout/manufacturing_journal/': typeof ProtectedTransactionsProviderVouchersLayoutManufacturing_journalIndexRoute
+  '/_protected/transactions/_provider/vouchers/_layout/opening_stock/': typeof ProtectedTransactionsProviderVouchersLayoutOpening_stockIndexRoute
   '/_protected/transactions/_provider/vouchers/_layout/physical_stock/': typeof ProtectedTransactionsProviderVouchersLayoutPhysical_stockIndexRoute
   '/_protected/transactions/_provider/vouchers/_layout/receipt/': typeof ProtectedTransactionsProviderVouchersLayoutReceiptIndexRoute
   '/_protected/transactions/_provider/vouchers/_layout/rejection_in/': typeof ProtectedTransactionsProviderVouchersLayoutRejection_inIndexRoute
@@ -2710,6 +2742,7 @@ export interface FileRouteTypes {
     | '/reports/freight/freight-transporter-wise'
     | '/reports/freight/freight-voucher-wise'
     | '/reports/freight/freight-zone-wise'
+    | '/reports/stock_summary/closing-stock'
     | '/reports/stock_summary/net-stock'
     | '/reports/stock_summary/purchase-order-outstanding'
     | '/reports/stock_summary/saleble-stock'
@@ -2822,6 +2855,7 @@ export interface FileRouteTypes {
     | '/transactions/vouchers/delivery_note'
     | '/transactions/vouchers/journal'
     | '/transactions/vouchers/manufacturing_journal/$id'
+    | '/transactions/vouchers/opening_stock/$id'
     | '/transactions/vouchers/payment'
     | '/transactions/vouchers/physical_stock/$id'
     | '/transactions/vouchers/purchase'
@@ -2856,6 +2890,7 @@ export interface FileRouteTypes {
     | '/transactions/vouchers/credit_note/'
     | '/transactions/vouchers/debit_note/'
     | '/transactions/vouchers/manufacturing_journal/'
+    | '/transactions/vouchers/opening_stock/'
     | '/transactions/vouchers/physical_stock/'
     | '/transactions/vouchers/receipt/'
     | '/transactions/vouchers/rejection_in/'
@@ -2950,6 +2985,7 @@ export interface FileRouteTypes {
     | '/reports/freight/freight-transporter-wise'
     | '/reports/freight/freight-voucher-wise'
     | '/reports/freight/freight-zone-wise'
+    | '/reports/stock_summary/closing-stock'
     | '/reports/stock_summary/net-stock'
     | '/reports/stock_summary/purchase-order-outstanding'
     | '/reports/stock_summary/saleble-stock'
@@ -3037,6 +3073,7 @@ export interface FileRouteTypes {
     | '/transactions/vouchers/credit_note/$id'
     | '/transactions/vouchers/debit_note/$id'
     | '/transactions/vouchers/manufacturing_journal/$id'
+    | '/transactions/vouchers/opening_stock/$id'
     | '/transactions/vouchers/physical_stock/$id'
     | '/transactions/vouchers/rejection_in/$id'
     | '/transactions/vouchers/rejection_out/$id'
@@ -3067,6 +3104,7 @@ export interface FileRouteTypes {
     | '/transactions/vouchers/credit_note'
     | '/transactions/vouchers/debit_note'
     | '/transactions/vouchers/manufacturing_journal'
+    | '/transactions/vouchers/opening_stock'
     | '/transactions/vouchers/physical_stock'
     | '/transactions/vouchers/receipt'
     | '/transactions/vouchers/rejection_in'
@@ -3178,6 +3216,7 @@ export interface FileRouteTypes {
     | '/_protected/reports/freight/_layout/freight-transporter-wise'
     | '/_protected/reports/freight/_layout/freight-voucher-wise'
     | '/_protected/reports/freight/_layout/freight-zone-wise'
+    | '/_protected/reports/stock_summary/_layout/closing-stock'
     | '/_protected/reports/stock_summary/_layout/net-stock'
     | '/_protected/reports/stock_summary/_layout/purchase-order-outstanding'
     | '/_protected/reports/stock_summary/_layout/saleble-stock'
@@ -3290,6 +3329,7 @@ export interface FileRouteTypes {
     | '/_protected/transactions/_provider/vouchers/_layout/delivery_note/_layout'
     | '/_protected/transactions/_provider/vouchers/_layout/journal/_layout'
     | '/_protected/transactions/_provider/vouchers/_layout/manufacturing_journal/$id'
+    | '/_protected/transactions/_provider/vouchers/_layout/opening_stock/$id'
     | '/_protected/transactions/_provider/vouchers/_layout/payment/_layout'
     | '/_protected/transactions/_provider/vouchers/_layout/physical_stock/$id'
     | '/_protected/transactions/_provider/vouchers/_layout/purchase/_layout'
@@ -3324,6 +3364,7 @@ export interface FileRouteTypes {
     | '/_protected/transactions/_provider/vouchers/_layout/credit_note/'
     | '/_protected/transactions/_provider/vouchers/_layout/debit_note/'
     | '/_protected/transactions/_provider/vouchers/_layout/manufacturing_journal/'
+    | '/_protected/transactions/_provider/vouchers/_layout/opening_stock/'
     | '/_protected/transactions/_provider/vouchers/_layout/physical_stock/'
     | '/_protected/transactions/_provider/vouchers/_layout/receipt/'
     | '/_protected/transactions/_provider/vouchers/_layout/rejection_in/'
@@ -4028,6 +4069,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProtectedReportsStock_summaryLayoutNetStockRouteImport
       parentRoute: typeof ProtectedReportsStock_summaryLayoutRoute
     }
+    '/_protected/reports/stock_summary/_layout/closing-stock': {
+      id: '/_protected/reports/stock_summary/_layout/closing-stock'
+      path: '/closing-stock'
+      fullPath: '/reports/stock_summary/closing-stock'
+      preLoaderRoute: typeof ProtectedReportsStock_summaryLayoutClosingStockRouteImport
+      parentRoute: typeof ProtectedReportsStock_summaryLayoutRoute
+    }
     '/_protected/reports/freight/_layout/freight-zone-wise': {
       id: '/_protected/reports/freight/_layout/freight-zone-wise'
       path: '/freight-zone-wise'
@@ -4623,6 +4671,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProtectedTransactionsProviderVouchersLayoutPhysical_stockIndexRouteImport
       parentRoute: typeof ProtectedTransactionsProviderVouchersLayoutRoute
     }
+    '/_protected/transactions/_provider/vouchers/_layout/opening_stock/': {
+      id: '/_protected/transactions/_provider/vouchers/_layout/opening_stock/'
+      path: '/opening_stock'
+      fullPath: '/transactions/vouchers/opening_stock/'
+      preLoaderRoute: typeof ProtectedTransactionsProviderVouchersLayoutOpening_stockIndexRouteImport
+      parentRoute: typeof ProtectedTransactionsProviderVouchersLayoutRoute
+    }
     '/_protected/transactions/_provider/vouchers/_layout/manufacturing_journal/': {
       id: '/_protected/transactions/_provider/vouchers/_layout/manufacturing_journal/'
       path: '/manufacturing_journal'
@@ -4859,6 +4914,13 @@ declare module '@tanstack/react-router' {
       path: '/payment'
       fullPath: '/transactions/vouchers/payment'
       preLoaderRoute: typeof ProtectedTransactionsProviderVouchersLayoutPaymentLayoutRouteImport
+      parentRoute: typeof ProtectedTransactionsProviderVouchersLayoutRoute
+    }
+    '/_protected/transactions/_provider/vouchers/_layout/opening_stock/$id': {
+      id: '/_protected/transactions/_provider/vouchers/_layout/opening_stock/$id'
+      path: '/opening_stock/$id'
+      fullPath: '/transactions/vouchers/opening_stock/$id'
+      preLoaderRoute: typeof ProtectedTransactionsProviderVouchersLayoutOpening_stockIdRouteImport
       parentRoute: typeof ProtectedTransactionsProviderVouchersLayoutRoute
     }
     '/_protected/transactions/_provider/vouchers/_layout/manufacturing_journal/$id': {
@@ -5440,6 +5502,7 @@ interface ProtectedTransactionsProviderVouchersLayoutRouteChildren {
   ProtectedTransactionsProviderVouchersLayoutDelivery_noteLayoutRoute: typeof ProtectedTransactionsProviderVouchersLayoutDelivery_noteLayoutRouteWithChildren
   ProtectedTransactionsProviderVouchersLayoutJournalLayoutRoute: typeof ProtectedTransactionsProviderVouchersLayoutJournalLayoutRouteWithChildren
   ProtectedTransactionsProviderVouchersLayoutManufacturing_journalIdRoute: typeof ProtectedTransactionsProviderVouchersLayoutManufacturing_journalIdRoute
+  ProtectedTransactionsProviderVouchersLayoutOpening_stockIdRoute: typeof ProtectedTransactionsProviderVouchersLayoutOpening_stockIdRoute
   ProtectedTransactionsProviderVouchersLayoutPaymentLayoutRoute: typeof ProtectedTransactionsProviderVouchersLayoutPaymentLayoutRouteWithChildren
   ProtectedTransactionsProviderVouchersLayoutPhysical_stockIdRoute: typeof ProtectedTransactionsProviderVouchersLayoutPhysical_stockIdRoute
   ProtectedTransactionsProviderVouchersLayoutPurchaseLayoutRoute: typeof ProtectedTransactionsProviderVouchersLayoutPurchaseLayoutRouteWithChildren
@@ -5456,6 +5519,7 @@ interface ProtectedTransactionsProviderVouchersLayoutRouteChildren {
   ProtectedTransactionsProviderVouchersLayoutCredit_noteIndexRoute: typeof ProtectedTransactionsProviderVouchersLayoutCredit_noteIndexRoute
   ProtectedTransactionsProviderVouchersLayoutDebit_noteIndexRoute: typeof ProtectedTransactionsProviderVouchersLayoutDebit_noteIndexRoute
   ProtectedTransactionsProviderVouchersLayoutManufacturing_journalIndexRoute: typeof ProtectedTransactionsProviderVouchersLayoutManufacturing_journalIndexRoute
+  ProtectedTransactionsProviderVouchersLayoutOpening_stockIndexRoute: typeof ProtectedTransactionsProviderVouchersLayoutOpening_stockIndexRoute
   ProtectedTransactionsProviderVouchersLayoutPhysical_stockIndexRoute: typeof ProtectedTransactionsProviderVouchersLayoutPhysical_stockIndexRoute
   ProtectedTransactionsProviderVouchersLayoutReceiptIndexRoute: typeof ProtectedTransactionsProviderVouchersLayoutReceiptIndexRoute
   ProtectedTransactionsProviderVouchersLayoutRejection_inIndexRoute: typeof ProtectedTransactionsProviderVouchersLayoutRejection_inIndexRoute
@@ -5486,6 +5550,8 @@ const ProtectedTransactionsProviderVouchersLayoutRouteChildren: ProtectedTransac
       ProtectedTransactionsProviderVouchersLayoutJournalLayoutRouteWithChildren,
     ProtectedTransactionsProviderVouchersLayoutManufacturing_journalIdRoute:
       ProtectedTransactionsProviderVouchersLayoutManufacturing_journalIdRoute,
+    ProtectedTransactionsProviderVouchersLayoutOpening_stockIdRoute:
+      ProtectedTransactionsProviderVouchersLayoutOpening_stockIdRoute,
     ProtectedTransactionsProviderVouchersLayoutPaymentLayoutRoute:
       ProtectedTransactionsProviderVouchersLayoutPaymentLayoutRouteWithChildren,
     ProtectedTransactionsProviderVouchersLayoutPhysical_stockIdRoute:
@@ -5518,6 +5584,8 @@ const ProtectedTransactionsProviderVouchersLayoutRouteChildren: ProtectedTransac
       ProtectedTransactionsProviderVouchersLayoutDebit_noteIndexRoute,
     ProtectedTransactionsProviderVouchersLayoutManufacturing_journalIndexRoute:
       ProtectedTransactionsProviderVouchersLayoutManufacturing_journalIndexRoute,
+    ProtectedTransactionsProviderVouchersLayoutOpening_stockIndexRoute:
+      ProtectedTransactionsProviderVouchersLayoutOpening_stockIndexRoute,
     ProtectedTransactionsProviderVouchersLayoutPhysical_stockIndexRoute:
       ProtectedTransactionsProviderVouchersLayoutPhysical_stockIndexRoute,
     ProtectedTransactionsProviderVouchersLayoutReceiptIndexRoute:
@@ -6281,6 +6349,7 @@ const ProtectedReportsReceipt_bookLayoutRouteWithChildren =
   )
 
 interface ProtectedReportsStock_summaryLayoutRouteChildren {
+  ProtectedReportsStock_summaryLayoutClosingStockRoute: typeof ProtectedReportsStock_summaryLayoutClosingStockRoute
   ProtectedReportsStock_summaryLayoutNetStockRoute: typeof ProtectedReportsStock_summaryLayoutNetStockRoute
   ProtectedReportsStock_summaryLayoutPurchaseOrderOutstandingRoute: typeof ProtectedReportsStock_summaryLayoutPurchaseOrderOutstandingRoute
   ProtectedReportsStock_summaryLayoutSalebleStockRoute: typeof ProtectedReportsStock_summaryLayoutSalebleStockRoute
@@ -6295,6 +6364,8 @@ interface ProtectedReportsStock_summaryLayoutRouteChildren {
 
 const ProtectedReportsStock_summaryLayoutRouteChildren: ProtectedReportsStock_summaryLayoutRouteChildren =
   {
+    ProtectedReportsStock_summaryLayoutClosingStockRoute:
+      ProtectedReportsStock_summaryLayoutClosingStockRoute,
     ProtectedReportsStock_summaryLayoutNetStockRoute:
       ProtectedReportsStock_summaryLayoutNetStockRoute,
     ProtectedReportsStock_summaryLayoutPurchaseOrderOutstandingRoute:

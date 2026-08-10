@@ -46,6 +46,7 @@ export const voucherDispatchDefaultValues: VoucherDispatchDetailForm = {
     packingCharges: null,
     insuranceCharges: null,
     otherCharges: null,
+    discount: null,
     billingPreference: 'advance' as const,
     freightCharges: null, 
 

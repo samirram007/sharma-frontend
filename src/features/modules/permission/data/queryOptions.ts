@@ -35,6 +35,17 @@ export function usePermissionMutation() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [Key] })
+            // A permission change affects every permission-filtered surface:
+            // - ['MenuTree']        → role-filtered sidebar menu (staleTime 30 min)
+            // - ['Menus']           → admin menu tree / lists
+            // - ['MenuPermissions'] → Menu Manager shield toggles
+            // - ['AppModuleFeatures'] → Role permission dialog badges
+            // Invalidating all of them makes the change visible immediately
+            // instead of after the menu tree's long staleTime expires.
+            queryClient.invalidateQueries({ queryKey: ['MenuTree'] })
+            queryClient.invalidateQueries({ queryKey: ['Menus'] })
+            queryClient.invalidateQueries({ queryKey: ['MenuPermissions'] })
+            queryClient.invalidateQueries({ queryKey: ['AppModuleFeatures'] })
         },
         onError: (error) => {
             console.error("Permission mutation failed:", error)

@@ -107,6 +107,7 @@ export const voucherDispatchDetailSchema = z.object({
     billOfLadingNo: z.string().nullish(),
     billOfLadingDate: z.coerce.date().nullish(),
     motorVehicleNo: z.string().nullish(),
+    discount: z.coerce.number().nullish(),
 
 
 })

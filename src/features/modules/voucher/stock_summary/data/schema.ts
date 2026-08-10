@@ -151,3 +151,70 @@ export const formSchema = z.object({
 
   isEdit: z.boolean(),
 })
+
+// ─────────────────────────────────────────────────────────────
+//  Closing Stock report (GET /stock_summaries/closing_stock)
+// ─────────────────────────────────────────────────────────────
+// Response shape (camelCased by ClosingStockResource) mirrors the backend
+// closingStock() payload: item → godown → batch tree with source metadata.
+
+export const closingStockBatchSchema = z.object({
+  batchNo: z.string().nullable(),
+  mfgDate: z.string().nullable(),
+  expiryDate: z.string().nullable(),
+  quantity: z.number(),
+  amount: z.number().nullable(),
+  rate: z.number().nullable(),
+})
+export type ClosingStockBatchSchema = z.infer<typeof closingStockBatchSchema>
+
+export const ClosingStockGodownDetailsSchema = z.object({
+  godownId: z.number().int().nullable(),
+  godownName: z.string().nullable(),
+  godownCode: z.string().nullable(),
+  closingQuantity: z.number(),
+  closingAmount: z.number(),
+  batchDetails: z.array(closingStockBatchSchema).optional(),
+})
+// Same-named type alias so `import type { ClosingStockGodownDetailsSchema }`
+// resolves to the inferred data type (used by closing_stock.tsx).
+export type ClosingStockGodownDetailsSchema = z.infer<
+  typeof ClosingStockGodownDetailsSchema
+>
+export type ClosingStockGodownDetails = ClosingStockGodownDetailsSchema
+
+export const ClosingStockItemSchema = z.object({
+  itemId: z.number().int(),
+  itemName: z.string(),
+  unitCode: z.string().nullable(),
+  unitName: z.string().nullable(),
+  noOfDecimalPlaces: z.number(),
+  closingQuantity: z.number(),
+  closingAmount: z.number(),
+  rate: z.number().nullable(),
+  godownDetails: z.array(ClosingStockGodownDetailsSchema),
+})
+export type ClosingStockItemSchema = z.infer<typeof ClosingStockItemSchema>
+export type ClosingStockItem = ClosingStockItemSchema
+
+export const ClosingStockSchema = z.object({
+  source: z.enum(['closing_journal', 'running']),
+  asOfDate: z.string().nullable(),
+  closingVoucherId: z.number().int().nullable(),
+  closingVoucherNo: z.string().nullable(),
+  closingDate: z.string().nullable(),
+  fiscalYear: z
+    .object({
+      id: z.number(),
+      name: z.string(),
+      startDate: z.string(),
+      endDate: z.string(),
+    })
+    .nullable(),
+  totalItems: z.number(),
+  totalQuantity: z.number().nullable(),
+  totalAmount: z.number().nullable(),
+  items: z.array(ClosingStockItemSchema),
+})
+export type ClosingStockSchema = z.infer<typeof ClosingStockSchema>
+export type ClosingStock = ClosingStockSchema

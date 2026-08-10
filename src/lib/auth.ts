@@ -21,10 +21,48 @@ export const AUTH_TOKEN_KEY = 'auth_token'
  * // In a route file:
  * beforeLoad: requirePermission('USER_MENU_VIEW')
  */
-export function requirePermission(permission: string, fallback: string = '/forbidden') {
+export function requirePermission(
+  permission: string,
+  fallback: string = '/forbidden',
+) {
   return async ({ context }: { context: MyRouterContext }) => {
     if (!context.auth?.permissions?.includes(permission)) {
       throw redirect({ to: fallback })
     }
   }
+}
+
+/**
+ * Role codes allowed to create or edit opening stock vouchers.
+ *
+ * Opening stock is a one-time-per-fiscal-year setup entry: only super admin /
+ * admin / developer roles may create or edit it. Everyone else is view-only.
+ * Codes match the backend `RoleSeeder` (sharma-api/app/Modules/Role).
+ */
+export const OPENING_STOCK_EDITOR_ROLE_CODES = [
+  'SUPER_ADMIN',
+  'ADMIN',
+  'DEVELOPER',
+] as const
+
+export type OpeningStockEditorRoleCode =
+  (typeof OPENING_STOCK_EDITOR_ROLE_CODES)[number]
+
+const OPENING_STOCK_EDITOR_ROLE_SET = new Set<string>(
+  OPENING_STOCK_EDITOR_ROLE_CODES,
+)
+
+/**
+ * Returns true when any of the user's roles may create or edit opening stock.
+ * Accepts the roles array from the auth profile (e.g. `user.roles`).
+ */
+export function canEditOpeningStock(
+  roles?: Array<{ code?: string | null }> | null,
+): boolean {
+  return (
+    roles?.some(
+      (role) =>
+        role.code != null && OPENING_STOCK_EDITOR_ROLE_SET.has(role.code),
+    ) ?? false
+  )
 }

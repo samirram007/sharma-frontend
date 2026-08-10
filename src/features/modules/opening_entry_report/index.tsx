@@ -411,7 +411,7 @@ export default function OpeningEntryReport() {
       )}
 
       {/* Error State */}
-      {fiscalYearId && isError && !report && (
+      {fiscalYearId && isError && (
         <div className='flex items-center justify-center py-16'>
           <div className='text-center space-y-4'>
             <IconX className='h-12 w-12 text-destructive mx-auto' />

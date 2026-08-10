@@ -31,6 +31,7 @@ export async function fetchMenuTreeService() {
 export async function patchMenuService(id: number, payload: Partial<{
     menu_name?: string;
     is_visible?: boolean;
+    is_top_menu?: boolean;
     status?: string;
     sort_order?: number;
 }>) {

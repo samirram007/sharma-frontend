@@ -49,3 +49,21 @@ export const openResponseSchema = z.object({
 })
 
 export type OpenResponse = z.infer<typeof openResponseSchema>
+
+/**
+ * A stock item with its (possibly user-edited) opening quantities, shown in
+ * the editable opening-stock grid before the opening journal is saved.
+ * One entry per godown, optionally with batch details.
+ */
+export interface EditableStockItem {
+  itemId: number
+  itemName: string | null
+  godowns: Array<{
+    godownId: number
+    godownName: string | null
+    quantity: number
+    batchNo: string | null
+    mfgDate: string | null
+    expiryDate: string | null
+  }>
+}

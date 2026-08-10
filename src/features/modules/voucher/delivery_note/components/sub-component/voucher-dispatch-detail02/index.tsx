@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label"
 
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden"
 import { Loader } from "lucide-react"
-import { Suspense, useEffect, useMemo, useRef, useState } from "react"
+import { Suspense, useEffect, useRef, useState } from "react"
 import { useForm, type Resolver, type UseFormReturn } from "react-hook-form"
 import { toast } from "sonner"
 
@@ -16,13 +16,8 @@ import { zodResolver } from "@hookform/resolvers/zod"
 
 
 import { TransporterSelector } from "./transporter-selector"
-import type { StockUnit, StockUnitList } from "@/features/modules/stock_unit/data/schema"
-import { useSuspenseQuery } from "@tanstack/react-query"
-import { stockUnitQueryOptions } from "@/features/modules/stock_unit/data/queryOptions"
-import { lowerCase } from "lodash"
-
-import { DeliveryVehicleRouteSelector } from "./delivery-vehicle-route-selector"
 import { BillingPreferenceSelector } from "./billing-preference-selector"
+import { FreightCalculator } from "@/features/modules/voucher/freight/components/shared/freight-calculator"
 
 import { PrimaryButtons as CreateTransporterButton } from "@/features/modules/transporter/components/primary-buttons"
 import { PrimaryButtons as CreateVehicleButton } from "@/features/modules/delivery_vehicle/components/primary-buttons"
@@ -188,12 +183,11 @@ const VoucherDispatchDetail02 = (props: VoucherDispatchDetailFormProps) => {
 
                                     </div>
                                 ))}
-                                <div className="hidden">
-                                    {config.map((item) => item.key === 'receipt_details' && item.value && (
-                                        <FreightCalculator key={item.key}
-                                            form={voucherDispatchForm} />
-                                    ))}
-                                </div>
+                                {config.find((item) => item.key === 'freight_details')?.value && (
+                                    <div className="space-y-2 border-t-2 pt-2">
+                                        <FreightCalculator form={voucherDispatchForm} />
+                                    </div>
+                                )}
                             </div>
 
 
@@ -212,309 +206,6 @@ const VoucherDispatchDetail02 = (props: VoucherDispatchDetailFormProps) => {
 }
 
 export default VoucherDispatchDetail02
-
-type FreightCalculatorProps = {
-    form: UseFormReturn<VoucherDispatchDetailForm>
-}
-
-const FreightCalculator = ({ form }: FreightCalculatorProps) => {
-    const { data: stockUnits } = useSuspenseQuery(stockUnitQueryOptions());
-
-
-    const freightBasis = form.watch('freightBasis');
-    const rate = form.watch('rate');
-    const weight = form.watch('weight');
-    useEffect(() => {
-        if (!freightBasis) {
-            form.setValue('freightBasis', 'weight');
-        }
-        if (Number(rate) > 0 && Number(weight) > 0) {
-            const totalFare = Number(form.watch('rate')) * Number(form.watch('weight'));
-            form.setValue('totalFare', totalFare)
-            form.setValue('freightCharges', totalFare)
-        }
-    }, [freightBasis, rate, weight]);
-    return (
-        <div className="space-y-2 border-t-2 pt-2">
-            <div className="text-center underline">Freight Calculator based on {freightBasis!}  </div>
-            <div className="text-sm italic text-gray-500">Freight calculator details can be added from the main Freight Details section.</div>
-            <div className="hidden w-full  grid-cols-[1fr_2fr] gap-4 mb-2">
-
-                <div className="text-left ">
-                    <div>Transporter</div>
-                    <div className=""><TransporterSelector name='carrierName' form={form} /></div>
-                </div>
-                <div className="text-left">
-                    <div>Vehicle Number</div>
-                    <div className=""><DeliveryVehicleRouteSelector name='motorVehicleNo' form={form} /></div>
-                </div>
-
-            </div>
-
-
-            <div className="w-full grid grid-cols-3 gap-4 ">
-
-                <div className="">
-                    <div className="text-left ">Weight(Mt)</div>
-
-                    <WeightBox form={form} name='weight'
-                        stockUnits={stockUnits?.data || []}
-                        freightBasis={freightBasis!}
-                    /></div>
-                <div className="">
-                    <div className="text-left ">Rate(Per Mt)</div>
-
-                    <RateBox form={form} name='rate'
-                        stockUnits={stockUnits?.data || []}
-                        freightBasis={freightBasis!}
-                    /></div>
-                <div>
-                    <div className="text-left ">Total Fare(INR)</div>
-
-                    <Input type="text" value={
-                        ((Number(form.watch('totalFare')) || 0)).toFixed(2)} readOnly className="value-box flex justify-end items-end" />
-
-                </div>
-
-            </div>
-
-
-        </div >
-    )
-}
-type Boxprops = {
-    form: UseFormReturn<VoucherDispatchDetailForm>
-    name: keyof VoucherDispatchDetailForm
-    stockUnits: StockUnitList
-    freightBasis?: string
-
-}
-const WeightBox = (props: Boxprops) => {
-    const { form, name, stockUnits, freightBasis } = props;
-    const weightUnits = useMemo(() => {
-        return stockUnits.filter((su) => su.unitType === 'simple' && lowerCase(su.quantityType!) === freightBasis);
-    }, [stockUnits]);
-    const weightUnitId = form.watch('weightUnitId');
-    const weightUnit = useMemo(() => {
-        return weightUnits.find((su) => su.id === weightUnitId);
-    }, [weightUnitId, weightUnits]);
-
-    const [boxValue, setBoxValue] = useState<string>("")
-
-
-
-    // const baseUnit = useMemo(() => {
-    //     return conversionFactors?.find((cf: ConversionFactor) => (cf.tag === 'base' && cf.isBaseUnit))?.stockUnit || null;
-    // }, [conversionFactors]);
-    const baseUnitCode = weightUnit?.code || '';
-    const basenoOfDecimalPlaces = weightUnit?.noOfDecimalPlaces;
-
-
-    const parseQuantityWithUnit = (input: string): { quantity: number, unit: StockUnit | null } => {
-        // Extract number and unit parts (e.g., "15 m" -> ["15", "m"])
-        const match = input.trim().match(/^(\d+\.?\d*)\s*([a-zA-Z]+)?$/);
-
-        if (!match) {
-            return { quantity: 0, unit: null };
-        }
-        const [, quantityStr, unitStr] = match;
-
-        const quantity = Number.parseFloat(quantityStr);
-
-        return { quantity, unit: unitStr ?? weightUnit?.code };
-
-    };
-
-
-
-
-    const handleBlurOrEnter = () => {
-        const { quantity } = parseQuantityWithUnit(boxValue);
-
-        if (quantity === 0) {
-            form.setValue(name, 0, { shouldValidate: true });
-            setBoxValue("");
-            return;
-        }
-
-        let finalQuantity = quantity;
-
-        // If a unit string was provided, find the matching conversion factor
-
-
-        form.setValue(name, finalQuantity, { shouldValidate: true });
-        setBoxValue(`${finalQuantity.toFixed(basenoOfDecimalPlaces)} ${baseUnitCode}`);
-
-    };
-
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'Enter') {
-            handleBlurOrEnter();
-        }
-    };
-    const handleBlur = () => {
-        handleBlurOrEnter();
-    };
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const rawValue = e.target.value;
-        setBoxValue(rawValue);
-    };
-
-    const handleOnFocus = () => {
-        const value = Number(form.getValues(name))?.toFixed(basenoOfDecimalPlaces)
-        setBoxValue(Number(value) > 0 ? value?.toString() : '');
-    }
-
-
-    useEffect(() => {
-        const value = form.watch(name);
-
-
-        if (value) {
-            const boxValueStr = `${Number(value).toFixed(basenoOfDecimalPlaces)} ${baseUnitCode}`
-            setBoxValue(boxValueStr);
-        } else {
-            setBoxValue("");
-        }
-    }, [form.watch(name), baseUnitCode]);
-    return (
-        <>
-            <Input
-                type="text"
-
-                value={boxValue}
-                onFocus={handleOnFocus}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                onKeyDown={handleKeyDown}
-                placeholder="e.g., 15 Mt"
-                className="value-box flex justify-end items-end"
-            />
-            <FormInputField type="hidden" form={form}
-                label=''
-                gapClass="grid-cols-[0_1fr] gap-0"
-                name={name} />
-
-
-
-        </>
-    )
-
-}
-const RateBox = (props: Boxprops) => {
-    const { form, name, stockUnits, freightBasis } = props;
-    console.log(freightBasis)
-    const rateUnits = useMemo(() => {
-        return stockUnits.filter((su) => su.unitType === 'simple' && lowerCase(su.quantityType!) === freightBasis!);
-    }, [stockUnits]);
-    const rateUnitId = form.watch('rateUnitId');
-    const rateUnit = useMemo(() => {
-        return rateUnits.find((su) => su.id === rateUnitId);
-    }, [rateUnitId, rateUnits]);
-
-    const [boxValue, setBoxValue] = useState<string>("")
-
-
-
-    // const baseUnit = useMemo(() => {
-    //     return conversionFactors?.find((cf: ConversionFactor) => (cf.tag === 'base' && cf.isBaseUnit))?.stockUnit || null;
-    // }, [conversionFactors]);
-    const baseUnitCode = rateUnit?.code || '';
-    const basenoOfDecimalPlaces = 2;
-
-
-    const parseQuantityWithUnit = (input: string): { quantity: number, unit: StockUnit | null } => {
-        // Extract number and unit parts (e.g., "15 m" -> ["15", "m"])
-        const match = input.trim().match(/^(\d+\.?\d*)\s*([a-zA-Z]+)?$/);
-
-        if (!match) {
-            return { quantity: 0, unit: null };
-        }
-        const [, quantityStr, unitStr] = match;
-
-        const quantity = Number.parseFloat(quantityStr);
-
-        return { quantity, unit: unitStr ?? rateUnit?.code };
-
-    };
-
-
-
-
-    const handleBlurOrEnter = () => {
-        const { quantity } = parseQuantityWithUnit(boxValue);
-
-        if (quantity === 0) {
-            form.setValue(name, 0, { shouldValidate: true });
-            setBoxValue("");
-            return;
-        }
-
-        let finalQuantity = quantity;
-
-        // If a unit string was provided, find the matching conversion factor
-
-
-        form.setValue(name, finalQuantity, { shouldValidate: true });
-        setBoxValue(`${finalQuantity.toFixed(basenoOfDecimalPlaces)}/${baseUnitCode}`);
-
-
-    };
-
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'Enter') {
-            handleBlurOrEnter();
-        }
-    };
-    const handleBlur = () => {
-        handleBlurOrEnter();
-    };
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const rawValue = e.target.value;
-        setBoxValue(rawValue);
-    };
-
-    const handleOnFocus = () => {
-        const value = Number(form.getValues(name))?.toFixed(basenoOfDecimalPlaces)
-        setBoxValue(Number(value) > 0 ? value?.toString() : '');
-    }
-
-
-    useEffect(() => {
-        const value = form.watch(name);
-
-
-        if (value) {
-            const boxValueStr = `${Number(value).toFixed(basenoOfDecimalPlaces)}/${baseUnitCode}`
-            setBoxValue(boxValueStr);
-        } else {
-            setBoxValue("");
-        }
-    }, [form.watch(name), baseUnitCode]);
-    return (
-        <>
-            <Input
-                type="text"
-
-                value={boxValue}
-                onFocus={handleOnFocus}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                onKeyDown={handleKeyDown}
-                placeholder="e.g., 400/Mt"
-                className="value-box flex justify-end items-end"
-            />
-            <FormInputField type="hidden" form={form}
-                label=''
-                gapClass="grid-cols-[0_1fr] gap-0"
-                name={name} />
-
-
-
-        </>
-    )
-
-}
 
 type DateBoxProps = {
     form: UseFormReturn<VoucherDispatchDetailForm>,

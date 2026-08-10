@@ -4,6 +4,7 @@ import { type UseFormReturn } from "react-hook-form"
 import { useSuspenseQuery } from "@tanstack/react-query"
 import { lowerCase } from "lodash"
 import { stockUnitQueryOptions } from "@/features/modules/stock_unit/data/queryOptions"
+import { computeFare, computeNetAdjustment } from "../../../shared/freight-fare"
 import type { VoucherDispatchDetailForm } from "../../../data-schema/voucher-schema"
 import type { StockUnit, StockUnitList } from "@/features/modules/stock_unit/data/schema"
 import FormInputField from "@/components/form-input-field"
@@ -41,7 +42,7 @@ type FreightCalculatorProps = {
 
 export const FreightCalculator = ({ form }: FreightCalculatorProps) => {
   const { data: stockUnits } = useSuspenseQuery(stockUnitQueryOptions())
-  const [chargesOpen, setChargesOpen] = useState(false)
+  const [chargesOpen, setChargesOpen] = useState(true)
 
   const freightBasis = form.watch('freightBasis')
   const rate = form.watch('rate')
@@ -51,35 +52,40 @@ export const FreightCalculator = ({ form }: FreightCalculatorProps) => {
   const packingCharges = form.watch('packingCharges')
   const insuranceCharges = form.watch('insuranceCharges')
   const otherCharges = form.watch('otherCharges')
+  const discount = form.watch('discount')
 
-  const additionalChargesTotal = useMemo(() => {
-    return (Number(loadingCharges) || 0) +
-      (Number(unloadingCharges) || 0) +
-      (Number(packingCharges) || 0) +
-      (Number(insuranceCharges) || 0) +
-      (Number(otherCharges) || 0)
-  }, [loadingCharges, unloadingCharges, packingCharges, insuranceCharges, otherCharges])
+  // Net adjustment = total additional charges − discount — the same figure the
+  // shared FareBreakdown shows on the printed voucher (see ./shared/freight-fare).
+  const netAdjustment = computeNetAdjustment({
+    loadingCharges,
+    unloadingCharges,
+    packingCharges,
+    insuranceCharges,
+    otherCharges,
+    discount,
+  })
 
   useEffect(() => {
     if (!freightBasis) {
       form.setValue('freightBasis', 'weight')
     }
 
-    const baseFare = Number(rate) > 0 && Number(weight) > 0
-      ? Number(rate) * Number(weight)
-      : 0
-
-    const loading = Number(loadingCharges) || 0
-    const unloading = Number(unloadingCharges) || 0
-    const packing = Number(packingCharges) || 0
-    const insurance = Number(insuranceCharges) || 0
-    const other = Number(otherCharges) || 0
-
-    const total = baseFare + loading + unloading + packing + insurance + other
+    // Total fare = base fare + additional charges − discount
+    // (see computeFare in ./freight-fare for the exact math + rounding)
+    const { baseFare, totalFare } = computeFare({
+      rate,
+      weight,
+      loadingCharges,
+      unloadingCharges,
+      packingCharges,
+      insuranceCharges,
+      otherCharges,
+      discount,
+    })
 
     form.setValue('freightCharges', baseFare)
-    form.setValue('totalFare', total)
-  }, [freightBasis, rate, weight, loadingCharges, unloadingCharges, packingCharges, insuranceCharges, otherCharges])
+    form.setValue('totalFare', totalFare)
+  }, [freightBasis, rate, weight, loadingCharges, unloadingCharges, packingCharges, insuranceCharges, otherCharges, discount])
 
   return (
     <SectionCard icon={Calculator} title={`Freight Calculator (${freightBasis ?? 'weight'}-based)`}>
@@ -136,9 +142,9 @@ export const FreightCalculator = ({ form }: FreightCalculatorProps) => {
             <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
               Additional Charges
             </h4>
-            {!chargesOpen && additionalChargesTotal > 0 && (
+            {!chargesOpen && netAdjustment !== 0 && (
               <span className="inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-semibold text-blue-700 dark:bg-blue-900/40 dark:text-blue-400">
-                ₹{additionalChargesTotal.toFixed(2)}
+                ₹{netAdjustment.toFixed(2)}
               </span>
             )}
           </div>
@@ -159,6 +165,7 @@ export const FreightCalculator = ({ form }: FreightCalculatorProps) => {
             <FormInputField type='text' gapClass='sm:grid-cols-[130px_minmax(0,1fr)]' noLabel form={form} name='packingCharges' label='Packing (₹)' />
             <FormInputField type='text' gapClass='sm:grid-cols-[130px_minmax(0,1fr)]' noLabel form={form} name='insuranceCharges' label='Insurance (₹)' />
             <FormInputField type='text' gapClass='sm:grid-cols-[130px_minmax(0,1fr)]' noLabel form={form} name='otherCharges' label='Other (₹)' />
+            <FormInputField type='text' gapClass='sm:grid-cols-[130px_minmax(0,1fr)]' noLabel form={form} name='discount' label='Discount (₹)' />
             <FormInputField type='text' gapClass='sm:grid-cols-[130px_minmax(0,1fr)]' noLabel form={form} name='freightCharges' label='Freight Charges (₹)' />
           </div>
         </div>

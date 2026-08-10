@@ -85,8 +85,9 @@ export const Route = createFileRoute(
         ]
       : []
 
-    // Show query error inline
-    if (error && !reportData) {
+    // Show query error inline (even when stale data exists, so a failed
+    // refetch never goes silent now that the global error toast is suppressed)
+    if (error) {
       return (
         <div className="flex flex-col items-center justify-center h-64 gap-4">
           <div className="flex items-center gap-2 text-destructive">

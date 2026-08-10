@@ -77,6 +77,9 @@ export default defineConfig(({ mode }) => {
     test: {
       globals: true,
       environment: 'jsdom',
+      // e2e/ specs belong to Playwright (pnpm test:e2e), not Vitest — exclude
+      // them so `pnpm test` only collects unit/integration tests.
+      exclude: ['e2e/**', 'node_modules/**', 'dist/**'],
     },
     
 

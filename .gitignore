@@ -7,3 +7,9 @@ dist-ssr
 nul
 # pnpm is the standard package manager (see package.json packageManager field)
 package-lock.json
+# Playwright e2e test artifacts
+playwright-report/
+test-results/
+# Temporary one-off debug scripts
+_close-fy.mjs
+e2e-debug.mjs

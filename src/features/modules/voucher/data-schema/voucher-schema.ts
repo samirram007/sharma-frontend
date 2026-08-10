@@ -137,6 +137,7 @@ export const voucherDispatchDetailSchema = z.object({
     packingCharges: z.coerce.number().nullish(),
     insuranceCharges: z.coerce.number().nullish(),
     otherCharges: z.coerce.number().nullish(),
+    discount: z.coerce.number().nullish(),
     freightCharges: z.coerce.number().nullish(),
     totalFare: z.coerce.number().nullish(),
     billingPreference: billingPreferenceSchema.nullish(),
@@ -171,6 +172,9 @@ export const voucherSchema = z.object({
     referenceDate: z.coerce.date().nullish(),
     voucherTypeId: z.number().int(),
     voucherType: z.lazy(() => voucherTypeSchema.nullish()),
+    // Returned by the backend VoucherResource (fiscal_year_id) — the opening
+    // stock screens rely on it for the one-voucher-per-fiscal-year rule.
+    fiscalYearId: z.number().int().nullish(),
     module: z.string().nullish(),
     stockJournalId: z.number().int().nullish(),
     stockJournal: z.lazy(() => stockJournalSchema.nullish()),

@@ -33,6 +33,24 @@ export const runningBalanceTransactionSchema = z.object({
         inwardQuantity: z.number(),
         outwardQuantity: z.number(),
         netQuantity: z.number(),
+        // Per-godown batch/serial detail lines (e.g. SKADJ physical-count
+        // adjustments) — returned by the backend getRunningBalance() as
+        // camelCased detailLines.
+        detailLines: z
+          .array(
+            z.object({
+              batchNo: z.string().nullable(),
+              serialNo: z.string().nullable(),
+              mfgDate: z.string().nullable(),
+              expiryDate: z.string().nullable(),
+              movementType: z.string(),
+              quantity: z.number(),
+              rate: z.number().nullable(),
+              amount: z.number().nullable(),
+              remarks: z.string().nullable(),
+            }),
+          )
+          .optional(),
       }),
     )
     .optional(),

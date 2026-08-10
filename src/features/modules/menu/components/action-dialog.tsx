@@ -59,6 +59,7 @@ export function ActionDialog({ currentRow, open, onOpenChange }: Props) {
           status: 'active',
           isVisible: true,
           isGroup: false,
+          isTopMenu: false,
           description: '',
           isEdit,
         },
@@ -118,9 +119,10 @@ export function ActionDialog({ currentRow, open, onOpenChange }: Props) {
                   ]}
                 />
               </div>
-              <div className='grid grid-cols-2 gap-4'>
+              <div className='grid grid-cols-3 gap-4'>
                 <FormInputField type='checkbox' form={form} name='isVisible' label='Visible' />
                 <FormInputField type='checkbox' form={form} name='isGroup' label='Is Group' />
+                <FormInputField type='checkbox' form={form} name='isTopMenu' label='Top Menu' />
               </div>
               <FormInputField type='textarea' form={form} name='description' label='Description (optional)' />
             </form>
