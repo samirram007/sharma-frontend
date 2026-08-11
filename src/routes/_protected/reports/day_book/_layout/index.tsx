@@ -6,6 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
 import { Loader } from 'lucide-react';
 import { useState, useCallback, useRef } from 'react';
+import { useLocalStorage } from '@/hooks/use-local-storage';
 import type { SortingState } from '@tanstack/react-table';
 
 export const Route = createFileRoute(
@@ -13,10 +14,7 @@ export const Route = createFileRoute(
 )({
   component: () => {
     const [page, setPage] = useState(1)
-    const [perPage, setPerPage] = useState(() => {
-      const saved = localStorage.getItem('daybook_per_page')
-      return saved ? Number(saved) : 10
-    })
+    const [perPage, setPerPage] = useLocalStorage<number>('daybook_per_page', 10)
     const [debouncedSearch, setDebouncedSearch] = useState('')
     const [voucherTypeIds, setVoucherTypeIds] = useState<string[]>([])
     const [billingPreferences, setBillingPreferences] = useState<string[]>([])
@@ -43,9 +41,8 @@ export const Route = createFileRoute(
 
     const handlePageSizeChange = useCallback((newSize: number) => {
       setPerPage(newSize)
-      localStorage.setItem('daybook_per_page', String(newSize))
       setPage(1)
-    }, [])
+    }, [setPerPage])
 
     const handleSearchChange = useCallback((value: string) => {
       if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current)

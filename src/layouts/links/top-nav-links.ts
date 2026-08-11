@@ -57,6 +57,14 @@ export const topNavLinks: TopNavLink[] = [
         disabled: true,
     },
     {
+        title: 'Conversion',
+        href: '/transactions/vouchers/conversion_journal',
+        icon: resolveIcon('ClipboardType'),
+        visible: true,
+        isActive: false,
+        disabled: true,
+    },
+    {
         title: 'Freight',
         href: '/transactions/freight',
         icon: resolveIcon('TruckDelivery'),

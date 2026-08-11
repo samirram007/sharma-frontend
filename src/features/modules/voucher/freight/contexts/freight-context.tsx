@@ -1,8 +1,27 @@
-import React, { useState, useCallback, useEffect } from 'react'
+import React, { useState, useCallback } from 'react'
+import { useLocalStorage } from '@/hooks/use-local-storage'
 import type { StockSummarySchema } from '../../stock_summary/data/schema'
 import useDialogState from '@/core/hooks/use-dialog-state'
 
 type ConfigItem = { key: string, value: boolean | string | number }
+
+const CONFIG_STORAGE_KEY = 'dispatchSectionConfig'
+
+const defaultConfig: Array<ConfigItem> = [
+  { key: 'order_details', value: false },
+  { key: 'transport_details', value: true },
+  { key: 'receipt_details', value: true },
+  { key: 'freight_details', value: true },
+  { key: 'freight_method', value: 2 },
+]
+
+// Merge stored entries with the defaults — stored values win for known keys,
+// defaults fill in any keys absent from storage (e.g. newly added sections),
+// and unknown stored keys are dropped.
+const deserializeConfig = (stored: unknown): Array<ConfigItem> => {
+  const parsed = Array.isArray(stored) ? (stored as Array<ConfigItem>) : []
+  return defaultConfig.map((def) => parsed.find((p) => p.key === def.key) ?? def)
+}
 
 type FreightDialogType = 'invite' | 'add' | 'edit' | 'delete'
 
@@ -25,47 +44,17 @@ interface Props {
 export default function FreightProvider({ children }: Props) {
   const [open, setOpen] = useDialogState<FreightDialogType>(null)
   const [currentRow, setCurrentRow] = useState<StockSummarySchema | null>(null)
-  const CONFIG_STORAGE_KEY = 'dispatchSectionConfig'
-
-  const defaultConfig: Array<ConfigItem> = [
-    { key: 'order_details', value: false },
-    { key: 'transport_details', value: true },
-    { key: 'receipt_details', value: true },
-    { key: 'freight_details', value: true },
-    { key: 'freight_method', value: 2 },
-  ]
-
-  const [config, setConfig] = useState<Array<ConfigItem>>(() => {
-    try {
-      const stored = localStorage.getItem(CONFIG_STORAGE_KEY)
-      if (stored) {
-        const parsed = JSON.parse(stored) as Array<ConfigItem>
-        // Merge with defaults — keep any new keys that don't exist in stored
-        const merged = defaultConfig.map(
-          (def) => parsed.find((p) => p.key === def.key) ?? def
-        )
-        return merged
-      }
-    } catch {
-      // localStorage unavailable or corrupt — fall through to defaults
-    }
-    return defaultConfig
-  })
+  const [config, setConfig] = useLocalStorage<Array<ConfigItem>>(
+    CONFIG_STORAGE_KEY,
+    defaultConfig,
+    { deserialize: deserializeConfig },
+  )
 
   const updateConfig = useCallback((key: string, value: boolean | string | number) => {
     setConfig(prev => prev.map(item =>
       item.key === key ? { ...item, value } : item
     ))
-  }, [])
-
-  // Persist config to localStorage whenever it changes
-  useEffect(() => {
-    try {
-      localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify(config))
-    } catch {
-      // silently ignore storage errors
-    }
-  }, [config])
+  }, [setConfig])
 
   return (
     <FreightContext.Provider value={{ config, updateConfig, open, setOpen, currentRow, setCurrentRow, keyName: "day_books" }}>
@@ -74,7 +63,6 @@ export default function FreightProvider({ children }: Props) {
   )
 }
 
-// eslint-disable-next-line react-refresh/only-export-components
 export const useFreight = () => {
   const freightContext = React.useContext(FreightContext)
 

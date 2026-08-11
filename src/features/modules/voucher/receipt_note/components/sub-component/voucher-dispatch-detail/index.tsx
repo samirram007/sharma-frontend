@@ -1,5 +1,6 @@
 import { Calculator, FileText, Info, LayoutGrid, List, Loader, MapPin, Settings, Truck } from "lucide-react"
 import { Suspense, useEffect, useRef, useState } from "react"
+import { useLocalStorage } from "@/hooks/use-local-storage"
 import { useForm, useFormContext } from "react-hook-form"
 import { toast } from "sonner"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -17,54 +18,43 @@ import { Switch } from "@/components/ui/switch"
 import { SectionCard, FreightCalculator, DateBox } from "@/features/modules/voucher/freight/components/shared/freight-calculator"
 
 
+type DispatchSectionConfig = Array<{ key: string, value: boolean }>
+
+const CONFIG_STORAGE_KEY = 'dispatchSectionConfigReceipt';
+
+const defaultConfig: DispatchSectionConfig = [
+    { key: 'order_details', value: false },
+    { key: 'transport_details', value: true },
+    { key: 'receipt_details', value: true },
+    { key: 'freight_details', value: true },
+];
+
+// Merge stored entries with the defaults — stored values win for known keys,
+// defaults fill in any keys absent from storage (e.g. newly added sections),
+// and unknown stored keys are dropped.
+const deserializeConfig = (stored: unknown): DispatchSectionConfig => {
+    const parsed = Array.isArray(stored) ? (stored as DispatchSectionConfig) : [];
+    return defaultConfig.map((def) => parsed.find((p) => p.key === def.key) ?? def);
+};
+
+
 const VoucherDispatchDetail = () => {
     const dispatchRef = useRef<HTMLDivElement>(null);
     const form = useFormContext<ReceiptNoteForm>();
 
     const [open, onOpenChange] = useState(false);
-    const [viewMode, setViewMode] = useState<'tabbed' | 'single'>(
-        () => (localStorage.getItem('dispatchViewMode') as 'tabbed' | 'single') || 'tabbed'
+    const [viewMode, setViewMode] = useLocalStorage<'tabbed' | 'single'>('dispatchViewMode', 'tabbed');
+    const [config, setConfig] = useLocalStorage<DispatchSectionConfig>(
+        CONFIG_STORAGE_KEY,
+        defaultConfig,
+        { deserialize: deserializeConfig },
     );
-    const CONFIG_STORAGE_KEY = 'dispatchSectionConfigReceipt';
-
-    const defaultConfig: Array<{ key: string, value: boolean }> = [
-        { key: 'order_details', value: false },
-        { key: 'transport_details', value: true },
-        { key: 'receipt_details', value: true },
-        { key: 'freight_details', value: true },
-    ];
-
-    const [config, setConfig] = useState<Array<{ key: string, value: boolean }>>(() => {
-        try {
-            const stored = localStorage.getItem(CONFIG_STORAGE_KEY);
-            if (stored) {
-                const parsed = JSON.parse(stored) as Array<{ key: string, value: boolean }>;
-                // Merge with defaults — keep any new keys that don't exist in stored
-                const merged = defaultConfig.map(
-                    (def) => parsed.find((p) => p.key === def.key) ?? def
-                );
-                return merged;
-            }
-        } catch {
-            // localStorage unavailable or corrupt — fall through to defaults
-        }
-        return defaultConfig;
-    });
 
     const updateConfig = (key: string, value: boolean) => {
         setConfig(prev => prev.map(item =>
             item.key === key ? { ...item, value } : item
         ))
     }
-
-    // Persist config to localStorage whenever it changes
-    useEffect(() => {
-        try {
-            localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify(config));
-        } catch {
-            // silently ignore storage errors
-        }
-    }, [config]);
 
     const gapClass01 = 'sm:grid-cols-[140px_minmax(0,1fr)]';
     const gapClass02 = 'sm:grid-cols-[180px_minmax(0,1fr)]';
@@ -80,10 +70,6 @@ const VoucherDispatchDetail = () => {
         toast.message("Dispatch details updated")
         onOpenChange(false)
     }
-
-    useEffect(() => {
-        localStorage.setItem('dispatchViewMode', viewMode);
-    }, [viewMode]);
 
     // Sync parent → child form values
     useEffect(() => {

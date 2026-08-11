@@ -1,5 +1,6 @@
 import { fonts } from '@/config/fonts'
-import React, { createContext, useContext, useEffect, useState } from 'react'
+import { useLocalStorage } from '@/hooks/use-local-storage'
+import React, { createContext, useContext, useEffect } from 'react'
 
 type Font = (typeof fonts)[number]
 
@@ -13,10 +14,15 @@ const FontContext = createContext<FontContextType | undefined>(undefined)
 export const FontProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [font, _setFont] = useState<Font>(() => {
-    const savedFont = localStorage.getItem('font')
-    return fonts.includes(savedFont as Font) ? (savedFont as Font) : fonts[0]
+  const [savedFont, setSavedFont] = useLocalStorage<string>('font', fonts[0], {
+    raw: true,
   })
+  // Validate the stored value against the configured font list so an outdated
+  // localStorage value can never escape the provider.
+  const font: Font = fonts.includes(savedFont as Font)
+    ? (savedFont as Font)
+    : fonts[0]
+  const setFont = (nextFont: Font) => setSavedFont(nextFont)
 
   useEffect(() => {
     const applyFont = (font: string) => {
@@ -30,15 +36,9 @@ export const FontProvider: React.FC<{ children: React.ReactNode }> = ({
     applyFont(font)
   }, [font])
 
-  const setFont = (font: Font) => {
-    localStorage.setItem('font', font)
-    _setFont(font)
-  }
-
   return <FontContext value={{ font, setFont }}>{children}</FontContext>
 }
 
-// eslint-disable-next-line react-refresh/only-export-components
 export const useFont = () => {
   const context = useContext(FontContext)
   if (!context) {

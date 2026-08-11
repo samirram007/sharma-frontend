@@ -6,6 +6,7 @@ import { useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { Loader, AlertTriangle, RefreshCw } from 'lucide-react'
 import { useState, useCallback, useRef } from 'react'
+import { useLocalStorage } from '@/hooks/use-local-storage'
 import type { SortingState } from '@tanstack/react-table'
 import { Button } from '@/components/ui/button'
 import { AxiosError } from 'axios'
@@ -15,10 +16,7 @@ export const Route = createFileRoute(
 )({
   component: () => {
     const [page, setPage] = useState(1)
-    const [perPage, setPerPage] = useState(() => {
-      const saved = localStorage.getItem('receipt_note_report_per_page')
-      return saved ? Number(saved) : 10
-    })
+    const [perPage, setPerPage] = useLocalStorage<number>('receipt_note_report_per_page', 10)
     const [debouncedSearch, setDebouncedSearch] = useState('')
     const [sortBy, setSortBy] = useState('')
     const [sortOrder, setSortOrder] = useState('')
@@ -36,9 +34,8 @@ export const Route = createFileRoute(
     const handlePageChange = useCallback((newPage: number) => setPage(newPage), [])
     const handlePageSizeChange = useCallback((newSize: number) => {
       setPerPage(newSize)
-      localStorage.setItem('receipt_note_report_per_page', String(newSize))
       setPage(1)
-    }, [])
+    }, [setPerPage])
 
     const handleSearchChange = useCallback((value: string) => {
       if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current)

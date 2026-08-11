@@ -4,10 +4,46 @@ export const PRINT_CSS_STATIC = `
 `
 
 export const PAPER_SIZES = [
-  { id: 'a5-landscape', label: 'A5 Landscape', pageSize: 'A5 landscape', margin: '10mm', fontSize: '11px', sectionGap: '7mm', headerPadding: '2.5mm 3.5mm', bodyPadding: '3mm 3.5mm' },
-  { id: 'a4-landscape', label: 'A4 Landscape', pageSize: 'A4 landscape', margin: '8mm', fontSize: '11px', sectionGap: '5mm', headerPadding: '3mm 4mm', bodyPadding: '3mm 4mm' },
-  { id: 'a5-portrait', label: 'A5 Portrait', pageSize: 'A5 portrait', margin: '6mm', fontSize: '9px', sectionGap: '4mm', headerPadding: '2mm 3mm', bodyPadding: '2.5mm 3mm' },
-  { id: 'a4-portrait', label: 'A4 Portrait', pageSize: 'A4 portrait', margin: '10mm', fontSize: '11px', sectionGap: '6mm', headerPadding: '3mm 4mm', bodyPadding: '3mm 4mm' },
+  {
+    id: 'a5-landscape',
+    label: 'A5 Landscape',
+    pageSize: 'A5 landscape',
+    margin: '10mm',
+    fontSize: '11px',
+    sectionGap: '4mm',
+    headerPadding: '2.5mm 3.5mm',
+    bodyPadding: '3mm 3.5mm',
+  },
+  {
+    id: 'a4-landscape',
+    label: 'A4 Landscape',
+    pageSize: 'A4 landscape',
+    margin: '8mm',
+    fontSize: '11px',
+    sectionGap: '3mm',
+    headerPadding: '3mm 4mm',
+    bodyPadding: '3mm 4mm',
+  },
+  {
+    id: 'a5-portrait',
+    label: 'A5 Portrait',
+    pageSize: 'A5 portrait',
+    margin: '6mm',
+    fontSize: '9px',
+    sectionGap: '2.5mm',
+    headerPadding: '2mm 3mm',
+    bodyPadding: '2.5mm 3mm',
+  },
+  {
+    id: 'a4-portrait',
+    label: 'A4 Portrait',
+    pageSize: 'A4 portrait',
+    margin: '10mm',
+    fontSize: '11px',
+    sectionGap: '3.5mm',
+    headerPadding: '3mm 4mm',
+    bodyPadding: '3mm 4mm',
+  },
 ] as const
 
 export type PaperSizeId = (typeof PAPER_SIZES)[number]['id']
@@ -204,6 +240,8 @@ export function buildPrintCss(paperSizeId: PaperSizeId): string {
         color: #b91c1c;
         line-height: 1.3;
       }
-    ` + getPaperOverrides(paperSizeId) + PRINT_CSS_STATIC
+    ` +
+    getPaperOverrides(paperSizeId) +
+    PRINT_CSS_STATIC
   )
 }

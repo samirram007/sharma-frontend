@@ -1,10 +1,14 @@
-import { Calculator, ChevronDown, IndianRupee, PackageOpen, Weight } from "lucide-react"
+import { BadgePercent, Calculator, ChevronDown, IndianRupee, PackageOpen, ShieldCheck, Weight } from "lucide-react"
 import { useEffect, useMemo, useState } from "react"
 import { type UseFormReturn } from "react-hook-form"
 import { useSuspenseQuery } from "@tanstack/react-query"
 import { lowerCase } from "lodash"
 import { stockUnitQueryOptions } from "@/features/modules/stock_unit/data/queryOptions"
-import { computeFare, computeNetAdjustment } from "../../../shared/freight-fare"
+import {
+  computeFare,
+  computeNetAdjustment,
+  computeRateFromCharge,
+} from "../../../shared/freight-fare"
 import type { VoucherDispatchDetailForm } from "../../../data-schema/voucher-schema"
 import type { StockUnit, StockUnitList } from "@/features/modules/stock_unit/data/schema"
 import FormInputField from "@/components/form-input-field"
@@ -31,6 +35,47 @@ export const SectionCard = ({ icon: Icon, title, children, className }: {
     <div className="p-4">
       {children}
     </div>
+  </div>
+)
+
+// ─── ChargeField ────────────────────────────────────────────────────
+
+const ChargeField = ({ icon: Icon, label, name, form, className, readOnly }: {
+  icon: React.ElementType
+  label: string
+  name: keyof VoucherDispatchDetailForm
+  form: UseFormReturn<VoucherDispatchDetailForm>
+  className?: string
+  /** Auto-computed fields render read-only, mirroring the calculator box. */
+  readOnly?: boolean
+}) => (
+  <div className={cn('space-y-1.5 rounded-lg px-2 py-1.5 transition-all duration-200', className)}>
+    <Label className="flex items-center gap-1.5 text-sm font-medium text-slate-600 dark:text-slate-400">
+      <Icon className="h-3.5 w-3.5" />
+      {label}
+    </Label>
+    {readOnly ? (
+      <div className="relative">
+        <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+          <span className="text-sm text-slate-400">₹</span>
+        </div>
+        <Input
+          type="text"
+          value={(Number(form.watch(name)) || 0).toFixed(2)}
+          readOnly
+          className="h-10 rounded-lg border-slate-300 bg-slate-50 pl-7 text-right text-sm font-semibold text-blue-700 dark:border-slate-600 dark:bg-slate-800 dark:text-blue-400"
+        />
+      </div>
+    ) : (
+      <FormInputField
+        type='text'
+        noLabel
+        gapClass='grid-cols-1 sm:grid-cols-1'
+        form={form}
+        name={name}
+        label={label}
+      />
+    )}
   </div>
 )
 
@@ -64,6 +109,11 @@ export const FreightCalculator = ({ form }: FreightCalculatorProps) => {
     otherCharges,
     discount,
   })
+
+  // Fields with a non-zero value get a highlight so discount & other charges
+  // stand out in the calculator (mirrors the highlighted rows on the print).
+  const hasOtherCharge = Number(otherCharges) > 0
+  const hasDiscount = Number(discount) > 0
 
   useEffect(() => {
     if (!freightBasis) {
@@ -115,18 +165,13 @@ export const FreightCalculator = ({ form }: FreightCalculatorProps) => {
         <div className="space-y-1.5">
           <Label className="flex items-center gap-1.5 text-sm font-medium text-slate-600 dark:text-slate-400">
             <IndianRupee className="h-3.5 w-3.5" />
-            Total Fare (INR)
+            Freight Charges (₹)
           </Label>
           <div className="relative">
             <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
               <span className="text-sm text-slate-400">₹</span>
             </div>
-            <Input
-              type="text"
-              value={((Number(form.watch('totalFare')) || 0)).toFixed(2)}
-              readOnly
-              className="h-10 rounded-lg border-slate-300 bg-slate-50 pl-7 text-right text-sm font-semibold text-blue-700 dark:border-slate-600 dark:bg-slate-800 dark:text-blue-400"
-            />
+            <FreightChargesBox form={form} />
           </div>
         </div>
       </div>
@@ -156,17 +201,37 @@ export const FreightCalculator = ({ form }: FreightCalculatorProps) => {
         </button>
         <div
           className={`overflow-hidden transition-all duration-200 ${
-            chargesOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+            chargesOpen ? 'max-h-[40rem] opacity-100' : 'max-h-0 opacity-0'
           }`}
         >
-          <div className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2 lg:grid-cols-3">
-            <FormInputField type='text' gapClass='sm:grid-cols-[130px_minmax(0,1fr)]' noLabel form={form} name='loadingCharges' label='Loading (₹)' />
-            <FormInputField type='text' gapClass='sm:grid-cols-[130px_minmax(0,1fr)]' noLabel form={form} name='unloadingCharges' label='Unloading (₹)' />
-            <FormInputField type='text' gapClass='sm:grid-cols-[130px_minmax(0,1fr)]' noLabel form={form} name='packingCharges' label='Packing (₹)' />
-            <FormInputField type='text' gapClass='sm:grid-cols-[130px_minmax(0,1fr)]' noLabel form={form} name='insuranceCharges' label='Insurance (₹)' />
-            <FormInputField type='text' gapClass='sm:grid-cols-[130px_minmax(0,1fr)]' noLabel form={form} name='otherCharges' label='Other (₹)' />
-            <FormInputField type='text' gapClass='sm:grid-cols-[130px_minmax(0,1fr)]' noLabel form={form} name='discount' label='Discount (₹)' />
-            <FormInputField type='text' gapClass='sm:grid-cols-[130px_minmax(0,1fr)]' noLabel form={form} name='freightCharges' label='Freight Charges (₹)' />
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
+            <ChargeField icon={PackageOpen} label='Loading (₹)' name='loadingCharges' form={form} />
+            <ChargeField icon={PackageOpen} label='Unloading (₹)' name='unloadingCharges' form={form} />
+            <ChargeField icon={PackageOpen} label='Packing (₹)' name='packingCharges' form={form} />
+            <ChargeField icon={ShieldCheck} label='Insurance (₹)' name='insuranceCharges' form={form} />
+            <ChargeField
+              icon={PackageOpen}
+              label='Other (₹)'
+              name='otherCharges'
+              form={form}
+              className={cn(
+                hasOtherCharge
+                  ? 'bg-amber-50 ring-2 ring-amber-400/60 dark:bg-amber-950/30 dark:ring-amber-500/50'
+                  : 'hover:bg-muted/40'
+              )}
+            />
+            <ChargeField
+              icon={BadgePercent}
+              label='Discount (₹)'
+              name='discount'
+              form={form}
+              className={cn(
+                hasDiscount
+                  ? 'bg-rose-50 ring-2 ring-rose-400/60 dark:bg-rose-950/30 dark:ring-rose-500/50'
+                  : 'hover:bg-muted/40'
+              )}
+            />
+            <ChargeField icon={IndianRupee} label='Total Fare (INR)' name='totalFare' form={form} readOnly />
           </div>
         </div>
       </div>
@@ -372,6 +437,94 @@ export const RateBox = (props: Boxprops) => {
         gapClass="grid-cols-[0_1fr] gap-0"
         name={name} />
     </>
+  )
+}
+
+// ─── FreightChargesBox ─────────────────────────────────────────────
+
+/**
+ * Editable Freight Charges box. Typing a total freight charge derives the
+ * per-unit rate (freightCharges ÷ weight) so the calculator stays consistent —
+ * the derived rate flows back through computeFare into freightCharges and
+ * totalFare. Full-precision division keeps the round-trip exact.
+ */
+export const FreightChargesBox = ({
+  form,
+}: {
+  form: UseFormReturn<VoucherDispatchDetailForm>
+}) => {
+  const name = 'freightCharges'
+  const weight = form.watch('weight')
+  const [boxValue, setBoxValue] = useState('')
+
+  const commit = () => {
+    const parsed = Number(boxValue)
+
+    if (isNaN(parsed) || parsed <= 0) {
+      form.setValue(name, 0, { shouldValidate: true })
+      setBoxValue('')
+      return
+    }
+
+    // Focus + blur without editing — keep the current rate as-is.
+    if (parsed === Number(form.getValues(name))) {
+      setBoxValue(parsed.toFixed(2))
+      return
+    }
+
+    form.setValue(name, parsed, { shouldValidate: true })
+    const rate = computeRateFromCharge(parsed, weight)
+    if (rate > 0) {
+      form.setValue('rate', rate, { shouldValidate: true })
+    }
+    setBoxValue(parsed.toFixed(2))
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      commit()
+    }
+  }
+
+  const handleOnFocus = () => {
+    const value = Number(form.getValues(name))
+    setBoxValue(Number(value) > 0 ? String(value) : '')
+  }
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setBoxValue(e.target.value)
+  }
+
+  useEffect(() => {
+    const value = form.watch(name)
+    setBoxValue(Number(value) > 0 ? Number(value).toFixed(2) : '')
+  }, [form.watch(name)])
+
+  // If weight is entered *after* a manually-entered charge (rate couldn't be
+  // derived at commit time), re-derive the rate now — otherwise the
+  // calculator's recompute would wipe the charge (baseFare = 0 × rate).
+  useEffect(() => {
+    const charge = Number(form.getValues('freightCharges'))
+    const currentRate = Number(form.getValues('rate'))
+    if (charge > 0 && Number(weight) > 0 && !(currentRate > 0)) {
+      form.setValue('rate', computeRateFromCharge(charge, weight), {
+        shouldValidate: true,
+      })
+    }
+  }, [weight, form])
+
+  return (
+    <Input
+      type="text"
+      inputMode="decimal"
+      value={boxValue}
+      onFocus={handleOnFocus}
+      onChange={handleChange}
+      onBlur={commit}
+      onKeyDown={handleKeyDown}
+      placeholder="e.g., 6000"
+      className="h-10 rounded-lg border-slate-300 bg-white pl-7 text-right text-sm dark:border-slate-600 dark:bg-slate-900"
+    />
   )
 }
 

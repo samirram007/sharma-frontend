@@ -30,45 +30,18 @@ import {
   IconTrash,
 } from '@tabler/icons-react'
 import { useState, useMemo, useRef, useCallback, useEffect } from 'react'
+import { useLocalStorage } from '@/hooks/use-local-storage'
 import { toast } from 'sonner'
 import { exportMenuService, importMenuService } from './data/api'
 import { useQueryClient } from '@tanstack/react-query'
 
 // ── Search persistence helpers ──────────────────────────────────────────────
 
-const RECENT_KEY = 'menu-recent-searches'
-const FILTERS_KEY = 'menu-saved-filters'
 const MAX_RECENT = 8
 
 interface SavedFilter {
   name: string
   query: string
-}
-
-function loadRecent(): string[] {
-  try {
-    const raw = localStorage.getItem(RECENT_KEY)
-    return raw ? JSON.parse(raw) : []
-  } catch {
-    return []
-  }
-}
-
-function saveRecent(searches: string[]) {
-  localStorage.setItem(RECENT_KEY, JSON.stringify(searches.slice(0, MAX_RECENT)))
-}
-
-function loadFilters(): SavedFilter[] {
-  try {
-    const raw = localStorage.getItem(FILTERS_KEY)
-    return raw ? JSON.parse(raw) : []
-  } catch {
-    return []
-  }
-}
-
-function saveFilters(filters: SavedFilter[]) {
-  localStorage.setItem(FILTERS_KEY, JSON.stringify(filters))
 }
 
 interface MenuProps {
@@ -107,23 +80,26 @@ function TreeViewSection() {
     const searchRef = useRef<HTMLDivElement>(null)
 
     // ── Recent searches ────────────────────────────────────────────
-    const [recentSearches, setRecentSearches] = useState<string[]>(loadRecent)
-    const [savedFilters, setSavedFilters] = useState<SavedFilter[]>(loadFilters)
+    const [recentSearches, setRecentSearches] = useLocalStorage<string[]>(
+        'menu-recent-searches',
+        [],
+    )
+    const [savedFilters, setSavedFilters] = useLocalStorage<SavedFilter[]>(
+        'menu-saved-filters',
+        [],
+    )
 
     const pushRecent = useCallback((query: string) => {
         const trimmed = query.trim()
         if (!trimmed) return
-        setRecentSearches((prev) => {
-            const next = [trimmed, ...prev.filter((s) => s !== trimmed)].slice(0, MAX_RECENT)
-            saveRecent(next)
-            return next
-        })
-    }, [])
+        setRecentSearches((prev) =>
+            [trimmed, ...prev.filter((s) => s !== trimmed)].slice(0, MAX_RECENT),
+        )
+    }, [setRecentSearches])
 
     const clearRecent = useCallback(() => {
         setRecentSearches([])
-        saveRecent([])
-    }, [])
+    }, [setRecentSearches])
 
     // ── Saved filters ──────────────────────────────────────────────
 
@@ -133,13 +109,12 @@ function TreeViewSection() {
         const name = prompt('Name this filter:', trimmed)
         if (!name?.trim()) return
 
-        setSavedFilters((prev) => {
-            const next = [{ name: name.trim(), query: trimmed }, ...prev.filter((f) => f.name !== name.trim())]
-            saveFilters(next)
-            return next
-        })
+        setSavedFilters((prev) => [
+            { name: name.trim(), query: trimmed },
+            ...prev.filter((f) => f.name !== name.trim()),
+        ])
         toast.success(`Filter "${name}" saved`)
-    }, [searchQuery])
+    }, [searchQuery, setSavedFilters])
 
     const applyFilter = useCallback((query: string) => {
         setSearchQuery(query)
@@ -148,12 +123,8 @@ function TreeViewSection() {
     }, [pushRecent])
 
     const deleteFilter = useCallback((name: string) => {
-        setSavedFilters((prev) => {
-            const next = prev.filter((f) => f.name !== name)
-            saveFilters(next)
-            return next
-        })
-    }, [])
+        setSavedFilters((prev) => prev.filter((f) => f.name !== name))
+    }, [setSavedFilters])
 
     // Close search dropdown on outside click
     useEffect(() => {

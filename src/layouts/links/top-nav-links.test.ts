@@ -25,8 +25,23 @@ describe('filterTopNavLinks', () => {
         expect(titles).toContain('Freight')
         expect(titles).not.toContain('Received(GRN)')
         expect(titles).not.toContain('Delivery Note')
+        expect(titles).not.toContain('Conversion')
         // Day Book is marked visible: false in the source data
         expect(titles).not.toContain('Day Book')
+    })
+
+    it('keeps Received(GRN), Delivery Note, and Conversion when their routes are allowed', () => {
+        const links = filterTopNavLinks(topNavLinks, [
+            '/transactions/vouchers/receipt_note',
+            '/transactions/vouchers/delivery_note',
+            '/transactions/vouchers/conversion_journal',
+        ])
+        const titles = links.map((link) => link.title)
+
+        expect(titles).toContain('Received(GRN)')
+        expect(titles).toContain('Delivery Note')
+        expect(titles).toContain('Conversion')
+        expect(titles).not.toContain('Freight')
     })
 
     it('drops the Reports submenu entirely when no report link is allowed', () => {

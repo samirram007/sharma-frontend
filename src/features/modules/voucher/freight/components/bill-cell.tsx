@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { lowerCase } from 'lodash'
 import { formSchema } from '../data/schema'
 import { useFreightMutation } from '../data/queryOptions'
+import { computeFare } from '../../shared/freight-fare'
 import { useFreight } from '../contexts/freight-context'
 import { voucherDispatchDefaultValues } from '../../delivery_note/data/data'
 import VoucherDispatchDetail01 from './voucher-dispatch-detail01'
@@ -49,6 +50,12 @@ export default function BillCell({ row }: CellContext<VoucherSchema, unknown>) {
       freightBasis: data.voucherDispatchDetail?.freightBasis || 'weight',
       rate: data.voucherDispatchDetail?.rate || 0,
       rateUnitId: data.voucherDispatchDetail?.rateUnitId || 16,
+      loadingCharges: data.voucherDispatchDetail?.loadingCharges || 0,
+      unloadingCharges: data.voucherDispatchDetail?.unloadingCharges || 0,
+      packingCharges: data.voucherDispatchDetail?.packingCharges || 0,
+      insuranceCharges: data.voucherDispatchDetail?.insuranceCharges || 0,
+      otherCharges: data.voucherDispatchDetail?.otherCharges || 0,
+      discount: data.voucherDispatchDetail?.discount || 0,
       freightCharges: data.voucherDispatchDetail?.freightCharges || 0,
       totalFare: data.voucherDispatchDetail?.totalFare || 0,
       dispatchSourceId:
@@ -62,28 +69,80 @@ export default function BillCell({ row }: CellContext<VoucherSchema, unknown>) {
   const weight = form.watch('weight')
   const freightBasis = form.watch('freightBasis')
   const rate = form.watch('rate')
+  const loadingCharges = form.watch('loadingCharges')
+  const unloadingCharges = form.watch('unloadingCharges')
+  const packingCharges = form.watch('packingCharges')
+  const insuranceCharges = form.watch('insuranceCharges')
+  const otherCharges = form.watch('otherCharges')
+  const discount = form.watch('discount')
 
+  // Total fare = base fare (weight/volume/distance × rate) + additional
+  // charges − discount — mirrors computeFare in shared/freight-fare (rounded
+  // to 2dp, floored at 0) so the Freight Bill and its print match the
+  // Dispatch Details calculator exactly.
   useEffect(() => {
-    if (lowerCase(freightBasis) === 'distance') {
-      const totalFare = distance! * rate
-      form.setValue('totalFare', totalFare)
-      form.setValue('freightCharges', totalFare)
-    } else if (lowerCase(freightBasis) === 'weight') {
-      const totalFare = weight! * rate
-      form.setValue('totalFare', totalFare)
-      form.setValue('freightCharges', totalFare)
-    } else if (lowerCase(freightBasis) === 'volume') {
-      const totalFare = volume! * rate
-      form.setValue('totalFare', totalFare)
-      form.setValue('freightCharges', totalFare)
-    }
-  }, [distance, weight, volume, freightBasis, rate, form])
+    const base = lowerCase(freightBasis) === 'distance'
+      ? (Number(distance) || 0) * (Number(rate) || 0)
+      : lowerCase(freightBasis) === 'volume'
+        ? (Number(volume) || 0) * (Number(rate) || 0)
+        : (Number(weight) || 0) * (Number(rate) || 0)
+
+    const additional =
+      (Number(loadingCharges) || 0) + (Number(unloadingCharges) || 0) +
+      (Number(packingCharges) || 0) + (Number(insuranceCharges) || 0) +
+      (Number(otherCharges) || 0)
+
+    // Weight basis: computeFare is authoritative (base = weight × rate and it
+    // floors at 0 + rounds to 2dp). Distance/volume: same formula with that
+    // basis's multiplier, since computeFare derives its base from weight.
+    const totalFare = lowerCase(freightBasis) === 'weight'
+      ? computeFare({ rate, weight, loadingCharges, unloadingCharges, packingCharges, insuranceCharges, otherCharges, discount }).totalFare
+      : Math.max(0, base + additional - (Number(discount) || 0))
+
+    form.setValue('freightCharges', base)
+    form.setValue('totalFare', Math.round(totalFare * 100) / 100)
+  }, [distance, weight, volume, freightBasis, rate, loadingCharges, unloadingCharges, packingCharges, insuranceCharges, otherCharges, discount, form])
+
+  // When the row's dispatch details change — e.g. after saving via the "D"
+  // dialog (which invalidates + refetches the grid) — sync the freight bill
+  // form so the Freight Bill and its print use the freshly saved fare,
+  // additional charges and discount instead of stale mount-time values.
+  useEffect(() => {
+    const dd = data.voucherDispatchDetail
+    if (!dd) return
+
+    const sync: Array<{ field: keyof FreightForm; value: string | number }> = []
+    if (dd.carrierName) sync.push({ field: 'transporter', value: dd.carrierName })
+    if (dd.motorVehicleNo) sync.push({ field: 'vehicleNumber', value: dd.motorVehicleNo })
+    if (dd.source) sync.push({ field: 'source', value: dd.source })
+    if (dd.destination) sync.push({ field: 'destination', value: dd.destination })
+    if (dd.weight != null) sync.push({ field: 'weight', value: Number(dd.weight) })
+    if (dd.rate != null) sync.push({ field: 'rate', value: Number(dd.rate) })
+    if (dd.loadingCharges != null) sync.push({ field: 'loadingCharges', value: Number(dd.loadingCharges) })
+    if (dd.unloadingCharges != null) sync.push({ field: 'unloadingCharges', value: Number(dd.unloadingCharges) })
+    if (dd.packingCharges != null) sync.push({ field: 'packingCharges', value: Number(dd.packingCharges) })
+    if (dd.insuranceCharges != null) sync.push({ field: 'insuranceCharges', value: Number(dd.insuranceCharges) })
+    if (dd.otherCharges != null) sync.push({ field: 'otherCharges', value: Number(dd.otherCharges) })
+    if (dd.discount != null) sync.push({ field: 'discount', value: Number(dd.discount) })
+
+    if (sync.length === 0) return
+
+    const current = form.getValues()
+    const changed = sync.some(
+      ({ field, value }) => Number(current[field] ?? 0) !== Number(value),
+    )
+    if (!changed) return
+
+    sync.forEach(({ field, value }) => form.setValue(field as any, value))
+  }, [data.voucherDispatchDetail, form])
 
   const handleFreightBill = () => {
     const formData = form.getValues()
 
     // Build dispatchDetail from current form values so the print validation
-    // uses what the user actually entered — not stale row data
+    // uses what the user actually entered — not stale row data. Includes the
+    // additional charges + discount so the FareBreakdown on the print shows
+    // the full breakdown (weight × rate + charges − discount).
     setPrintDispatchDetail({
       carrierName: formData.transporter,
       motorVehicleNo: formData.vehicleNumber,
@@ -92,7 +151,18 @@ export default function BillCell({ row }: CellContext<VoucherSchema, unknown>) {
       weight: formData.weight,
       freightBasis: formData.freightBasis,
       rate: formData.rate,
+      loadingCharges: formData.loadingCharges,
+      unloadingCharges: formData.unloadingCharges,
+      packingCharges: formData.packingCharges,
+      insuranceCharges: formData.insuranceCharges,
+      otherCharges: formData.otherCharges,
+      discount: formData.discount,
+      freightCharges: formData.freightCharges,
       totalFare: formData.totalFare,
+      // Include the unit so the print header can show e.g. "23.000 Mt".
+      weightUnit: data.voucherDispatchDetail?.weightUnit,
+      weightUnitId: data.voucherDispatchDetail?.weightUnitId,
+      rateUnitId: data.voucherDispatchDetail?.rateUnitId,
     })
 
     saveFreight(formData, {

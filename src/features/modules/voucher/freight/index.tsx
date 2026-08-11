@@ -92,12 +92,12 @@ export default function Freight({ data: freightListSchema, isLoading, pagination
                     </h2>
                     <p className='text-xs text-muted-foreground sm:text-sm'>
                         {meta?.total !== undefined
-                          ? `${meta.total} delivery note${meta.total !== 1 ? 's' : ''} ${localFreightStatus === 'prepared' ? 'with freight bills' : localFreightStatus === 'all' ? 'found' : 'available for freight billing'}`
+                          ? `${meta.total} delivery note${meta.total !== 1 ? 's' : ''} ${localFreightStatus === 'prepared' ? 'with fare entered' : localFreightStatus === 'all' ? 'found' : 'awaiting fare entry'}`
                           : localFreightStatus === 'prepared'
-                            ? 'Delivery notes with freight bills'
+                            ? 'Delivery notes with fare entered'
                             : localFreightStatus === 'all'
                               ? 'All delivery notes'
-                              : 'Delivery notes awaiting freight billing'}
+                              : 'Delivery notes awaiting fare entry'}
                     </p>
                 </div>
                 <div className='flex items-center gap-2'>
@@ -124,10 +124,10 @@ export default function Freight({ data: freightListSchema, isLoading, pagination
                         {/* Description */}
                         <p className='mt-2 max-w-sm text-sm leading-relaxed text-muted-foreground'>
                             {localFreightStatus === 'prepared'
-                              ? 'No delivery notes with freight bills found in this period.'
+                              ? 'No delivery notes with fare entered found in this period.'
                               : localFreightStatus === 'all'
                                 ? 'No delivery notes found in this period.'
-                                : 'All delivery notes in this period have freight bills assigned. New delivery notes will appear here when ready for billing.'}
+                                : 'All delivery notes in this period have their fare entered. New delivery notes will appear here once their dispatch details are filled in.'}
                         </p>
                     </div>
                 ) : (

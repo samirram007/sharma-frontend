@@ -161,7 +161,7 @@ export function GridTable({
   const keyName = 'Day Book'
 
   const totalVouchers = paginationMeta?.total ?? 0
-  // Derive the visible record range client-side (backend now sends minimal meta only)
+  // Derive the visible record range client-side (from the paginator meta)
   const fromRecord = totalVouchers > 0 ? (currentPage - 1) * pageSize + 1 : 0
   const toRecord = totalVouchers > 0 ? Math.min(currentPage * pageSize, totalVouchers) : 0
 

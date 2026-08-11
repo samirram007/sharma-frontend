@@ -33,6 +33,31 @@ export function requirePermission(
 }
 
 /**
+ * Creates a reusable TanStack Router `beforeLoad` guard that checks if the
+ * authenticated user has ANY of the given permissions.
+ *
+ * Use for layout routes that aggregate several permission-gated pages
+ * (e.g. `/reports/freight/_layout` hosts both DELIVERY_NOTE_REPORT_MENU_VIEW
+ * and FREIGHT_REPORT_MENU_VIEW pages).
+ *
+ * @param permissions - Permission codes to check (e.g. ['DAYBOOK_MENU_VIEW', 'DAYBOOK_SELF_MENU_VIEW'])
+ * @param fallback - Optional redirect path when all permissions are missing (default: '/forbidden')
+ */
+export function requireAnyPermission(
+  permissions: string[],
+  fallback: string = '/forbidden',
+) {
+  return async ({ context }: { context: MyRouterContext }) => {
+    const hasAny = permissions.some((permission) =>
+      context.auth?.permissions?.includes(permission),
+    )
+    if (!hasAny) {
+      throw redirect({ to: fallback })
+    }
+  }
+}
+
+/**
  * Role codes allowed to create or edit opening stock vouchers.
  *
  * Opening stock is a one-time-per-fiscal-year setup entry: only super admin /

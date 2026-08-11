@@ -48,7 +48,7 @@ export const FreightPrintContent = (printData: PrintContentData) => {
             <span>Dl. No.:</span> <span className="underline decoration-dotted underline-offset-4 "> {printData?.referenceNo}</span>
           </div>
           <div className="flex justify-end gap-2">
-            <span>Dl. Date:</span> <span className="underline decoration-dotted underline-offset-4 "> {date_format(printData?.referenceDate!)}</span>
+            <span>Dl. Date:</span> <span className="underline decoration-dotted underline-offset-4 "> {printData?.referenceDate ? date_format(printData.referenceDate) : ''}</span>
           </div>
         </div>
         {/* Dispatch details live on the referenced delivery note — the freight
@@ -95,9 +95,6 @@ export const FreightPrintContent = (printData: PrintContentData) => {
           </div>
           <div className="mt-2 border-t-2 border-gray-900 pt-2">
             <FareBreakdown dispatchDetail={dispatchDetail} totalFare={totalFare} showNetAdjustment />
-          </div>
-          <div className="text-right">
-            Total:
           </div>
         </div>
         <div>

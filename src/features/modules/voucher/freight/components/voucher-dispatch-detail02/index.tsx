@@ -1,5 +1,6 @@
 import { Calculator, FileText, LayoutGrid, List, Loader, MapPin, Truck, Info, Settings } from "lucide-react"
 import { Suspense, useEffect, useRef, useState } from "react"
+import { useLocalStorage } from "@/hooks/use-local-storage"
 import { useForm, useWatch } from "react-hook-form"
 import { toast } from "sonner"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -40,9 +41,7 @@ const VoucherDispatchDetail02 = (props: VoucherDispatchDetailFormProps) => {
     const { config, updateConfig } = useFreight();
 
     const [open, onOpenChange] = useState(false);
-    const [viewMode, setViewMode] = useState<'tabbed' | 'single'>(
-        () => (localStorage.getItem('dispatchViewMode') as 'tabbed' | 'single') || 'tabbed'
-    );
+    const [viewMode, setViewMode] = useLocalStorage<'tabbed' | 'single'>('dispatchViewMode', 'tabbed');
     const gapClass01 = 'sm:grid-cols-[140px_minmax(0,1fr)]';
     const leftFieldClass = 'sm:grid-cols-[180px_minmax(0,1fr)]';
     const gapClass02 = leftFieldClass;
@@ -122,10 +121,11 @@ const VoucherDispatchDetail02 = (props: VoucherDispatchDetailFormProps) => {
         });
     }
     useEffect(() => {
-        localStorage.setItem('dispatchViewMode', viewMode);
-    }, [viewMode]);
+        // Never clobber in-dialog edits — e.g. a vehicle selection sets a
+        // rate/source that intentionally differ from the parent form. Sync
+        // only while the dialog is closed so reopening shows fresh data.
+        if (open) return;
 
-    useEffect(() => {
         const current = voucherDispatchForm.getValues();
 
         if (
@@ -150,7 +150,7 @@ const VoucherDispatchDetail02 = (props: VoucherDispatchDetailFormProps) => {
             rateUnitId,
             source,
         });
-    }, [deliveryNoteId, freightBasis, weight, weightUnitId, rate, rateUnitId, source]);
+    }, [deliveryNoteId, freightBasis, weight, weightUnitId, rate, rateUnitId, source, open]);
 
     return (
         <Suspense fallback={<Loader className="animate-spin" />}>

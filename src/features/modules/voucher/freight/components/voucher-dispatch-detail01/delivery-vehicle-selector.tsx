@@ -34,6 +34,7 @@ import { capitalizeAllWords } from "@/utils/removeEmptyStrings"
 
 
 import { deliveryRouteQueryOptions } from "@/features/modules/delivery_route/data/queryOptions"
+import { computeFare } from "../../../shared/freight-fare"
 
 
 
@@ -66,25 +67,36 @@ export const DeliveryVehicleSelector = ({ form, name }: Props) => {
             setOpen(true);
             return;
         }
-        const rateValue = selectedVehicle.rate;
-        const sourceValue = selectedVehicle.sourcePlace?.name;
-        const destinationValue = selectedVehicle.destinationPlace?.name;
+        // Fall back to the current form values so a vehicle without a
+        // configured rate/place never wipes what the user already entered.
+        const rateValue = selectedVehicle.rate ?? form.getValues('rate');
+        const sourceValue = selectedVehicle.sourcePlace?.name ?? form.getValues('source');
+        const destinationValue = selectedVehicle.destinationPlace?.name ?? form.getValues('destination');
 
 
-        // Atomic update
-        form.reset(
-            {
-                ...form.getValues(),
-                [name]: value,
-                rate: rateValue,
-                source: sourceValue,
-                destination: destinationValue,
-                freightCharges: 0,
-                totalFare: 0,
-                dispatchedThrough: 'Truck',
-            },
-            { keepDirty: true }
-        );
+        // Update only the fields that come from the selected vehicle. A full
+        // form.reset() here would wipe the freight calculation the user has
+        // already entered (rate, charges, total fare), so apply targeted
+        // updates and recompute the fare from the vehicle's rate — the
+        // Freight Calculator keeps it in sync when it is mounted.
+        form.setValue(name, value, { shouldDirty: true });
+        form.setValue('rate', rateValue, { shouldDirty: true });
+        form.setValue('source', sourceValue, { shouldDirty: true });
+        form.setValue('destination', destinationValue, { shouldDirty: true });
+        form.setValue('dispatchedThrough', 'Truck', { shouldDirty: true });
+
+        const { baseFare, totalFare } = computeFare({
+            rate: rateValue,
+            weight: form.getValues('weight'),
+            loadingCharges: form.getValues('loadingCharges'),
+            unloadingCharges: form.getValues('unloadingCharges'),
+            packingCharges: form.getValues('packingCharges'),
+            insuranceCharges: form.getValues('insuranceCharges'),
+            otherCharges: form.getValues('otherCharges'),
+            discount: form.getValues('discount'),
+        });
+        form.setValue('freightCharges', baseFare, { shouldDirty: true });
+        form.setValue('totalFare', totalFare, { shouldDirty: true });
 
         setValue(value);
         setOpen(false);

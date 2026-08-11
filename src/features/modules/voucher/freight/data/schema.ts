@@ -99,6 +99,12 @@ export const formSchema = z.object({
   freightBasis: z.string().min(1),
   rate: z.coerce.number().min(0),
   rateUnitId: z.number().int().positive(),
+  loadingCharges: z.coerce.number().min(0).nullish(),
+  unloadingCharges: z.coerce.number().min(0).nullish(),
+  packingCharges: z.coerce.number().min(0).nullish(),
+  insuranceCharges: z.coerce.number().min(0).nullish(),
+  otherCharges: z.coerce.number().min(0).nullish(),
+  discount: z.coerce.number().min(0).nullish(),
   freightCharges: z.coerce.number().min(0),
   totalFare: z.coerce.number().min(0),
   dispatchSourceId: z.number().int().positive().nullish(),
@@ -108,8 +114,8 @@ export const formSchema = z.object({
 export type FreightForm = z.infer<typeof formSchema>
 
 /**
- * Minimal pagination metadata returned by the API (SuccessCollection::paginationMeta).
- * Only the fields needed for server-side pagination are exposed.
+ * Pagination metadata returned by the API (Laravel's built-in paginator meta).
+ * Only the fields needed for server-side pagination are used by the frontend.
  */
 export interface PaginationMeta {
   current_page: number

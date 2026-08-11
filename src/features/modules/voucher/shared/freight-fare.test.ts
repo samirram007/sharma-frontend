@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { computeFare, computeNetAdjustment, type FareInputs } from './freight-fare'
+import {
+    computeFare,
+    computeNetAdjustment,
+    computeRateFromCharge,
+    type FareInputs,
+} from './freight-fare'
 import { buildChargeRows } from './fare-breakdown'
 
 describe('computeFare — Freight Calculator fare math', () => {
@@ -120,6 +125,37 @@ describe('computeNetAdjustment — FareBreakdown Net Adjustment math', () => {
         expect(
             computeNetAdjustment({ loadingCharges: '50', discount: '10' }),
         ).toBe(40)
+    })
+})
+
+describe('computeRateFromCharge — manual Freight Charges → Rate', () => {
+    it('derives the per-unit rate from a manually entered charge and weight', () => {
+        expect(computeRateFromCharge(6000, 15)).toBe(400)
+    })
+
+    it('round-trips exactly: rate × weight reproduces the entered charge', () => {
+        // Non-divisible case: the full-precision rate must not drift the fare.
+        const charge = 100
+        const weight = 3
+        const rate = computeRateFromCharge(charge, weight)
+        expect(rate * weight).toBeCloseTo(charge, 10)
+        expect(computeFare({ rate, weight }).baseFare).toBeCloseTo(charge, 10)
+    })
+
+    it('returns 0 when weight is missing or zero', () => {
+        expect(computeRateFromCharge(6000, 0)).toBe(0)
+        expect(computeRateFromCharge(6000, null)).toBe(0)
+        expect(computeRateFromCharge(6000, undefined)).toBe(0)
+    })
+
+    it('returns 0 when the charge is missing or zero', () => {
+        expect(computeRateFromCharge(0, 15)).toBe(0)
+        expect(computeRateFromCharge(null, 15)).toBe(0)
+        expect(computeRateFromCharge(undefined, 15)).toBe(0)
+    })
+
+    it('coerces string inputs', () => {
+        expect(computeRateFromCharge('6000', '15')).toBe(400)
     })
 })
 

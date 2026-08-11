@@ -22,10 +22,11 @@ export type FareDispatchDetail = {
  * - day_book + receipt print dialogs (`shared/print-content.tsx`)
  * - delivery note POS preview (`delivery_note/pos/components/pos-body.tsx`)
  *
- * Renders the charge rows (incl. the Freight Charges base), the red
- * "Less: Discount" deduction (only when a discount exists) and the bold
- * "Total Fare" row. Layout differs per surface, so `variant` picks the row
- * classes while the row *content* stays identical.
+ * Renders the bold "Total Fare" row at the top (mirroring the modal, where
+ * the calculator leads with the total), then the other charge rows, the red
+ * "Less: Discount" deduction (only when a discount exists) and finally the
+ * base "Freight Charges" row. Layout differs per surface, so `variant`
+ * picks the row classes while the row *content* stays identical.
  */
 
 export type FareChargeRow = {
@@ -87,6 +88,12 @@ export const FareBreakdown = ({
     [dispatchDetail],
   )
 
+  // The base Freight Charges row prints at the END of the breakdown, mirroring
+  // the modal where the calculator leads with the base fare and the additional
+  // charges list totals up to the Total Fare row at the top.
+  const freightRow = chargeRows.find((row) => row.label === 'Freight Charges')
+  const otherRows = chargeRows.filter((row) => row.label !== 'Freight Charges')
+
   // Net adjustment = additional charges (everything except the base Freight
   // Charges row) − discount — the same figure the Freight Calculator shows.
   // See computeNetAdjustment in ./freight-fare for the exact math.
@@ -100,7 +107,11 @@ export const FareBreakdown = ({
   if (variant === 'grid') {
     return (
       <>
-        {chargeRows.map((row) => (
+        <div className="grid grid-cols-[1fr_150px_150px_150px] gap-2 border-b border-gray-900 text-sm font-bold">
+          <div className="col-span-3 text-right pr-2">Total Fare</div>
+          <div className="text-right">{fmt(totalFare)}</div>
+        </div>
+        {otherRows.map((row) => (
           <div key={row.label} className="grid grid-cols-[1fr_150px_150px_150px] gap-2 text-sm">
             <div className="col-span-3 text-right pr-2">{row.label}</div>
             <div className="text-right">{fmt(row.value)}</div>
@@ -118,10 +129,12 @@ export const FareBreakdown = ({
             <div className="text-right">{netAdjustment >= 0 ? `+ ${fmt(netAdjustment)}` : `− ${fmt(Math.abs(netAdjustment))}`}</div>
           </div>
         )}
-        <div className="grid grid-cols-[1fr_150px_150px_150px] gap-2 border-t border-gray-900 text-sm font-bold">
-          <div className="col-span-3 text-right pr-2">Total Fare</div>
-          <div className="text-right">{fmt(totalFare)}</div>
-        </div>
+        {freightRow && (
+          <div className="grid grid-cols-[1fr_150px_150px_150px] gap-2 text-sm">
+            <div className="col-span-3 text-right pr-2">{freightRow.label}</div>
+            <div className="text-right">{fmt(freightRow.value)}</div>
+          </div>
+        )}
       </>
     )
   }
@@ -129,7 +142,11 @@ export const FareBreakdown = ({
   if (variant === 'pos') {
     return (
       <>
-        {chargeRows.map((row) => (
+        <div className="col-span-3 grid grid-cols-[1fr_200px_120px] gap-4 border-b-2 border-primary/30 pb-1">
+          <div>Total Fare: </div>
+          <div className="pr-4">{fmt(totalFare)}</div>
+        </div>
+        {otherRows.map((row) => (
           <div key={row.label} className="contents">
             <div>{row.label}: </div>
             <div className="pr-4">{fmt(row.value)}</div>
@@ -141,10 +158,12 @@ export const FareBreakdown = ({
             <div className="pr-4">− {fmt(discount)}</div>
           </div>
         )}
-        <div className="col-span-3 grid grid-cols-[1fr_200px_120px] gap-4 border-t-2 border-primary/30 pt-1">
-          <div>Total Fare: </div>
-          <div className="pr-4">{fmt(totalFare)}</div>
-        </div>
+        {freightRow && (
+          <div className="contents">
+            <div>{freightRow.label}: </div>
+            <div className="pr-4">{fmt(freightRow.value)}</div>
+          </div>
+        )}
       </>
     )
   }
@@ -152,7 +171,11 @@ export const FareBreakdown = ({
   // flex — the default, used by the freight print dialog
   return (
     <>
-      {chargeRows.map((row) => (
+      <div className={totalRowClassName ?? `mb-1 flex items-baseline justify-between gap-4 border-b border-gray-900 pb-1 text-sm font-bold ${rowClassName}`}>
+        <span>Total Fare</span>
+        <span>{fmt(totalFare)}</span>
+      </div>
+      {otherRows.map((row) => (
         <div key={row.label} className={`flex items-baseline justify-between gap-4 py-0.5 text-sm ${rowClassName}`}>
           <span>{row.label}</span>
           <span>{fmt(row.value)}</span>
@@ -170,10 +193,12 @@ export const FareBreakdown = ({
           <span>{netAdjustment >= 0 ? `+ ${fmt(netAdjustment)}` : `− ${fmt(Math.abs(netAdjustment))}`}</span>
         </div>
       )}
-      <div className={totalRowClassName ?? `mt-1 flex items-baseline justify-between gap-4 border-t border-gray-900 pt-1 text-sm font-bold ${rowClassName}`}>
-        <span>Total Fare</span>
-        <span>{fmt(totalFare)}</span>
-      </div>
+      {freightRow && (
+        <div className={`flex items-baseline justify-between gap-4 py-0.5 text-sm ${rowClassName}`}>
+          <span>{freightRow.label}</span>
+          <span>{fmt(freightRow.value)}</span>
+        </div>
+      )}
     </>
   )
 }

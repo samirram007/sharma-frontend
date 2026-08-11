@@ -75,3 +75,26 @@ export function computeNetAdjustment(input?: FareInputs | null): number {
 
   return additional - (Number(input?.discount) || 0)
 }
+
+/**
+ * Derive the per-unit rate from a manually-entered Freight Charges total:
+ * `rate = freightCharges ÷ weight`. Returns 0 when either input is missing or
+ * zero, so callers can skip overwriting the rate.
+ *
+ * Full float precision is kept on purpose: `rate × weight` then reproduces the
+ * entered charge exactly (the Freight Calculator's base-fare recomputation
+ * round-trips instead of drifting by rounding the rate to 2dp).
+ */
+export function computeRateFromCharge(
+  freightCharges: FareInputs['freightCharges'],
+  weight: FareInputs['weight'],
+): number {
+  const charge = Number(freightCharges)
+  const measure = Number(weight)
+
+  if (!(charge > 0) || !(measure > 0)) {
+    return 0
+  }
+
+  return charge / measure
+}

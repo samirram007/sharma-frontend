@@ -8,6 +8,7 @@ export const voucherReferenceSchema = z.object({
   id: z.number().int().positive().nullish(),
   voucherId: z.number().int().positive().nullish(),
   refVoucherId: z.number().int().positive().nullish(),
+  referenceVoucher: voucherSchema.nullish(),
   type: z.string().nullable(),
 })
 
@@ -15,6 +16,7 @@ export const dayBookSchema = voucherSchema.extend({
   voucherType: voucherTypeSchema,
   company: companySchema.nullish(),
   fiscalYear: fiscalYearSchema.nullish(),
+  voucherReferences: z.array(voucherReferenceSchema).nullish(),
   referencedBy: z.array(voucherReferenceSchema).nullish(),
   paymentStatus: z.string().nullish(),
 });
