@@ -169,7 +169,7 @@ const ReportView = ({ table }: { table: any }) => {
                   <div className="text-right pr-2">
                     {zone.original.openingQuantity === 0
                       ? '-'
-                      : `formatQty(zone.original.openingQuantity, zone.original.godownDetails[0]?.itemDetails[0]?.noOfDecimalPlaces, zone.original.godownDetails[0]?.itemDetails[0]?.unitCode)`}
+                      : formatQty(zone.original.openingQuantity, zone.original.godownDetails[0]?.itemDetails[0]?.noOfDecimalPlaces, zone.original.godownDetails[0]?.itemDetails[0]?.unitCode)}
                   </div>
                   <div>
                     {zone.original.openingAmount === 0
@@ -182,7 +182,7 @@ const ReportView = ({ table }: { table: any }) => {
                   <div className="text-right pr-2">
                     {zone.original.inwardQuantity === 0
                       ? '-'
-                      : `formatQty(zone.original.inwardQuantity, zone.original.godownDetails[0]?.itemDetails[0]?.noOfDecimalPlaces, zone.original.godownDetails[0]?.itemDetails[0]?.unitCode)`}
+                      : formatQty(zone.original.inwardQuantity, zone.original.godownDetails[0]?.itemDetails[0]?.noOfDecimalPlaces, zone.original.godownDetails[0]?.itemDetails[0]?.unitCode)}
                   </div>
                   <div>
                     {zone.original.inwardAmount === 0
@@ -195,7 +195,7 @@ const ReportView = ({ table }: { table: any }) => {
                   <div className="text-right pr-2">
                     {zone.original.outwardQuantity === 0
                       ? '-'
-                      : `formatQty(zone.original.outwardQuantity, zone.original.godownDetails[0]?.itemDetails[0]?.noOfDecimalPlaces, zone.original.godownDetails[0]?.itemDetails[0]?.unitCode)`}
+                      : formatQty(zone.original.outwardQuantity, zone.original.godownDetails[0]?.itemDetails[0]?.noOfDecimalPlaces, zone.original.godownDetails[0]?.itemDetails[0]?.unitCode)}
                   </div>
                   <div>
                     {zone.original.outwardAmount === 0
@@ -208,7 +208,7 @@ const ReportView = ({ table }: { table: any }) => {
                   <div className="text-right pr-2">
                     {zone.original.closingQuantity === 0
                       ? '-'
-                      : `formatQty(zone.original.closingQuantity, zone.original.godownDetails[0]?.itemDetails[0]?.noOfDecimalPlaces, zone.original.godownDetails[0]?.itemDetails[0]?.unitCode)`}
+                      : formatQty(zone.original.closingQuantity, zone.original.godownDetails[0]?.itemDetails[0]?.noOfDecimalPlaces, zone.original.godownDetails[0]?.itemDetails[0]?.unitCode)}
                   </div>
                   <div>
                     {zone.original.closingAmount === 0
@@ -249,7 +249,7 @@ const ReportView = ({ table }: { table: any }) => {
                             <div className="text-right pr-2">
                               {godown.openingQuantity === 0
                                 ? '-'
-                                : `formatQty(godown.openingQuantity, godown.itemDetails?.[0]?.noOfDecimalPlaces, godown.itemDetails?.[0]?.unitCode)`}
+                                : formatQty(godown.openingQuantity, godown.itemDetails?.[0]?.noOfDecimalPlaces, godown.itemDetails?.[0]?.unitCode)}
                             </div>
                             <div>
                               {godown.openingAmount === 0
@@ -262,7 +262,7 @@ const ReportView = ({ table }: { table: any }) => {
                             <div className="text-right pr-2">
                               {godown.inwardQuantity === 0
                                 ? '-'
-                                : `formatQty(godown.inwardQuantity, godown.itemDetails?.[0]?.noOfDecimalPlaces, godown.itemDetails?.[0]?.unitCode)`}
+                                : formatQty(godown.inwardQuantity, godown.itemDetails?.[0]?.noOfDecimalPlaces, godown.itemDetails?.[0]?.unitCode)}
                             </div>
                             <div>
                               {godown.inwardAmount === 0
@@ -275,7 +275,7 @@ const ReportView = ({ table }: { table: any }) => {
                             <div className="text-right pr-2">
                               {godown.outwardQuantity === 0
                                 ? '-'
-                                : `formatQty(godown.outwardQuantity, godown.itemDetails?.[0]?.noOfDecimalPlaces, godown.itemDetails?.[0]?.unitCode)`}
+                                : formatQty(godown.outwardQuantity, godown.itemDetails?.[0]?.noOfDecimalPlaces, godown.itemDetails?.[0]?.unitCode)}
                             </div>
                             <div>
                               {godown.outwardAmount === 0
@@ -287,7 +287,7 @@ const ReportView = ({ table }: { table: any }) => {
                             <div className="text-right pr-2">
                               {godown.closingQuantity === 0
                                 ? '-'
-                                : `formatQty(godown.closingQuantity, godown.itemDetails?.[0]?.noOfDecimalPlaces, godown.itemDetails?.[0]?.unitCode)`}
+                                : formatQty(godown.closingQuantity, godown.itemDetails?.[0]?.noOfDecimalPlaces, godown.itemDetails?.[0]?.unitCode)}
                             </div>
                             <div>
                               {godown.closingAmount === 0
@@ -324,7 +324,7 @@ const ReportView = ({ table }: { table: any }) => {
                                   <div className="text-right pr-2">
                                     {item.openingQuantity === 0
                                       ? '-'
-                                      : `formatQty(item.openingQuantity, item.noOfDecimalPlaces, item.unitCode)`}
+                                      : formatQty(item.openingQuantity, item.noOfDecimalPlaces, item.unitCode)}
                                   </div>
                                   <div>
                                     {item.openingAmount === 0
@@ -337,7 +337,7 @@ const ReportView = ({ table }: { table: any }) => {
                                   <div className="text-right pr-2">
                                     {item.inwardQuantity === 0
                                       ? '-'
-                                      : `formatQty(item.inwardQuantity, item.noOfDecimalPlaces, item.unitCode)`}
+                                      : formatQty(item.inwardQuantity, item.noOfDecimalPlaces, item.unitCode)}
                                   </div>
                                   <div>
                                     {item.inwardAmount === 0
@@ -350,7 +350,7 @@ const ReportView = ({ table }: { table: any }) => {
                                   <div className="text-right pr-2">
                                     {item.outwardQuantity === 0
                                       ? '-'
-                                      : `formatQty(item.outwardQuantity, item.noOfDecimalPlaces, item.unitCode)`}
+                                      : formatQty(item.outwardQuantity, item.noOfDecimalPlaces, item.unitCode)}
                                   </div>
                                   <div>
                                     {item.outwardAmount === 0
@@ -362,7 +362,7 @@ const ReportView = ({ table }: { table: any }) => {
                                   <div className="text-right pr-2">
                                     {item.closingQuantity === 0
                                       ? '-'
-                                      : `formatQty(item.closingQuantity, item.noOfDecimalPlaces, item.unitCode)`}
+                                      : formatQty(item.closingQuantity, item.noOfDecimalPlaces, item.unitCode)}
                                   </div>
                                   <div>
                                     {item.closingAmount === 0

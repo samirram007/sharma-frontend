@@ -49,7 +49,7 @@ const ReportView = ({ data }: { data: StockInHandGodownWiseListSchema }) => {
                   <div className="text-right pr-2">
                     {item.openingQuantity === 0
                       ? '-'
-                      : `formatQty(item.openingQuantity, item.itemDetails[0].noOfDecimalPlaces, item.itemDetails[0].unitCode)`}
+                      : formatQty(item.openingQuantity, item.itemDetails[0].noOfDecimalPlaces, item.itemDetails[0].unitCode)}
                   </div>
                   <div>
                     {item.openingAmount === 0
@@ -62,7 +62,7 @@ const ReportView = ({ data }: { data: StockInHandGodownWiseListSchema }) => {
                   <div className="text-right pr-2">
                     {item.inwardQuantity === 0
                       ? '-'
-                      : `formatQty(item.inwardQuantity, item.itemDetails[0].noOfDecimalPlaces, item.itemDetails[0].unitCode)`}
+                      : formatQty(item.inwardQuantity, item.itemDetails[0].noOfDecimalPlaces, item.itemDetails[0].unitCode)}
                   </div>
                   <div>
                     {item.inwardAmount === 0
@@ -75,7 +75,7 @@ const ReportView = ({ data }: { data: StockInHandGodownWiseListSchema }) => {
                   <div className="text-right pr-2">
                     {item.outwardQuantity === 0
                       ? '-'
-                      : `formatQty(item.outwardQuantity, item.itemDetails[0].noOfDecimalPlaces, item.itemDetails[0].unitCode)`}
+                      : formatQty(item.outwardQuantity, item.itemDetails[0].noOfDecimalPlaces, item.itemDetails[0].unitCode)}
                   </div>
                   <div>
                     {item.outwardAmount === 0
@@ -88,7 +88,7 @@ const ReportView = ({ data }: { data: StockInHandGodownWiseListSchema }) => {
                   <div className="text-right pr-2">
                     {item.closingQuantity === 0
                       ? '-'
-                      : `formatQty(item.closingQuantity, item.itemDetails[0].noOfDecimalPlaces, item.itemDetails[0].unitCode)`}
+                      : formatQty(item.closingQuantity, item.itemDetails[0].noOfDecimalPlaces, item.itemDetails[0].unitCode)}
                   </div>
                   <div>
                     {item.closingAmount === 0
@@ -126,7 +126,7 @@ const ReportView = ({ data }: { data: StockInHandGodownWiseListSchema }) => {
                         <div className="text-right pr-2">
                           {item.openingQuantity === 0
                             ? '-'
-                            : `formatQty(item.openingQuantity, item.noOfDecimalPlaces, item.unitCode)`}
+                            : formatQty(item.openingQuantity, item.noOfDecimalPlaces, item.unitCode)}
                         </div>
                         <div>
                           {item.openingAmount === 0
@@ -139,7 +139,7 @@ const ReportView = ({ data }: { data: StockInHandGodownWiseListSchema }) => {
                         <div className="text-right pr-2">
                           {item.inwardQuantity === 0
                             ? '-'
-                            : `formatQty(item.inwardQuantity, item.noOfDecimalPlaces, item.unitCode)`}
+                            : formatQty(item.inwardQuantity, item.noOfDecimalPlaces, item.unitCode)}
                         </div>
                         <div>
                           {item.inwardAmount === 0
@@ -152,7 +152,7 @@ const ReportView = ({ data }: { data: StockInHandGodownWiseListSchema }) => {
                         <div className="text-right pr-2">
                           {item.outwardQuantity === 0
                             ? '-'
-                            : `formatQty(item.outwardQuantity, item.noOfDecimalPlaces, item.unitCode)`}
+                            : formatQty(item.outwardQuantity, item.noOfDecimalPlaces, item.unitCode)}
                         </div>
                         <div>
                           {item.outwardAmount === 0
@@ -164,7 +164,7 @@ const ReportView = ({ data }: { data: StockInHandGodownWiseListSchema }) => {
                         <div className="text-right pr-2">
                           {item.closingQuantity === 0
                             ? '-'
-                            : `formatQty(item.closingQuantity, item.noOfDecimalPlaces, item.unitCode)`}
+                            : formatQty(item.closingQuantity, item.noOfDecimalPlaces, item.unitCode)}
                         </div>
                         <div>
                           {item.closingAmount === 0

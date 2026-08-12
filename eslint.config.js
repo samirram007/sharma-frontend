@@ -1,12 +1,34 @@
 //  @ts-check
 
 import { tanstackConfig } from '@tanstack/eslint-config'
+import noUninterpolatedCodeTemplateLiteral from './eslint-rules/no-uninterpolated-code-template-literal.js'
 
-/** @type {import('eslint').Linter.FlatConfig[]} */
+/** @type {import('eslint').Linter.Config[]} */
 export default [
   ...tanstackConfig,
   {
+    // Tooling-only JS files aren't part of any tsconfig project and would trip
+    // the @typescript-eslint/parser "file not found in project" error.
+    ignores: ['eslint-rules/**'],
+  },
+  {
+    // Scope custom plugins + overrides to TS/TSX files: the '@typescript-eslint'
+    // plugin is only declared by @tanstack/eslint-config for **/*.{ts,tsx}, so
+    // applying its rules to .js/.mjs files fails config resolution.
+    files: ['**/*.{ts,tsx}'],
+    plugins: {
+      local: {
+        rules: {
+          'no-uninterpolated-code-template-literal':
+            noUninterpolatedCodeTemplateLiteral,
+        },
+      },
+    },
+  },
+  {
+    files: ['**/*.{ts,tsx}'],
     rules: {
+      'local/no-uninterpolated-code-template-literal': 'error',
       'no-console': ['off', { allow: ['warn', 'error'] }],
       'react/react-in-jsx-scope': 'off',
       'import/order': 'off',
@@ -14,7 +36,7 @@ export default [
       'import/consistent-type-specifier-style': 'off',
       '@typescript-eslint/no-non-null-asserted-optional-chain': 'off',
       '@typescript-eslint/no-unnecessary-type-assertion': 'off',
-      '@typescript-eslint/consistent-type-imports ': 'off',
+      '@typescript-eslint/consistent-type-imports': 'off',
       'prefer-const': 'off',
       'import/first': 'off',
       'import/newline-after-import': 'off',
