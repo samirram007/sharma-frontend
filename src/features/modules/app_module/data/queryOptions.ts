@@ -1,48 +1,57 @@
-import { queryOptions, useMutation, useQueryClient } from "@tanstack/react-query"
-import type { AppModuleForm } from "../types/types"
-import { deleteAppModuleService, fetchAppModuleService, storeAppModuleService, updateAppModuleService } from "./api"
-const Key = "AppModules"
+import {
+  queryOptions,
+  useMutation,
+  useQueryClient,
+} from '@tanstack/react-query'
+import type { AppModuleForm } from '../types/types'
+import {
+  deleteAppModuleService,
+  fetchAppModuleService,
+  storeAppModuleService,
+  updateAppModuleService,
+} from './api'
+const Key = 'AppModules'
 export const appModuleQueryOptions = (key: string = Key) => {
-    return queryOptions({
-        queryKey: [key],
-        queryFn: fetchAppModuleService,
-        staleTime: 1000 * 60 * 5, // 5 minutes
-        retry: 1,
-    })
+  return queryOptions({
+    queryKey: [key],
+    queryFn: fetchAppModuleService,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    retry: 1,
+  })
 }
 export function useAppModuleMutation() {
-    const queryClient = useQueryClient()
+  const queryClient = useQueryClient()
 
-    return useMutation({
-        mutationFn: async (data: AppModuleForm & { id?: number }) => {
-            console.log("mutation Data", data)
-            if (data.id) {
-                // Update if id exists
-                return await updateAppModuleService(data)
-            }
-            // Otherwise create
-            return await storeAppModuleService(data)
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: [Key] })
-        },
-        onError: (error) => {
-            console.error("AppModule mutation failed:", error)
-        },
-    })
+  return useMutation({
+    mutationFn: async (data: AppModuleForm & { id?: number }) => {
+      console.log('mutation Data', data)
+      if (data.id) {
+        // Update if id exists
+        return await updateAppModuleService(data)
+      }
+      // Otherwise create
+      return await storeAppModuleService(data)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [Key] })
+    },
+    onError: (error) => {
+      console.error('AppModule mutation failed:', error)
+    },
+  })
 }
 export function useAppModuleDeleteMutation() {
-    const queryClient = useQueryClient()
+  const queryClient = useQueryClient()
 
-    return useMutation({
-        mutationFn: async (id: number) => {
-            return await deleteAppModuleService({ id })
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: [Key] })
-        },
-        onError: (error) => {
-            console.error("AppModule delete failed:", error)
-        },
-    })
+  return useMutation({
+    mutationFn: async (id: number) => {
+      return await deleteAppModuleService({ id })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [Key] })
+    },
+    onError: (error) => {
+      console.error('AppModule delete failed:', error)
+    },
+  })
 }

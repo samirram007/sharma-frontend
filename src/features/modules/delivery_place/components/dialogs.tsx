@@ -2,9 +2,9 @@ import { useDeliveryPlace } from '@/features/modules/delivery_place/contexts/del
 import { ActionDialog } from './action-dialog'
 import { DeleteDialog } from './delete-dialog'
 
-
 export function Dialogs() {
-  const { open, setOpen, currentRow, setCurrentRow, keyName } = useDeliveryPlace()
+  const { open, setOpen, currentRow, setCurrentRow, keyName } =
+    useDeliveryPlace()
   return (
     <>
       <ActionDialog

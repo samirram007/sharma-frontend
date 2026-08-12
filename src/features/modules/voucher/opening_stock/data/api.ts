@@ -29,10 +29,14 @@ export async function fetchPreviousYearClosingStockService() {
   return await getData(`${API_PATH}/opening-stock/previous-year-closing`)
 }
 
-export async function storeOpeningStockService(payload: Record<string, unknown>) {
+export async function storeOpeningStockService(
+  payload: Record<string, unknown>,
+) {
   return await postData(API_PATH, payload)
 }
 
-export async function updateOpeningStockService(payload: Record<string, unknown>) {
+export async function updateOpeningStockService(
+  payload: Record<string, unknown>,
+) {
   return await putData(`${API_PATH}/${payload.id}`, payload)
 }

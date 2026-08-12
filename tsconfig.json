@@ -31,14 +31,14 @@
     "noEmit": true,
 
     /* Linting */
-    "skipLibCheck": true, 
+    "skipLibCheck": true,
     "strict": true,
     "forceConsistentCasingInFileNames": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
-   
+
     "paths": {
       "@/*": ["./src/*"]
     }

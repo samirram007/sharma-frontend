@@ -7,7 +7,7 @@ export function Dialogs() {
   return (
     <>
       <ActionDialog
-        key='menu-entry-add'
+        key="menu-entry-add"
         open={open === 'add'}
         onOpenChange={() => setOpen('add')}
       />

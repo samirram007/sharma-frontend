@@ -2,8 +2,6 @@ import useDialogState from '@/core/hooks/use-dialog-state'
 import React, { useState } from 'react'
 import type { AccountLedger } from '../data/schema'
 
-
-
 type AccountLedgerDialogType = 'invite' | 'add' | 'edit' | 'delete'
 
 interface AccountLedgerContextType {
@@ -13,7 +11,8 @@ interface AccountLedgerContextType {
   setCurrentRow: React.Dispatch<React.SetStateAction<AccountLedger | null>>
 }
 
-const AccountLedgerContext = React.createContext<AccountLedgerContextType | null>(null)
+const AccountLedgerContext =
+  React.createContext<AccountLedgerContextType | null>(null)
 
 interface Props {
   children: React.ReactNode
@@ -35,7 +34,9 @@ export const useAccountLedger = () => {
   const accountLedgerContext = React.useContext(AccountLedgerContext)
 
   if (!accountLedgerContext) {
-    throw new Error('useAccountLedger has to be used within <AccountLedgerContext>')
+    throw new Error(
+      'useAccountLedger has to be used within <AccountLedgerContext>',
+    )
   }
 
   return accountLedgerContext

@@ -1,6 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { getData, patchData } from '@/utils/dataClient'
-import type { NotificationFilter, NotificationItem, NotificationsResponse } from './schema'
+import type {
+  NotificationFilter,
+  NotificationItem,
+  NotificationsResponse,
+} from './schema'
 
 const NOTIFICATION_KEYS = ['app-notifications'] as const
 
@@ -62,7 +66,9 @@ export function useMarkNotificationAsRead() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: NOTIFICATION_KEYS })
-      queryClient.invalidateQueries({ queryKey: ['app-notifications', 'unread-count'] })
+      queryClient.invalidateQueries({
+        queryKey: ['app-notifications', 'unread-count'],
+      })
       queryClient.invalidateQueries({ queryKey: ['app-notifications', 'my'] })
     },
   })
@@ -80,7 +86,9 @@ export function useMarkAllNotificationsAsRead() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: NOTIFICATION_KEYS })
-      queryClient.invalidateQueries({ queryKey: ['app-notifications', 'unread-count'] })
+      queryClient.invalidateQueries({
+        queryKey: ['app-notifications', 'unread-count'],
+      })
       queryClient.invalidateQueries({ queryKey: ['app-notifications', 'my'] })
     },
   })

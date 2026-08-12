@@ -16,7 +16,10 @@ export const Route = createFileRoute(
 )({
   component: () => {
     const [page, setPage] = useState(1)
-    const [perPage, setPerPage] = useLocalStorage<number>('manufacturing_journal_report_per_page', 10)
+    const [perPage, setPerPage] = useLocalStorage<number>(
+      'manufacturing_journal_report_per_page',
+      10,
+    )
     const [debouncedSearch, setDebouncedSearch] = useState('')
     const [sortBy, setSortBy] = useState('')
     const [sortOrder, setSortOrder] = useState('')
@@ -40,10 +43,13 @@ export const Route = createFileRoute(
       (newPage: number) => setPage(newPage),
       [],
     )
-    const handlePageSizeChange = useCallback((newSize: number) => {
-      setPerPage(newSize)
-      setPage(1)
-    }, [setPerPage])
+    const handlePageSizeChange = useCallback(
+      (newSize: number) => {
+        setPerPage(newSize)
+        setPage(1)
+      },
+      [setPerPage],
+    )
 
     const handleSearchChange = useCallback((value: string) => {
       if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current)

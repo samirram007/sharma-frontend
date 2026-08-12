@@ -14,9 +14,9 @@ describe('requirePermission route guard', () => {
 
   it('redirects when the user has no permissions at all', async () => {
     const guard = requirePermission('FREIGHT_MENU_VIEW')
-    await expect(
-      guard({ context: makeContext([]) }),
-    ).rejects.toMatchObject({ options: { to: '/forbidden' } })
+    await expect(guard({ context: makeContext([]) })).rejects.toMatchObject({
+      options: { to: '/forbidden' },
+    })
   })
 
   it('passes when the permission is present', async () => {

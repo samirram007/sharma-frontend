@@ -17,7 +17,7 @@ const paramsSchema = z.object({
 })
 
 export const Route = createFileRoute(
-  '/_protected/transactions/_provider/vouchers/_layout/opening_stock/$id'
+  '/_protected/transactions/_provider/vouchers/_layout/opening_stock/$id',
 )({
   beforeLoad: requirePermission('OPENING_STOCK_MENU_VIEW'),
   params: {
@@ -31,10 +31,10 @@ export const Route = createFileRoute(
   component: RouteComponent,
   errorComponent: () => (
     <div>
-      <span className='bg-red-400'>By ID:</span> Error loading opening stock.
+      <span className="bg-red-400">By ID:</span> Error loading opening stock.
     </div>
   ),
-  pendingComponent: () => <Loader className='animate-spin' />,
+  pendingComponent: () => <Loader className="animate-spin" />,
 })
 
 function RouteComponent() {
@@ -43,7 +43,7 @@ function RouteComponent() {
 
   const { data: openingStock } = useSuspenseQuery(OpeningStockQueryOptions(id))
   return (
-    <Suspense fallback={<Loader className='animate-spin' />}>
+    <Suspense fallback={<Loader className="animate-spin" />}>
       <OpeningStockVoucherComponent currentRow={openingStock?.data} />
     </Suspense>
   )

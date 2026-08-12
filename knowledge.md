@@ -8,18 +8,18 @@ React 19 SPA for **AIPT** (Accounts | Inventory | Payroll | Tax). Serves the `sh
 
 ## Quickstart / Commands
 
-| Action | Command |
-|--------|---------|
-| Install | `pnpm install` |
-| Dev (Vite) | `pnpm dev` — port **5173** |
-| Alt dev | `pnpm start` — port **3000** |
-| Build | `pnpm build` (`vite build && tsc`) |
-| Test | `pnpm test` (Vitest 4, jsdom) |
-| E2E | `pnpm test:e2e` (Playwright — needs Laravel backend on :8000) |
-| Lint | `pnpm lint` (ESLint, TanStack config) |
-| Format | `pnpm format` (Prettier) |
-| Check all | `pnpm check` (`prettier --write . && eslint --fix`) |
-| SSR (experimental) | `pnpm serve:ssr` / `pnpm dev:server` (`tsx src/server.ts`) |
+| Action             | Command                                                       |
+| ------------------ | ------------------------------------------------------------- |
+| Install            | `pnpm install`                                                |
+| Dev (Vite)         | `pnpm dev` — port **5173**                                    |
+| Alt dev            | `pnpm start` — port **3000**                                  |
+| Build              | `pnpm build` (`vite build && tsc`)                            |
+| Test               | `pnpm test` (Vitest 4, jsdom)                                 |
+| E2E                | `pnpm test:e2e` (Playwright — needs Laravel backend on :8000) |
+| Lint               | `pnpm lint` (ESLint, TanStack config)                         |
+| Format             | `pnpm format` (Prettier)                                      |
+| Check all          | `pnpm check` (`prettier --write . && eslint --fix`)           |
+| SSR (experimental) | `pnpm serve:ssr` / `pnpm dev:server` (`tsx src/server.ts`)    |
 
 **Setup:** copy `.env.example` → `.env`, set `VITE_API_BASE_URL` (must end with `/api`, e.g. `https://aipt-api.local/api`). Dev proxy target is `VITE_BACKEND_URL` (no `/api` suffix).
 
@@ -38,6 +38,7 @@ Playwright e2e tests live in `e2e/` (`playwright.config.ts` at project root).
 ## Architecture
 
 ### Key directories
+
 ```
 src/
   routes/            — TanStack Router file-based routes (routeTree.gen.ts is AUTO-GENERATED)
@@ -66,6 +67,7 @@ src/
 ```
 
 ### Routing (TanStack Router, file-based)
+
 - Route files live in `src/routes/`; `routeTree.gen.ts` is **auto-generated** by `@tanstack/router-plugin/vite` (dev server regenerates on file changes — never hand-edit).
 - `router.tsx` exports `createAppRouter()` — `defaultPreload: 'intent'`, `scrollRestoration: true`, `defaultStructuralSharing: true`. `AppRouter.tsx` renders `RouterProvider` with context `{ auth, queryClient }` and augments the `Register` type; while `auth.isLoading` it shows a `react-top-loading-bar` + spinner.
 - `__root.tsx` — `NavigationProgress`, `<Outlet />`, and `LayoutAddition` (TanStack + React Query devtools); `notFoundComponent: NotFoundError`, `errorComponent: GeneralError`.
@@ -75,10 +77,12 @@ src/
 - `lib/auth.ts` also exports `AUTH_TOKEN_KEY = 'auth_token'`, `OPENING_STOCK_EDITOR_ROLE_CODES`, and `canEditOpeningStock(roles)`.
 
 ### Provider tree (bootstrap)
+
 `main.tsx` mounts into `#app` (index.html) in this order:
 `TanStackQueryProvider` → `ThemeContextProvider` (defaultTheme **dark**, storageKey `vite-ui-theme`) → `FontProvider` → `AuthProvider` → `EchoProvider` (Reverb) → `Toaster` (sonner, top-center, richColors) → `AppRouter`.
 
 ### Auth flow
+
 - **AuthContext** (`features/auth/contexts/AuthContext.tsx`) — state: `user` (UserWithRole), `userFiscalYear`, `period` (start/end dates derived from `userFiscalYear`), `permissions[]` (collected from `user.roles[].permissions[]` where `isAllowed`, keyed by `appModuleFeature.code`), `menuTree` (fetched via query once user exists). `isAuthenticated = !!user`.
 - `fetchProfile()` runs on mount: `GET /auth/me`; on failure clears user + token. `login()` stores the bearer token if returned, then fetches profile. `logout()` calls the API, `queryClient.clear()`, clears state + token.
 - **Token storage is driver-configurable** via `VITE_AUTH_STORAGE` (`localStorage` default | `sessionStorage` | `cookie`) — shared helpers `getToken/setToken/removeToken` in AuthContext and mirrored logic in `axios-client.ts` (kept in sync manually; circular-dependency note in code).
@@ -86,24 +90,29 @@ src/
 - ⚠️ Known issue: the JWT lives **both** in client storage (localStorage/sessionStorage) **and** in an httpOnly cookie — duplication + XSS exposure (see backend knowledge.md, same gap).
 
 ### Data fetching (TanStack Query)
+
 - **`utils/dataClient.tsx`** — `getData/postData/putData/patchData/deleteData` wrappers over axiosClient. Payloads pass through `removeEmptyStrings()`. **Success auto-toasts `response.data.message`; errors auto-toast per-field validation messages** (session-expired text is rewritten, `duration: 6000`). Don't double-toast in mutation callbacks.
 - **`integrations/tanstack-query/root-provider.tsx`** — shared `QueryClient`: `staleTime: 10min`, `refetchOnWindowFocus: only in prod`, retries: **disabled in dev**, in prod stop after 3 and never retry 401/403. Mutation `onError` → `handleServerError`; queryCache `onError` toasts 500.
 - **Per-module pattern** — each module has `data/api.ts` (calls dataClient) + `data/queryOptions.ts` (exported `xQueryOptions()` with `queryKey: [BASE_KEY, ...]`, `queryFn`, sometimes `enabled`/`staleTime: 30s` for reports). Features consume via `useQuery({ ...queryOptions(), enabled: ... })` and mutations via `useMutation`.
 - Response shape from backend: unified envelope `{ success, code, message, data }` — the `data` field is the actual payload.
 
 ### Forms (react-hook-form + Zod v4)
+
 - **Schema pair per module** (`data/schema.ts`): a resource schema (response type, e.g. `godownSchema`) + a `formSchema` (form type, usually with an `isEdit: z.boolean()` flag). Recursion via `z.lazy()` (e.g. godown `parent`, address). Shared schemas like `ActiveInactiveStatusSchema` live in `src/types/`.
 - Dialogs: `components/action-dialog.tsx` (create/edit) + `components/delete-dialog.tsx`, driven by a per-module context (`contexts/*-context.tsx`) that holds dialog state via `use-dialog-state` and config toggles.
 - **`select-dropdown.tsx`** — the standard relation lookup: a right-side **Sheet + Command** (cmdk) searchable combobox wrapped in `FormControl`; props `items: {label, value}[]`, `isPending` loader, `useSheet` variant. Domain-specific dropdowns (e.g. `country-dropdown.tsx`, `godown-combo-box.tsx`) wrap it with query data.
 - Other form primitives: `form-input-field.tsx`, `password-input.tsx`, `pin-input.tsx`, `date` via react-day-picker v9 (`components/ui/calendar.tsx`), `sonner` toasts.
 
 ### Tables (TanStack Table v8)
+
 Two coexisting patterns:
+
 - **`data-table` pattern** (stock_category, stock_unit, voucher_category, voucher_type, unique_quantity_code, tasks, notifications): full-featured `components/data-table.tsx` with `data-table-toolbar`, `data-table-column-header`, `data-table-faceted-filter`, `data-table-pagination`, `data-table-view-options`, `data-table-row-actions`.
 - **`grid-table` pattern** (godown, grade, role, permission, menu, shift, status, stock_item, user, supplier, transporter…): CSS-grid table (`display: grid; gridTemplateColumns` from column defs) with sortable headers, row actions, and per-module `primary-buttons.tsx` (Add / Import / Export). State managed externally (sorting, pagination, columnVisibility, rowSelection).
 - Reports use a **GridTable with manual pagination + expandable rows** (see Report Architecture in root knowledge.md — ReceiptNoteReport pattern).
 
 ### UI & theming (Tailwind v4 + Shadcn)
+
 - **Tailwind v4 CSS-first config** — no `tailwind.config.js`. `src/styles.css`: `@import 'tailwindcss'`, `@plugin "tailwindcss-animate"`, `@custom-variant dark (&:is(.dark *))`, and `@theme inline` mapping oklch CSS variables → Tailwind color tokens (`--color-primary: var(--primary)`, etc.).
 - Theme tokens in `:root` (light) and `.dark` (**deep navy, hue ~248** — intentionally different from stock zinc). `ThemeContextProvider` (custom, NOT next-themes) sets the `.dark` class on `<html>`, supports `system`, persists to `localStorage[vite-ui-theme]`.
 - **Custom button classes** in `@layer components`: `btn-gradient` (primary gradient + sheen "wave" hover animation), `btn-surface`, `btn-outline`, `btn-ghost` — with `prefers-reduced-motion` support.
@@ -113,6 +122,7 @@ Two coexisting patterns:
 - **Fonts:** `config/fonts.ts` = `['inter', 'manrope', 'system']`; applied via `FontProvider` (`core/contexts/font-context.tsx`) and the appearance settings form. Dynamic font classes must be safelisted (comment in fonts.ts).
 
 ### Reports & export system
+
 - Reports follow the **ReceiptNoteReport pattern** (see root `knowledge.md` → "Report Architecture"): `index.tsx` with header + ReportingPeriod + view-selector dropdown/Tabs, `data/{api,queryOptions,schema}.ts` (one endpoint per grouped view, lazy-loaded via `enabled`), `components/{columns,grid-table,stock-item-details}.tsx`, TOTAL rows, on-screen charts via **recharts**.
 - **`components/export-dropdown.tsx`** — shared export menu: PDF, Excel, CSV, JSON, Copy to Clipboard (TSV), Print. Props: `tab/title/rawData/columns/formatRow/computeTotals` + handlers `onExportPdf/Excel/Csv/Json/CopyToClipboard` + optional `chartConfig {labelKey, valueKey, chartLabel, formatLabel}`.
 - **`utils/export-table-pdf.ts`** — jsPDF v4 + `jspdf-autotable`; `exportTableToPdf({ fileName, sections: [{ title, columnData, data, chart? }] })`.
@@ -122,6 +132,7 @@ Two coexisting patterns:
 - Number/date conventions: display uses `toLocaleString('en-IN', …)` / `toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' })`; exports use `toFixed(2)` and `format(d, 'dd-MMM-yyyy')` (date-fns). CSV writes include the `\uFEFF` BOM; clipboard falls back to `document.execCommand('copy')`.
 
 ### Realtime & misc features
+
 - **Laravel Echo + pusher-js → Laravel Reverb** via `EchoProvider` (`core/contexts/echo-context.tsx`); env: `VITE_REVERB_APP_KEY/HOST/PORT/SCHEME` (defaults `localhost:8080/http`). Used by notifications center and chats.
 - **POS / transactions** — `features/modules/voucher/` hosts every voucher type (purchase, sales, receipt, payment, contra, journal, opening_stock, physical_stock, transfer_voucher, freight, day_book, …) sharing `contexts/pos-context.tsx`, `pos-header/body/footer`, `special/save-dialog`, and `components/stock-journal*` grids; shared schema in `data-schema/voucher-schema.ts` (+ `movement-type.ts`).
 - **Dashboard** — recharts widgets with per-widget queries (`/dashboard/summary`, `*_wise`).
@@ -131,11 +142,13 @@ Two coexisting patterns:
 ## Conventions
 
 ### Formatting / Linting
+
 - **Prettier:** `semi: false`, `singleQuote: true`, `trailingComma: 'all'` (`prettier.config.js`).
 - **ESLint:** `@tanstack/eslint-config` + local overrides — `no-console` **off**, `no-explicit-any` **off**, unused vars warn with `_` prefix ignored, several import/order rules relaxed.
 - **TypeScript:** `strict: true`, `verbatimModuleSyntax: true`, `noUnusedLocals/Parameters`, `skipLibCheck: true`, `noEmit`, moduleResolution `bundler`, path alias `@/* → ./src/*`.
 
 ### Patterns to follow
+
 - **Feature-first folders** — every domain under `features/` with `data/{api,queryOptions,schema}.ts`, `components/`, `contexts/`, `index.tsx` (+ `details.tsx`, `configuration.tsx` where needed).
 - **Query options pattern** — export `xxxQueryOptions()` from `data/queryOptions.ts`; use `useQuery({ ...queryOptions(), enabled })`; lazy-load report tabs with `enabled: activeTab === '…'`.
 - **Mutations** — `useMutation` with `onSuccess: queryClient.invalidateQueries(...)`; rely on dataClient's automatic toasts.
@@ -146,6 +159,7 @@ Two coexisting patterns:
 - **Charts** — recharts on screen; `generateChartImage` for PDFs.
 
 ## Gotchas & Known Issues
+
 1. **`routeTree.gen.ts` is auto-generated** — never hand-edit; it regenerates on route-file changes via the router plugin. `tsconfig.json` excludes `entry-client.tsx`/`entry-server.tsx` (SSR mostly disabled; `index.html` loads `main.tsx`).
 2. **`VITE_API_BASE_URL` must end with `/api`.** The Vite dev proxy (`/api` → `VITE_BACKEND_URL`) does **not** rewrite the prefix (Laravel routes are already `/api`-prefixed).
 3. **Token duplication (security):** JWT stored in localStorage/sessionStorage (via `VITE_AUTH_STORAGE`, default `localStorage`, key `auth_token`) **and** in the httpOnly cookie set by the backend. Keep the two storage paths in sync when editing auth code (`AuthContext` + `axios-client.ts` — circular import note in the latter).
@@ -160,6 +174,7 @@ Two coexisting patterns:
 12. `.env.example` ships `VITE_API_BASE_URL=https://aipt-api.local/api`; social login URLs default to `#` (disabled); `VITE_AUTH_STORAGE` is honored by code but **not** listed in `.env.example`.
 
 ## Things to avoid
+
 - Do NOT hand-edit `src/routeTree.gen.ts` — the router plugin owns it.
 - Do NOT commit `.env` files (API URLs/keys).
 - Do NOT install packages globally — use project-local `pnpm`.
@@ -172,33 +187,35 @@ Two coexisting patterns:
 - Do NOT remove the `/api` suffix from `VITE_API_BASE_URL`.
 
 ## Key Dependencies (from package.json)
-| Package | Purpose |
-|---------|---------|
-| `react` / `react-dom` `^19.2` | UI framework |
-| `@tanstack/react-router` `^1.168` | File-based routing (`routeTree.gen.ts` auto-gen) |
-| `@tanstack/react-query` `^5.96` | Server state/caching |
-| `@tanstack/react-table` `^8.21` | Tables |
-| `react-hook-form` + `@hookform/resolvers` | Form state + Zod resolvers |
-| `zod` `^4.3` | Schema validation |
-| `tailwindcss` `^4.2` + `@tailwindcss/vite` | Styling (CSS-first config in `styles.css`) |
-| `recharts` `^3.8` | Charts |
-| `lucide-react` / `@tabler/icons-react` / `react-icons` | Icons |
-| `@radix-ui/*` + `radix-ui` + `@base-ui-components/react` | UI primitives (both coexist) |
-| `cmdk` `^1.1` | Command palette (command-menu, select-dropdown sheets) |
-| `react-day-picker` `^9.14` | Date pickers (calendar.tsx) |
-| `sonner` `^2.0` | Toasts (dataClient auto-toasts) |
-| `axios` `^1.14` | HTTP (interceptors: bearer + 401 refresh) |
-| `jspdf` `^4.2` + `jspdf-autotable` `^5.0` | PDF export |
-| `exceljs` `^3.4` | Excel export |
-| `file-saver` + `@types/file-saver` | File downloads |
-| `date-fns` `^4.1` | Date formatting (exports) |
-| `lodash` `^4.18` | Utility functions (isEqual, lowerCase, upperCase) |
-| `laravel-echo` `^2.3` + `pusher-js` `^8.5` | Realtime (Reverb) |
-| `@dnd-kit/*` | Drag & drop (menu tree) |
-| `react-top-loading-bar` | Auth-loading progress bar |
-| `@faker-js/faker` | Demo data |
+
+| Package                                                  | Purpose                                                |
+| -------------------------------------------------------- | ------------------------------------------------------ |
+| `react` / `react-dom` `^19.2`                            | UI framework                                           |
+| `@tanstack/react-router` `^1.168`                        | File-based routing (`routeTree.gen.ts` auto-gen)       |
+| `@tanstack/react-query` `^5.96`                          | Server state/caching                                   |
+| `@tanstack/react-table` `^8.21`                          | Tables                                                 |
+| `react-hook-form` + `@hookform/resolvers`                | Form state + Zod resolvers                             |
+| `zod` `^4.3`                                             | Schema validation                                      |
+| `tailwindcss` `^4.2` + `@tailwindcss/vite`               | Styling (CSS-first config in `styles.css`)             |
+| `recharts` `^3.8`                                        | Charts                                                 |
+| `lucide-react` / `@tabler/icons-react` / `react-icons`   | Icons                                                  |
+| `@radix-ui/*` + `radix-ui` + `@base-ui-components/react` | UI primitives (both coexist)                           |
+| `cmdk` `^1.1`                                            | Command palette (command-menu, select-dropdown sheets) |
+| `react-day-picker` `^9.14`                               | Date pickers (calendar.tsx)                            |
+| `sonner` `^2.0`                                          | Toasts (dataClient auto-toasts)                        |
+| `axios` `^1.14`                                          | HTTP (interceptors: bearer + 401 refresh)              |
+| `jspdf` `^4.2` + `jspdf-autotable` `^5.0`                | PDF export                                             |
+| `exceljs` `^3.4`                                         | Excel export                                           |
+| `file-saver` + `@types/file-saver`                       | File downloads                                         |
+| `date-fns` `^4.1`                                        | Date formatting (exports)                              |
+| `lodash` `^4.18`                                         | Utility functions (isEqual, lowerCase, upperCase)      |
+| `laravel-echo` `^2.3` + `pusher-js` `^8.5`               | Realtime (Reverb)                                      |
+| `@dnd-kit/*`                                             | Drag & drop (menu tree)                                |
+| `react-top-loading-bar`                                  | Auth-loading progress bar                              |
+| `@faker-js/faker`                                        | Demo data                                              |
 
 ## Vite Config Notes (`vite.config.js`)
+
 - `base` from `VITE_BASE_URL`; dev proxy `/api` → `VITE_BACKEND_URL` (default `http://localhost:8000`), no prefix rewrite, `secure` from `VITE_API_SECURE`.
 - TanStack Router plugin: `autoCodeSplitting: true`, SPA prerender (`crawlLinks`), sitemap host `https://localhost:3000`.
 - `manualChunks`: `src/features/masters/accounts` → `accounts` chunk (keep feature splits here).

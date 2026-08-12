@@ -9,13 +9,10 @@ export type PurchaseVoucher = z.infer<typeof PurchaseVoucherSchema>
 export const PurchaseVoucherListSchema = z.array(PurchaseVoucherSchema)
 export type PurchaseVoucherList = z.infer<typeof PurchaseVoucherListSchema>
 
-export const PurchaseFormSchema = PurchaseVoucherSchema
-    .extend({
-        isEdit: z.boolean().optional(),
-    })
-    .omit({
-        id: true,
-    })
+export const PurchaseFormSchema = PurchaseVoucherSchema.extend({
+  isEdit: z.boolean().optional(),
+}).omit({
+  id: true,
+})
 
 export type PurchaseVoucherForm = z.infer<typeof PurchaseFormSchema>
-

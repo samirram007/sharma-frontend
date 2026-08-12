@@ -13,24 +13,46 @@ export const openingStockVoucherTypeSchema = z.object({
   code: z.string().min(1),
   name: z.string().min(1),
 })
-export type OpeningStockVoucherType = z.infer<typeof openingStockVoucherTypeSchema>
+export type OpeningStockVoucherType = z.infer<
+  typeof openingStockVoucherTypeSchema
+>
 
 export const OpeningStockVoucherSchema = voucherSchema
 export type OpeningStockVoucher = z.infer<typeof OpeningStockVoucherSchema>
 
-export const OpeningStockVoucherListSchema = z.array(OpeningStockVoucherSchema)
-export type OpeningStockVoucherList = z.infer<typeof OpeningStockVoucherListSchema>
+// List rows are served in LIST mode: the backend loads stock_journal
+// SHALLOWLY (no entries/godown entries) to keep list payloads small, so the
+// full voucherSchema (which requires stockJournalEntries) must NOT be used to
+// parse them — a missing key would throw and break the existence check that
+// drives the edit redirect. Only the fields the check needs are parsed here.
+export const OpeningStockVoucherListItemSchema = z.object({
+  id: z.number().int().positive().nullish(),
+  voucherNo: z.string().min(1).nullish(),
+  // nullish for resilience — the existence check never needs the date
+  voucherDate: z.coerce.date().nullish(),
+  voucherTypeId: z.number().int(),
+  fiscalYearId: z.number().int().nullish(),
+  stockJournalId: z.number().int().nullish(),
+})
+export type OpeningStockVoucherListItem = z.infer<
+  typeof OpeningStockVoucherListItemSchema
+>
 
-export const OpeningStockFormSchema = OpeningStockVoucherSchema
-  .extend({
-    isEdit: z.boolean().optional(),
-    // The OPNSK type id is resolved at runtime (see OPENING_STOCK_VOUCHER_TYPE_CODE)
-    // — it is null until the backend responds, then stamped before saving.
-    voucherTypeId: z.number().int().nullable().optional(),
-  })
-  .omit({
-    id: true,
-  })
+export const OpeningStockVoucherListSchema = z.array(
+  OpeningStockVoucherListItemSchema,
+)
+export type OpeningStockVoucherList = z.infer<
+  typeof OpeningStockVoucherListSchema
+>
+
+export const OpeningStockFormSchema = OpeningStockVoucherSchema.extend({
+  isEdit: z.boolean().optional(),
+  // The OPNSK type id is resolved at runtime (see OPENING_STOCK_VOUCHER_TYPE_CODE)
+  // — it is null until the backend responds, then stamped before saving.
+  voucherTypeId: z.number().int().nullable().optional(),
+}).omit({
+  id: true,
+})
 
 export type OpeningStockVoucherForm = z.infer<typeof OpeningStockFormSchema>
 

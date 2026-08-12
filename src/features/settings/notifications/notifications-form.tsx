@@ -87,31 +87,31 @@ export function NotificationsForm() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-8'>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         <div>
-          <h3 className='mb-4 text-lg font-medium'>In-App Notifications</h3>
-          <p className='text-muted-foreground mb-6 text-sm'>
+          <h3 className="mb-4 text-lg font-medium">In-App Notifications</h3>
+          <p className="text-muted-foreground mb-6 text-sm">
             Choose which types of notifications you want to see in the
             notification bell and in-app.
           </p>
 
           {isLoading ? (
-            <div className='space-y-4'>
+            <div className="space-y-4">
               {NOTIFICATION_TYPES.map((type) => (
                 <div
                   key={type}
-                  className='flex flex-row items-center justify-between rounded-lg border p-4'
+                  className="flex flex-row items-center justify-between rounded-lg border p-4"
                 >
-                  <div className='space-y-0.5'>
-                    <Skeleton className='h-5 w-24' />
-                    <Skeleton className='h-4 w-64' />
+                  <div className="space-y-0.5">
+                    <Skeleton className="h-5 w-24" />
+                    <Skeleton className="h-4 w-64" />
                   </div>
-                  <Skeleton className='h-6 w-10 rounded-full' />
+                  <Skeleton className="h-6 w-10 rounded-full" />
                 </div>
               ))}
             </div>
           ) : (
-            <div className='space-y-4'>
+            <div className="space-y-4">
               {NOTIFICATION_TYPES.map((type) => {
                 const { label, description } = getTypeLabel(type)
                 return (
@@ -120,9 +120,9 @@ export function NotificationsForm() {
                     control={form.control}
                     name={type}
                     render={({ field }) => (
-                      <FormItem className='flex flex-row items-center justify-between rounded-lg border p-4 transition-colors hover:bg-slate-50 dark:hover:bg-slate-900/50'>
-                        <div className='space-y-0.5'>
-                          <FormLabel className='text-base cursor-pointer'>
+                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 transition-colors hover:bg-slate-50 dark:hover:bg-slate-900/50">
+                        <div className="space-y-0.5">
+                          <FormLabel className="text-base cursor-pointer">
                             {label}
                           </FormLabel>
                           <FormDescription>{description}</FormDescription>
@@ -143,7 +143,7 @@ export function NotificationsForm() {
         </div>
 
         <Button
-          type='submit'
+          type="submit"
           disabled={!hasChanges || updateMutation.isPending}
         >
           {updateMutation.isPending ? 'Saving…' : 'Update preferences'}

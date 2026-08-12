@@ -23,7 +23,9 @@ export default function StatusProvider({ children }: Props) {
   const [currentRow, setCurrentRow] = useState<Status | null>(null)
 
   return (
-    <StatusContext value={{ open, setOpen, currentRow, setCurrentRow, keyName: "status" }}>
+    <StatusContext
+      value={{ open, setOpen, currentRow, setCurrentRow, keyName: 'status' }}
+    >
       {children}
     </StatusContext>
   )

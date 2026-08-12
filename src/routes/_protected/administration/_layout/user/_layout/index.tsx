@@ -1,15 +1,14 @@
-
 import { roleQueryOptions } from '@/features/modules/role/data/queryOptions'
 import { userQueryOptions } from '@/features/modules/user/data/queryOptions'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { Loader } from 'lucide-react'
 import React, { Suspense } from 'react'
-const User = React.lazy(() =>
-  import('@/features/modules/user')
-)
+const User = React.lazy(() => import('@/features/modules/user'))
 
-export const Route = createFileRoute('/_protected/administration/_layout/user/_layout/',)({
+export const Route = createFileRoute(
+  '/_protected/administration/_layout/user/_layout/',
+)({
   loader: async ({ context }) => {
     const { queryClient } = context
 

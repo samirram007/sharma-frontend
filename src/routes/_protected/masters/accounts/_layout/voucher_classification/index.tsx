@@ -10,7 +10,9 @@ export const Route = createFileRoute(
   loader: ({ context }) =>
     context.queryClient.ensureQueryData(voucherClassificationQueryOptions()),
   component: () => {
-    const { data: voucherClassification } = useSuspenseQuery(voucherClassificationQueryOptions())
+    const { data: voucherClassification } = useSuspenseQuery(
+      voucherClassificationQueryOptions(),
+    )
     return <VoucherClassification data={voucherClassification?.data} />
   },
   errorComponent: () => <div>Error loading voucher classification data.</div>,

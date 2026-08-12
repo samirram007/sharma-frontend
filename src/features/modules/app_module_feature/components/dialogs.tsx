@@ -1,11 +1,10 @@
-
 import { useAppModuleFeature } from '../contexts/app_module_feature-context'
 import { ActionDialog } from './action-dialog'
 import { DeleteDialog } from './delete-dialog'
 
-
 export function Dialogs() {
-  const { open, setOpen, currentRow, setCurrentRow, keyName } = useAppModuleFeature()
+  const { open, setOpen, currentRow, setCurrentRow, keyName } =
+    useAppModuleFeature()
   return (
     <>
       <ActionDialog

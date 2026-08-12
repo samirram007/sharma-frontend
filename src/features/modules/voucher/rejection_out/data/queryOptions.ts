@@ -1,83 +1,92 @@
-import { queryOptions, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
-    fetchRejectionOutByIdService,
-    fetchRejectionOutService,
-    storeRejectionOutService,
-    updateRejectionOutService,
+  queryOptions,
+  useMutation,
+  useQueryClient,
+} from '@tanstack/react-query'
+import {
+  fetchRejectionOutByIdService,
+  fetchRejectionOutService,
+  storeRejectionOutService,
+  updateRejectionOutService,
 } from './api'
 import {
-    RejectionOutVoucherListSchema,
-    REJECTION_OUT_VOUCHER_TYPE_ID,
+  RejectionOutVoucherListSchema,
+  REJECTION_OUT_VOUCHER_TYPE_ID,
 } from './schema'
 
 const BASE_KEY = 'rejection-out-vouchers'
 
 export const RejectionOutVoucherQueryOptions = () => {
-    return queryOptions({
-        queryKey: [BASE_KEY, 'list', REJECTION_OUT_VOUCHER_TYPE_ID],
-        queryFn: async () => {
-            const response = await fetchRejectionOutService()
-            const parsed = RejectionOutVoucherListSchema.parse(response?.data ?? [])
-            return parsed.filter(
-                (voucher) => voucher.voucherTypeId === REJECTION_OUT_VOUCHER_TYPE_ID
-            )
-        },
-        staleTime: 1000 * 60,
-        retry: 1,
-    })
+  return queryOptions({
+    queryKey: [BASE_KEY, 'list', REJECTION_OUT_VOUCHER_TYPE_ID],
+    queryFn: async () => {
+      const response = await fetchRejectionOutService()
+      const parsed = RejectionOutVoucherListSchema.parse(response?.data ?? [])
+      return parsed.filter(
+        (voucher) => voucher.voucherTypeId === REJECTION_OUT_VOUCHER_TYPE_ID,
+      )
+    },
+    staleTime: 1000 * 60,
+    retry: 1,
+  })
 }
 
 export const RejectionOutQueryOptions = (id?: number) => {
-    return queryOptions({
-        queryKey: id ? [BASE_KEY, id] : [BASE_KEY],
-        queryFn: () => (id ? fetchRejectionOutByIdService(id) : fetchRejectionOutService()),
-        staleTime: 1000 * 60 * 5,
-        retry: 1,
-    })
+  return queryOptions({
+    queryKey: id ? [BASE_KEY, id] : [BASE_KEY],
+    queryFn: () =>
+      id ? fetchRejectionOutByIdService(id) : fetchRejectionOutService(),
+    staleTime: 1000 * 60 * 5,
+    retry: 1,
+  })
 }
 
 type RejectionOutVoucherMutationPayload = {
-    id?: number
-    voucherDate: Date | string
-    voucherNo?: string | null
-    amount?: number | null
+  id?: number
+  voucherDate: Date | string
+  voucherNo?: string | null
+  amount?: number | null
+  remarks?: string | null
+  module?: string | null
+  referenceNo?: string | null
+  referenceDate?: Date | string | null
+  voucherTypeId?: number
+  stockJournalId?: number | null
+  stockJournal?: unknown
+  party?: unknown
+  partyLedger?: unknown
+  transactionLedger?: unknown
+  voucherDispatchDetail?: unknown
+  voucherEntries?: Array<{
+    id?: number | null
+    voucherId?: number | null
+    entryOrder: number
+    accountLedgerId: number
+    debit: number
+    credit: number
     remarks?: string | null
-    module?: string | null
-    referenceNo?: string | null
-    referenceDate?: Date | string | null
-    voucherTypeId?: number
-    stockJournalId?: number | null
-    stockJournal?: unknown
-    party?: unknown
-    partyLedger?: unknown
-    transactionLedger?: unknown
-    voucherDispatchDetail?: unknown
-    voucherEntries?: Array<{
-        id?: number | null
-        voucherId?: number | null
-        entryOrder: number
-        accountLedgerId: number
-        debit: number
-        credit: number
-        remarks?: string | null
-    }>
+  }>
 }
 
 export function useRejectionOutVoucherMutation() {
-    const queryClient = useQueryClient()
+  const queryClient = useQueryClient()
 
-    return useMutation({
-        mutationFn: async (data: RejectionOutVoucherMutationPayload) => {
-            if (data.id) {
-                return await updateRejectionOutService(data as unknown as Record<string, unknown>)
-            }
-            return await storeRejectionOutService(data as unknown as Record<string, unknown>)
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: [BASE_KEY] })
-        },
-        onError: (error) => {
-            console.error('Rejection out voucher mutation failed:', error)
-        },
-    })
+  return useMutation({
+    mutationFn: async (data: RejectionOutVoucherMutationPayload) => {
+      if (data.id) {
+        return await updateRejectionOutService(
+          data as unknown as Record<string, unknown>,
+        )
+      }
+      return await storeRejectionOutService(
+        data as unknown as Record<string, unknown>,
+      )
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [BASE_KEY] })
+    },
+    onError: (error) => {
+      console.error('Rejection out voucher mutation failed:', error)
+    },
+  })
 }

@@ -1,8 +1,6 @@
-
 import { useAppModule } from '../contexts/app_module-context'
 import { ActionDialog } from './action-dialog'
 import { DeleteDialog } from './delete-dialog'
-
 
 export function Dialogs() {
   const { open, setOpen, currentRow, setCurrentRow, keyName } = useAppModule()

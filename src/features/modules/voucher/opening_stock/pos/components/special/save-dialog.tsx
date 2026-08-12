@@ -14,6 +14,7 @@ import type { OpeningStockVoucherForm } from '../../../data/schema'
 import { Loader } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
 import { toast } from 'sonner'
+import { getServerErrorMessage } from '@/utils/handle-server-error'
 import type {
   StockJournalEntryForm,
   StockJournalGodownEntryForm,
@@ -34,11 +35,14 @@ type SaveDialogProps = {
 
 const SaveDialog = ({ mainForm, isSaving, setSaving }: SaveDialogProps) => {
   const { userFiscalYear } = useAuth()
-  const { mutate: saveOpeningStock, isPending } = useOpeningStockVoucherMutation()
+  const { mutate: saveOpeningStock, isPending } =
+    useOpeningStockVoucherMutation()
 
   // OPNSK type id is resolved from the backend at runtime (not stable across
   // databases) — the duplicate-voucher check must filter by the real id.
-  const { data: openingStockType } = useQuery(openingStockVoucherTypeQueryOptions())
+  const { data: openingStockType } = useQuery(
+    openingStockVoucherTypeQueryOptions(),
+  )
 
   const { data: existingVouchers } = useQuery({
     ...OpeningStockVoucherQueryOptions(openingStockType?.data?.id),
@@ -56,10 +60,8 @@ const SaveDialog = ({ mainForm, isSaving, setSaving }: SaveDialogProps) => {
     // (stale tab, double-submit race, another client).
     saveOpeningStock(mainForm.getValues(), {
       onError: (error) => {
-        const axiosError = error as { response?: { data?: { message?: string } } }
         toast.error(
-          axiosError?.response?.data?.message ??
-            'Failed to save opening stock voucher.',
+          getServerErrorMessage(error, 'Failed to save opening stock voucher.'),
         )
       },
     })
@@ -93,8 +95,12 @@ const SaveDialog = ({ mainForm, isSaving, setSaving }: SaveDialogProps) => {
       if (userFiscalYear?.fiscalYear && voucherDate) {
         const vDate = new Date(voucherDate)
         // Parse 'YYYY-MM-DD' as local midnight to avoid UTC date-shifting.
-        const startDate = new Date(`${userFiscalYear.fiscalYear.startDate}T00:00:00`)
-        const endDate = new Date(`${userFiscalYear.fiscalYear.endDate}T00:00:00`)
+        const startDate = new Date(
+          `${userFiscalYear.fiscalYear.startDate}T00:00:00`,
+        )
+        const endDate = new Date(
+          `${userFiscalYear.fiscalYear.endDate}T00:00:00`,
+        )
 
         // Opening stock must be dated the FIRST day of the fiscal year.
         const sameDayAsStart =
@@ -142,7 +148,9 @@ const SaveDialog = ({ mainForm, isSaving, setSaving }: SaveDialogProps) => {
       )
 
       if (!hasInEntry) {
-        newErrors.push('At least one IN entry (opening stock quantity) is required.')
+        newErrors.push(
+          'At least one IN entry (opening stock quantity) is required.',
+        )
       }
 
       // --- Duplicate stock item check ---

@@ -49,18 +49,18 @@ export function NewChat({ users, onOpenChange, open }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='sm:max-w-[600px]'>
+      <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>New message</DialogTitle>
         </DialogHeader>
-        <div className='flex flex-col gap-4'>
-          <div className='flex flex-wrap items-center gap-2'>
-            <span className='text-muted-foreground text-sm'>To:</span>
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-muted-foreground text-sm">To:</span>
             {selectedUsers.map((user) => (
-              <Badge key={user.id} variant='default'>
+              <Badge key={user.id} variant="default">
                 {user.fullName}
                 <Button
-                  className='ring-offset-background focus:ring-ring ml-1 rounded-full outline-hidden focus:ring-2 focus:ring-offset-2'
+                  className="ring-offset-background focus:ring-ring ml-1 rounded-full outline-hidden focus:ring-2 focus:ring-offset-2"
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                       handleRemoveUser(user.id)
@@ -68,15 +68,15 @@ export function NewChat({ users, onOpenChange, open }: Props) {
                   }}
                   onClick={() => handleRemoveUser(user.id)}
                 >
-                  <IconX className='text-muted-foreground hover:text-foreground h-3 w-3' />
+                  <IconX className="text-muted-foreground hover:text-foreground h-3 w-3" />
                 </Button>
               </Badge>
             ))}
           </div>
-          <Command className='rounded-lg border'>
+          <Command className="rounded-lg border">
             <CommandInput
-              placeholder='Search people...'
-              className='text-foreground'
+              placeholder="Search people..."
+              className="text-foreground"
             />
             <CommandList className=" max-h-full">
               <CommandEmpty>No people found.</CommandEmpty>
@@ -85,26 +85,26 @@ export function NewChat({ users, onOpenChange, open }: Props) {
                   <CommandItem
                     key={user.id}
                     onSelect={() => handleSelectUser(user)}
-                    className='flex items-center justify-between gap-2'
+                    className="flex items-center justify-between gap-2"
                   >
-                    <div className='flex items-center gap-2'>
+                    <div className="flex items-center gap-2">
                       <img
                         src={user.profile || '/placeholder.svg'}
                         alt={user.fullName}
-                        className='h-8 w-8 rounded-full'
+                        className="h-8 w-8 rounded-full"
                       />
-                      <div className='flex flex-col'>
-                        <span className='text-sm font-medium'>
+                      <div className="flex flex-col">
+                        <span className="text-sm font-medium">
                           {user.fullName}
                         </span>
-                        <span className='text-muted-foreground text-xs'>
+                        <span className="text-muted-foreground text-xs">
                           {user.username} aa
                         </span>
                       </div>
                     </div>
 
                     {selectedUsers.find((u) => u.id === user.id) && (
-                      <IconCheck className='h-4 w-4' />
+                      <IconCheck className="h-4 w-4" />
                     )}
                   </CommandItem>
                 ))}

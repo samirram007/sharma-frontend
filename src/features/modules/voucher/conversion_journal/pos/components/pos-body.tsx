@@ -1,7 +1,7 @@
 import { Form } from '@/components/ui/form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import isEqual from 'lodash/isEqual'
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import {
   useForm,
   useWatch,
@@ -55,16 +55,28 @@ const PosBody = ({ mainForm }: PosBodyProps) => {
     }
   }, [stockJournalEntries])
 
-  // Sync: parent -> child (when the parent form value changes externally)
+  // Sync: parent -> child (when the parent form value changes externally).
+  // Skipping the initial snapshot stops the StrictMode double-effect from
+  // resetting the sub-form with a stale value and wiping auto-added rows
+  // (e.g. the first entry row appended on mount).
   const parentStockJournal = mainForm.watch('stockJournal')
+  const lastParentStockJournalRef = useRef<unknown>(null)
   useEffect(() => {
-    if (
-      parentStockJournal &&
-      !isEqual(parentStockJournal, stockJournalForm.getValues())
-    ) {
-      stockJournalForm.reset(parentStockJournal)
+    const currentParent = mainForm.getValues('stockJournal')
+    if (lastParentStockJournalRef.current === null) {
+      lastParentStockJournalRef.current = currentParent
+      return
     }
-  }, [parentStockJournal, stockJournalForm])
+    if (!isEqual(lastParentStockJournalRef.current, currentParent)) {
+      lastParentStockJournalRef.current = currentParent
+      if (
+        currentParent &&
+        !isEqual(currentParent, stockJournalForm.getValues())
+      ) {
+        stockJournalForm.reset(currentParent)
+      }
+    }
+  }, [parentStockJournal, mainForm, stockJournalForm])
 
   // Sync: child -> parent (when the stock journal sub-form changes)
   useEffect(() => {

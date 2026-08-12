@@ -7,42 +7,44 @@ import { Suspense } from 'react'
 import z from 'zod'
 
 const paramsSchema = z.object({
-    id: z.union([
-        z.literal('new'),
-        z.coerce.number().refine((n) => !Number.isNaN(n), {
-            message: 'Invalid number',
-        }),
-    ]),
+  id: z.union([
+    z.literal('new'),
+    z.coerce.number().refine((n) => !Number.isNaN(n), {
+      message: 'Invalid number',
+    }),
+  ]),
 })
 
 export const Route = createFileRoute(
-    '/_protected/transactions/_provider/vouchers/_layout/physical_stock/$id'
+  '/_protected/transactions/_provider/vouchers/_layout/physical_stock/$id',
 )({
-    params: {
-        parse: (params) => paramsSchema.parse(params),
-        stringify: ({ id }) => ({ id: `${id}` }),
-    },
-    loader: ({ context, params: { id } }) => {
-        if (id === 'new') return null
-        return context.queryClient.ensureQueryData(PhysicalStockQueryOptions(id))
-    },
-    component: RouteComponent,
-    errorComponent: () => (
-        <div>
-            <span className='bg-red-400'>By ID:</span> Error loading physical stock.
-        </div>
-    ),
-    pendingComponent: () => <Loader className='animate-spin' />,
+  params: {
+    parse: (params) => paramsSchema.parse(params),
+    stringify: ({ id }) => ({ id: `${id}` }),
+  },
+  loader: ({ context, params: { id } }) => {
+    if (id === 'new') return null
+    return context.queryClient.ensureQueryData(PhysicalStockQueryOptions(id))
+  },
+  component: RouteComponent,
+  errorComponent: () => (
+    <div>
+      <span className="bg-red-400">By ID:</span> Error loading physical stock.
+    </div>
+  ),
+  pendingComponent: () => <Loader className="animate-spin" />,
 })
 
 function RouteComponent() {
-    const { id } = Route.useParams()
-    if (id === 'new') return <PhysicalStockVoucherComponent />
+  const { id } = Route.useParams()
+  if (id === 'new') return <PhysicalStockVoucherComponent />
 
-    const { data: physicalStock } = useSuspenseQuery(PhysicalStockQueryOptions(id))
-    return (
-        <Suspense fallback={<Loader className='animate-spin' />}>
-            <PhysicalStockVoucherComponent currentRow={physicalStock?.data} />
-        </Suspense>
-    )
+  const { data: physicalStock } = useSuspenseQuery(
+    PhysicalStockQueryOptions(id),
+  )
+  return (
+    <Suspense fallback={<Loader className="animate-spin" />}>
+      <PhysicalStockVoucherComponent currentRow={physicalStock?.data} />
+    </Suspense>
+  )
 }

@@ -14,12 +14,15 @@ interface MenuPreviewProps {
   compact?: boolean
 }
 
-export default function MenuPreview({ tree, compact = false }: MenuPreviewProps) {
+export default function MenuPreview({
+  tree,
+  compact = false,
+}: MenuPreviewProps) {
   if (!tree || tree.length === 0) {
     return (
-      <div className='flex flex-col items-center justify-center py-10 text-muted-foreground'>
-        <p className='text-xs font-medium'>No menu items to preview</p>
-        <p className='text-[10px]'>Add entries in the tree view first.</p>
+      <div className="flex flex-col items-center justify-center py-10 text-muted-foreground">
+        <p className="text-xs font-medium">No menu items to preview</p>
+        <p className="text-[10px]">Add entries in the tree view first.</p>
       </div>
     )
   }
@@ -32,15 +35,15 @@ export default function MenuPreview({ tree, compact = false }: MenuPreviewProps)
       )}
     >
       {/* Preview header */}
-      <div className='mb-2 flex items-center gap-2 border-b border-sidebar-border/60 pb-1.5'>
-        <div className='flex h-5 w-5 items-center justify-center rounded bg-blue-600 shadow-sm'>
-          <span className='text-[8px] font-bold text-white'>A</span>
+      <div className="mb-2 flex items-center gap-2 border-b border-sidebar-border/60 pb-1.5">
+        <div className="flex h-5 w-5 items-center justify-center rounded bg-blue-600 shadow-sm">
+          <span className="text-[8px] font-bold text-white">A</span>
         </div>
-        <div className='flex min-w-0 flex-col leading-none'>
-          <span className='truncate text-[10px] font-bold text-sidebar-foreground'>
+        <div className="flex min-w-0 flex-col leading-none">
+          <span className="truncate text-[10px] font-bold text-sidebar-foreground">
             SIDEBAR PREVIEW
           </span>
-          <span className='truncate text-[8px] font-medium text-sidebar-foreground/40'>
+          <span className="truncate text-[8px] font-medium text-sidebar-foreground/40">
             Drag items above to customize
           </span>
         </div>
@@ -71,11 +74,11 @@ function PreviewGroup({ node, depth, compact }: PreviewGroupProps) {
   const iconInnerSize = compact ? 'h-2.5 w-2.5' : 'h-3 w-3'
 
   return (
-    <div className='group/preview'>
+    <div className="group/preview">
       {isRoot ? (
         // Root level — render as group header
-        <div className='mb-0.5 px-1.5 pt-1.5'>
-          <div className='flex items-center gap-1.5'>
+        <div className="mb-0.5 px-1.5 pt-1.5">
+          <div className="flex items-center gap-1.5">
             {Icon && (
               <Icon
                 className={cn(
@@ -103,8 +106,8 @@ function PreviewGroup({ node, depth, compact }: PreviewGroupProps) {
               </span>
             )}
             {!node.isVisible && (
-              <span className='flex items-center gap-0.5 text-[8px] text-amber-500'>
-                <EyeOff className='h-2.5 w-2.5' />
+              <span className="flex items-center gap-0.5 text-[8px] text-amber-500">
+                <EyeOff className="h-2.5 w-2.5" />
               </span>
             )}
           </div>
@@ -121,10 +124,10 @@ function PreviewGroup({ node, depth, compact }: PreviewGroupProps) {
             )}
           >
             {/* Expand indicator */}
-            <div className='flex w-3.5 items-center justify-center'>
+            <div className="flex w-3.5 items-center justify-center">
               {hasChildren || node.isGroup ? (
                 <CollapsibleTrigger asChild>
-                  <button className='flex items-center justify-center text-sidebar-foreground/30 hover:text-sidebar-foreground'>
+                  <button className="flex items-center justify-center text-sidebar-foreground/30 hover:text-sidebar-foreground">
                     <ChevronRight
                       className={cn(
                         'transition-transform duration-200',
@@ -135,7 +138,7 @@ function PreviewGroup({ node, depth, compact }: PreviewGroupProps) {
                   </button>
                 </CollapsibleTrigger>
               ) : (
-                <span className='w-3.5' />
+                <span className="w-3.5" />
               )}
             </div>
 
@@ -147,9 +150,11 @@ function PreviewGroup({ node, depth, compact }: PreviewGroupProps) {
               )}
             >
               {Icon ? (
-                <Icon className={cn('text-sidebar-foreground/60', iconInnerSize)} />
+                <Icon
+                  className={cn('text-sidebar-foreground/60', iconInnerSize)}
+                />
               ) : (
-                <span className='rounded bg-sidebar-foreground/10' />
+                <span className="rounded bg-sidebar-foreground/10" />
               )}
             </div>
 
@@ -166,7 +171,7 @@ function PreviewGroup({ node, depth, compact }: PreviewGroupProps) {
 
             {/* Route badge */}
             {node.route && !compact && (
-              <code className='hidden truncate rounded bg-sidebar-accent/50 px-1 py-0.5 text-[8px] font-mono text-sidebar-foreground/30 sm:inline-block max-w-16'>
+              <code className="hidden truncate rounded bg-sidebar-accent/50 px-1 py-0.5 text-[8px] font-mono text-sidebar-foreground/30 sm:inline-block max-w-16">
                 {node.route}
               </code>
             )}

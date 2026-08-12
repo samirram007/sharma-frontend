@@ -9,7 +9,9 @@ test.describe('Key pages', () => {
   test('user-wise dashboard renders', async ({ page }) => {
     await page.goto('/dashboard/user-wise')
 
-    await expect(page.getByRole('heading', { name: 'User-wise Dashboard' })).toBeVisible()
+    await expect(
+      page.getByRole('heading', { name: 'User-wise Dashboard' }),
+    ).toBeVisible()
     await expect(page.getByText('Active Users', { exact: true })).toBeVisible()
     await expectNoErrorState(page)
   })
@@ -23,7 +25,9 @@ test.describe('Key pages', () => {
     await expectNoErrorState(page)
   })
 
-  test('opening stock entry page opens without a server error', async ({ page }) => {
+  test('opening stock entry page opens without a server error', async ({
+    page,
+  }) => {
     await page.goto('/transactions/vouchers/opening_stock/new')
 
     // The POS form renders a 'Reference No.' field once its heavy data load completes

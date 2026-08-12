@@ -5,8 +5,8 @@ import './styles.css'
 
 const rootElement = document.getElementById('root')!
 ReactDOM.hydrateRoot(
-    rootElement,
-    <Providers>
-        <AppRouter />
-    </Providers>
+  rootElement,
+  <Providers>
+    <AppRouter />
+  </Providers>,
 )

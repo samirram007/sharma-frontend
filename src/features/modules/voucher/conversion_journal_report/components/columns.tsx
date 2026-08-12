@@ -15,6 +15,7 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { toNum, formatLocale } from '@/utils/format-num'
+import RowActions from './row-actions'
 
 const formatDate = (value: string | Date) => {
   const date = new Date(value)
@@ -243,5 +244,13 @@ export const columns: ColumnDef<ConversionJournalReportSchema>[] = [
       </div>
     ),
     meta: { className: 'text-right' },
+  },
+  {
+    id: 'actions',
+    header: () => null,
+    cell: RowActions,
+    enableSorting: false,
+    enableHiding: false,
+    meta: { className: 'w-8' },
   },
 ]

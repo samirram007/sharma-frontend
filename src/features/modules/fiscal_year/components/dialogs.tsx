@@ -2,7 +2,6 @@ import { useFiscalYear } from '@/features/modules/fiscal_year/contexts/fiscal_ye
 import { ActionDialog } from './action-dialog'
 import { DeleteDialog } from './delete-dialog'
 
-
 export function Dialogs() {
   const { open, setOpen, currentRow, setCurrentRow, keyName } = useFiscalYear()
   return (

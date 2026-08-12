@@ -8,8 +8,21 @@ import {
 import { rankItem } from '@tanstack/match-sorter-utils'
 import { MixerHorizontalIcon } from '@radix-ui/react-icons'
 import { useMemo, useState } from 'react'
-import { ChevronDown, ChevronUp, FileSpreadsheet, FileText, Search } from 'lucide-react'
-import type { ColumnDef, ColumnFiltersState, FilterFn, RowData, SortingState, VisibilityState } from '@tanstack/react-table'
+import {
+  ChevronDown,
+  ChevronUp,
+  FileSpreadsheet,
+  FileText,
+  Search,
+} from 'lucide-react'
+import type {
+  ColumnDef,
+  ColumnFiltersState,
+  FilterFn,
+  RowData,
+  SortingState,
+  VisibilityState,
+} from '@tanstack/react-table'
 import type { VoucherSchema } from '../../data-schema/voucher-schema'
 
 const fuzzyFilter: FilterFn<any> = (row, columnId, value) => {
@@ -38,9 +51,7 @@ import { DataTablePagination } from '@/features/global/components/data-table/dat
 import { cn } from '@/lib/utils'
 import { date_format } from '@/utils/removeEmptyStrings'
 
-
 declare module '@tanstack/react-table' {
-
   interface ColumnMeta<TData extends RowData, TValue> {
     className: string
   }
@@ -123,13 +134,15 @@ export function GridTable({
     },
   })
 
-
   // Prepare export column mapping from the table column definitions
   const exportColumns = useMemo(() => {
     return table
       .getAllLeafColumns()
       .filter((col) => col.getCanHide() || !col.id.startsWith('_'))
-      .filter((col) => col.id !== 'actions' && col.id !== 'select' && col.id !== 'slNo')
+      .filter(
+        (col) =>
+          col.id !== 'actions' && col.id !== 'select' && col.id !== 'slNo',
+      )
       .map((col) => {
         // Derive a human-readable header from the column definition
         const def = col.columnDef
@@ -150,14 +163,23 @@ export function GridTable({
       partyName: item.party?.name ?? '',
       dispatchNo: item.voucherDispatchDetail?.billOfLadingNo ?? '',
       source: item.voucherDispatchDetail?.source ?? '',
-      destination: [item.voucherDispatchDetail?.destination, item.voucherDispatchDetail?.destinationSecondary]
+      destination: [
+        item.voucherDispatchDetail?.destination,
+        item.voucherDispatchDetail?.destinationSecondary,
+      ]
         .filter(Boolean)
         .join(', '),
       carrier: item.voucherDispatchDetail?.carrierName ?? '',
       vehicleNo: item.voucherDispatchDetail?.motorVehicleNo ?? '',
-      weight: item.voucherDispatchDetail?.weight ? Number(item.voucherDispatchDetail.weight).toFixed(3) : '',
-      rate: item.voucherDispatchDetail?.rate ? Number(item.voucherDispatchDetail.rate).toFixed(2) : '',
-      totalFare: item.voucherDispatchDetail?.totalFare ? Number(item.voucherDispatchDetail.totalFare).toFixed(2) : '',
+      weight: item.voucherDispatchDetail?.weight
+        ? Number(item.voucherDispatchDetail.weight).toFixed(3)
+        : '',
+      rate: item.voucherDispatchDetail?.rate
+        ? Number(item.voucherDispatchDetail.rate).toFixed(2)
+        : '',
+      totalFare: item.voucherDispatchDetail?.totalFare
+        ? Number(item.voucherDispatchDetail.totalFare).toFixed(2)
+        : '',
     }))
   }, [data])
 
@@ -172,41 +194,41 @@ export function GridTable({
     const sorted = column.getIsSorted()
     if (!sorted) return null
     return (
-      <span className='ml-1 inline-flex'>
+      <span className="ml-1 inline-flex">
         {sorted === 'asc' ? (
-          <ChevronUp className='h-3 w-3 text-blue-600 dark:text-blue-400' />
+          <ChevronUp className="h-3 w-3 text-blue-600 dark:text-blue-400" />
         ) : (
-          <ChevronDown className='h-3 w-3 text-blue-600 dark:text-blue-400' />
+          <ChevronDown className="h-3 w-3 text-blue-600 dark:text-blue-400" />
         )}
       </span>
     )
   }
 
   return (
-    <div className='flex flex-col gap-3 p-1'>
+    <div className="flex flex-col gap-3 p-1">
       {/* Toolbar with search, freight status filter, column visibility toggle + export buttons */}
-      <div className='flex flex-wrap items-center justify-between gap-3 px-2 pt-1'>
-        <div className='flex items-center gap-3'>
+      <div className="flex flex-wrap items-center justify-between gap-3 px-2 pt-1">
+        <div className="flex items-center gap-3">
           {/* Search input */}
-          <div className='relative flex w-[200px] items-center'>
+          <div className="relative flex w-[200px] items-center">
             <Input
-              placeholder='Search...'
+              placeholder="Search..."
               value={search || ''}
-              className='h-8 w-full pr-9 text-xs'
+              className="h-8 w-full pr-9 text-xs"
               onChange={(e) => onSearchChange?.(e.target.value)}
             />
             <Button
-              variant='ghost'
-              size='sm'
-              className='absolute right-0 top-1/2 h-8 w-8 -translate-y-1/2 p-0'
+              variant="ghost"
+              size="sm"
+              className="absolute right-0 top-1/2 h-8 w-8 -translate-y-1/2 p-0"
               onClick={onSearch}
             >
-              <Search className='h-3.5 w-3.5 text-muted-foreground' />
+              <Search className="h-3.5 w-3.5 text-muted-foreground" />
             </Button>
           </div>
 
           {/* Freight status filter toggle */}
-          <div className='flex items-center gap-1 rounded-lg border border-border bg-muted/50 p-0.5 dark:bg-muted/40'>
+          <div className="flex items-center gap-1 rounded-lg border border-border bg-muted/50 p-0.5 dark:bg-muted/40">
             {[
               { value: 'pending', label: 'Pending' },
               { value: 'prepared', label: 'Prepared' },
@@ -228,16 +250,17 @@ export function GridTable({
           </div>
         </div>
 
-        <div className='flex items-center gap-2'>
+        <div className="flex items-center gap-2">
           {/* Export PDF */}
           {data.length > 0 && (
             <>
               <Button
-                variant='outline'
-                size='sm'
-                className='h-8 rounded-lg text-xs text-muted-foreground shadow-xs transition-colors hover:bg-accent hover:text-accent-foreground'
+                variant="outline"
+                size="sm"
+                className="h-8 rounded-lg text-xs text-muted-foreground shadow-xs transition-colors hover:bg-accent hover:text-accent-foreground"
                 onClick={async () => {
-                  const { default: exportTableToPdf } = await import('@/utils/export-table-pdf')
+                  const { default: exportTableToPdf } =
+                    await import('@/utils/export-table-pdf')
                   exportTableToPdf({
                     title: 'Freight Delivery Notes',
                     columnData: exportColumns,
@@ -246,16 +269,17 @@ export function GridTable({
                   })
                 }}
               >
-                <FileText className='mr-1.5 h-3.5 w-3.5' />
+                <FileText className="mr-1.5 h-3.5 w-3.5" />
                 PDF
               </Button>
               {/* Export Excel */}
               <Button
-                variant='outline'
-                size='sm'
-                className='h-8 rounded-lg text-xs text-muted-foreground shadow-xs transition-colors hover:bg-accent hover:text-accent-foreground'
+                variant="outline"
+                size="sm"
+                className="h-8 rounded-lg text-xs text-muted-foreground shadow-xs transition-colors hover:bg-accent hover:text-accent-foreground"
                 onClick={async () => {
-                  const { default: exportTableToExcel } = await import('@/utils/export-table-excel')
+                  const { default: exportTableToExcel } =
+                    await import('@/utils/export-table-excel')
                   exportTableToExcel({
                     title: 'Freight Delivery Notes',
                     columnData: exportColumns,
@@ -264,7 +288,7 @@ export function GridTable({
                   })
                 }}
               >
-                <FileSpreadsheet className='mr-1.5 h-3.5 w-3.5' />
+                <FileSpreadsheet className="mr-1.5 h-3.5 w-3.5" />
                 Excel
               </Button>
             </>
@@ -273,15 +297,15 @@ export function GridTable({
           <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
               <Button
-                variant='outline'
-                size='sm'
-                className='h-8 rounded-lg text-xs text-muted-foreground shadow-xs transition-colors hover:bg-accent hover:text-accent-foreground'
+                variant="outline"
+                size="sm"
+                className="h-8 rounded-lg text-xs text-muted-foreground shadow-xs transition-colors hover:bg-accent hover:text-accent-foreground"
               >
-                <MixerHorizontalIcon className='mr-2 h-4 w-4' />
+                <MixerHorizontalIcon className="mr-2 h-4 w-4" />
                 Columns
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align='end' className='w-[160px]'>
+            <DropdownMenuContent align="end" className="w-[160px]">
               <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
               <DropdownMenuSeparator />
               {table
@@ -290,7 +314,7 @@ export function GridTable({
                 .map((column) => (
                   <DropdownMenuCheckboxItem
                     key={column.id}
-                    className='capitalize'
+                    className="capitalize"
                     checked={column.getIsVisible()}
                     onCheckedChange={(value) =>
                       column.toggleVisibility(!!value)
@@ -305,11 +329,14 @@ export function GridTable({
       </div>
 
       {/* Table container with horizontal scroll */}
-      <div className='overflow-x-auto rounded-lg border border-border'>
+      <div className="overflow-x-auto rounded-lg border border-border">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id} className='border-b border-border bg-muted/50'>
+              <TableRow
+                key={headerGroup.id}
+                className="border-b border-border bg-muted/50"
+              >
                 {headerGroup.headers.map((header) => (
                   <TableHead
                     key={header.id}
@@ -322,7 +349,8 @@ export function GridTable({
                     className={cn(
                       'h-10 px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground',
                       header.column.columnDef.meta?.className ?? '',
-                      header.column.getCanSort() && 'cursor-pointer select-none hover:text-foreground',
+                      header.column.getCanSort() &&
+                        'cursor-pointer select-none hover:text-foreground',
                       'relative',
                     )}
                     onClick={
@@ -331,7 +359,7 @@ export function GridTable({
                         : undefined
                     }
                   >
-                    <div className='flex items-center'>
+                    <div className="flex items-center">
                       {header.isPlaceholder
                         ? null
                         : flexRender(
@@ -368,9 +396,7 @@ export function GridTable({
                   data-state={row.getIsSelected() && 'selected'}
                   className={cn(
                     'border-b border-border/60 transition-colors duration-150',
-                    rowIdx % 2 === 0
-                      ? 'bg-background'
-                      : 'bg-muted/20',
+                    rowIdx % 2 === 0 ? 'bg-background' : 'bg-muted/20',
                     'hover:bg-accent/50',
                   )}
                 >
@@ -399,7 +425,7 @@ export function GridTable({
               <TableRow>
                 <TableCell
                   colSpan={table.getVisibleLeafColumns().length}
-                  className='h-32 text-center text-sm text-muted-foreground'
+                  className="h-32 text-center text-sm text-muted-foreground"
                 >
                   No results found.
                 </TableCell>
@@ -410,26 +436,34 @@ export function GridTable({
       </div>
 
       {/* Footer with totals and pagination */}
-      <div className='flex flex-wrap items-center justify-between gap-4 rounded-lg border border-border bg-muted/40 px-5 py-2.5 text-sm dark:bg-muted/30'>
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-lg border border-border bg-muted/40 px-5 py-2.5 text-sm dark:bg-muted/30">
         {data.length > 0 && (
-          <div className='flex flex-wrap items-center gap-6'>
-            <span className='text-xs font-medium text-muted-foreground'>
+          <div className="flex flex-wrap items-center gap-6">
+            <span className="text-xs font-medium text-muted-foreground">
               Total Records:{' '}
-              <span className='font-semibold text-blue-700 dark:text-blue-400'>
+              <span className="font-semibold text-blue-700 dark:text-blue-400">
                 {totalRecords ?? data.length}
               </span>
             </span>
-            <span className='text-xs font-medium text-muted-foreground'>
+            <span className="text-xs font-medium text-muted-foreground">
               This Page Fare:{' '}
-              <span className='font-semibold text-blue-700 dark:text-blue-400'>
-                ₹{totalFare.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              <span className="font-semibold text-blue-700 dark:text-blue-400">
+                ₹
+                {totalFare.toLocaleString('en-IN', {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
               </span>
             </span>
             {totalFareOverall !== undefined && (
-              <span className='text-xs font-medium text-muted-foreground'>
+              <span className="text-xs font-medium text-muted-foreground">
                 Overall Fare:{' '}
-                <span className='font-semibold text-blue-700 dark:text-blue-400'>
-                  ₹{totalFareOverall.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                <span className="font-semibold text-blue-700 dark:text-blue-400">
+                  ₹
+                  {totalFareOverall.toLocaleString('en-IN', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
                 </span>
               </span>
             )}

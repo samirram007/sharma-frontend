@@ -6,7 +6,9 @@ test.beforeEach(async ({ page }) => {
 })
 
 test.describe('Dashboard', () => {
-  test('renders stat cards and charts without a server error', async ({ page }) => {
+  test('renders stat cards and charts without a server error', async ({
+    page,
+  }) => {
     await page.goto('/dashboard')
 
     // App shell + page header
@@ -19,7 +21,9 @@ test.describe('Dashboard', () => {
     await expect(page.getByText('deliveries dispatched')).toBeVisible()
 
     // Charts render (recharts wraps each chart in a ResponsiveContainer)
-    await expect(page.locator('.recharts-responsive-container').first()).toBeVisible()
+    await expect(
+      page.locator('.recharts-responsive-container').first(),
+    ).toBeVisible()
 
     // Regression: no error boundary, no global server-error toast, no widget fallbacks
     await expectNoErrorState(page)
@@ -36,7 +40,7 @@ test.describe('Dashboard', () => {
         status: 500,
         contentType: 'application/json',
         body: JSON.stringify({ message: 'simulated server error' }),
-      })
+      }),
     )
 
     await page.goto('/dashboard')
@@ -53,7 +57,9 @@ test.describe('Dashboard', () => {
     await expect(page.getByRole('button', { name: 'Retry' })).toBeVisible()
 
     // Other charts still render
-    await expect(page.locator('.recharts-responsive-container').first()).toBeVisible()
+    await expect(
+      page.locator('.recharts-responsive-container').first(),
+    ).toBeVisible()
 
     // Regression: no full-page error boundary and no global 'Internal Server Error!' toast
     await expectNoErrorState(page)
@@ -79,8 +85,9 @@ test.describe('Dashboard', () => {
     // Wait until the mocked endpoint actually returned its 500, then expect the
     // inline fallback (the query retries once, so wait for the first response).
     await page.waitForResponse(
-      (r) => r.url().includes('/dashboard/transporter_wise') && r.status() === 500,
-      { timeout: 15_000 }
+      (r) =>
+        r.url().includes('/dashboard/transporter_wise') && r.status() === 500,
+      { timeout: 15_000 },
     )
     await expect(page.getByText("Couldn't load this chart.")).toBeVisible({
       timeout: 15_000,
@@ -93,7 +100,9 @@ test.describe('Dashboard', () => {
     await expect(page.getByText("Couldn't load this chart.")).toHaveCount(0, {
       timeout: 15_000,
     })
-    await expect(page.locator('.recharts-responsive-container').first()).toBeVisible()
+    await expect(
+      page.locator('.recharts-responsive-container').first(),
+    ).toBeVisible()
     await expectNoErrorState(page)
   })
 })

@@ -2,8 +2,6 @@ import useDialogState from '@/core/hooks/use-dialog-state'
 import React, { useState } from 'react'
 import type { Role } from '../data/schema'
 
-
-
 type RoleDialogType = 'invite' | 'add' | 'edit' | 'delete' | 'permissions'
 
 interface RoleContextType {
@@ -27,13 +25,18 @@ export default function RoleProvider({ children }: Props) {
   const [currentRow, setCurrentRow] = useState<Role | null>(null)
   const [isModal, setIsModal] = useState<boolean>(false)
 
-
-
   return (
-    <RoleContext.Provider value={{
-      open, setOpen, currentRow, setCurrentRow, keyName: "role",
-      isModal, setIsModal
-    }}>
+    <RoleContext.Provider
+      value={{
+        open,
+        setOpen,
+        currentRow,
+        setCurrentRow,
+        keyName: 'role',
+        isModal,
+        setIsModal,
+      }}
+    >
       {children}
     </RoleContext.Provider>
   )

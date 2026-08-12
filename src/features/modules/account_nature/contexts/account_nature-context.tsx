@@ -2,8 +2,6 @@ import useDialogState from '@/core/hooks/use-dialog-state'
 import React, { useState } from 'react'
 import type { AccountNature } from '../data/schema'
 
-
-
 type AccountNatureDialogType = 'invite' | 'add' | 'edit' | 'delete'
 
 interface AccountNatureContextType {
@@ -14,7 +12,8 @@ interface AccountNatureContextType {
   keyName: string
 }
 
-const AccountNatureContext = React.createContext<AccountNatureContextType | null>(null)
+const AccountNatureContext =
+  React.createContext<AccountNatureContextType | null>(null)
 
 interface Props {
   children: React.ReactNode
@@ -24,9 +23,16 @@ export default function AccountNatureProvider({ children }: Props) {
   const [open, setOpen] = useDialogState<AccountNatureDialogType>(null)
   const [currentRow, setCurrentRow] = useState<AccountNature | null>(null)
 
-
   return (
-    <AccountNatureContext value={{ open, setOpen, currentRow, setCurrentRow, keyName: "account_nature" }}>
+    <AccountNatureContext
+      value={{
+        open,
+        setOpen,
+        currentRow,
+        setCurrentRow,
+        keyName: 'account_nature',
+      }}
+    >
       {children}
     </AccountNatureContext>
   )
@@ -37,7 +43,9 @@ export const useAccountNature = () => {
   const accountNatureContext = React.useContext(AccountNatureContext)
 
   if (!accountNatureContext) {
-    throw new Error('useAccountNature has to be used within <AccountNatureContext>')
+    throw new Error(
+      'useAccountNature has to be used within <AccountNatureContext>',
+    )
   }
 
   return accountNatureContext

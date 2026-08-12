@@ -1,6 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
 
-
 export const Route = createFileRoute(
   '/_protected/transactions/_provider/freight/_layout/$id/receipt',
 )({

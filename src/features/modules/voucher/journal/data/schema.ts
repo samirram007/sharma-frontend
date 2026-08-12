@@ -10,11 +10,11 @@ export const journalVoucherListSchema = z.array(journalVoucherSchema)
 export type JournalVoucherList = z.infer<typeof journalVoucherListSchema>
 
 export const journalFormSchema = journalVoucherSchema
-    .extend({
-        isEdit: z.boolean().optional(),
-    })
-    .omit({
-        id: true,
-    })
+  .extend({
+    isEdit: z.boolean().optional(),
+  })
+  .omit({
+    id: true,
+  })
 
 export type JournalVoucherForm = z.infer<typeof journalFormSchema>

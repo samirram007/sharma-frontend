@@ -9,11 +9,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import {
-  Form
-} from '@/components/ui/form'
+import { Form } from '@/components/ui/form'
 
-import type { Company, CompanyForm } from '@/features/modules/company/data/schema'
+import type {
+  Company,
+  CompanyForm,
+} from '@/features/modules/company/data/schema'
 import { showSubmittedData } from '@/utils/show-submitted-data'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
@@ -23,7 +24,6 @@ import { useForm } from 'react-hook-form'
 import { lowerCase } from '../../../../utils/removeEmptyStrings'
 import { storeCompanyService, updateCompanyService } from '../data/api'
 import { formSchema } from '../data/schema'
-
 
 interface Props {
   currentRow?: Company
@@ -38,12 +38,11 @@ export function ActionDialog({ currentRow, open, onOpenChange }: Props) {
     mutationFn: async (data: CompanyForm) => {
       // Here you would typically make an API call to save the Company
       // For example:
-      console.log('Saving Company:', data);
+      console.log('Saving Company:', data)
       if (isEdit && currentRow) {
         return await updateCompanyService({ ...data, id: currentRow.id })
-      }
-      else if (!isEdit) {
-        return await storeCompanyService(data);
+      } else if (!isEdit) {
+        return await storeCompanyService(data)
       }
     },
     onSuccess: (data) => {
@@ -56,26 +55,25 @@ export function ActionDialog({ currentRow, open, onOpenChange }: Props) {
     resolver: zodResolver(formSchema),
     defaultValues: isEdit
       ? {
-        ...currentRow, isEdit,
-      }
+          ...currentRow,
+          isEdit,
+        }
       : {
-        name: '',
-        code: '', 
-        status: 'active',
-        isEdit,
-      },
+          name: '',
+          code: '',
+          status: 'active',
+          isEdit,
+        },
   })
   //  const companyStatusOptions: ActiveInactiveStatus[] = ['active', 'inactive'];
 
-  const moduleName = "Company"
+  const moduleName = 'Company'
   const onSubmit = (values: CompanyForm) => {
     form.reset()
     showSubmittedData(values)
     mutateCompany.mutate(values)
     onOpenChange(false)
   }
-
-
 
   return (
     <Dialog
@@ -85,40 +83,63 @@ export function ActionDialog({ currentRow, open, onOpenChange }: Props) {
         onOpenChange(state)
       }}
     >
-      <DialogContent className='sm:max-w-lg'>
-        <DialogHeader className='text-left'>
-          <DialogTitle>{isEdit ? 'Edit ' : 'Add New '} {moduleName}</DialogTitle>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader className="text-left">
+          <DialogTitle>
+            {isEdit ? 'Edit ' : 'Add New '} {moduleName}
+          </DialogTitle>
           <DialogDescription>
-            {isEdit ? `Update the ${lowerCase(moduleName)} here. `
+            {isEdit
+              ? `Update the ${lowerCase(moduleName)} here. `
               : `Create new ${lowerCase(moduleName)} here. `}
             Click save when you&apos;re done.
           </DialogDescription>
         </DialogHeader>
-        <div className='-mr-4 h-[26.25rem] w-full overflow-y-auto py-1 pr-4'>
+        <div className="-mr-4 h-[26.25rem] w-full overflow-y-auto py-1 pr-4">
           <Form {...form}>
             <form
-              id='user-form'
+              id="user-form"
               onSubmit={form.handleSubmit(onSubmit)}
-              className='space-y-4 p-0.5'
+              className="space-y-4 p-0.5"
             >
-              <FormInputField type='text' form={form} name='name' label='Name' />
-              <FormInputField type='text' form={form} name='code' label='Code' />
+              <FormInputField
+                type="text"
+                form={form}
+                name="name"
+                label="Name"
+              />
+              <FormInputField
+                type="text"
+                form={form}
+                name="code"
+                label="Code"
+              />
 
-              <FormInputField type='textarea' form={form} name='description' label='Description (optional)' />
-              <FormInputField type='checkbox' form={form} name='status' label='Status' options={[
-                { label: 'Active', value: 'active' },
-                { label: 'Inactive', value: 'inactive' },
-              ]} />
-
+              <FormInputField
+                type="textarea"
+                form={form}
+                name="description"
+                label="Description (optional)"
+              />
+              <FormInputField
+                type="checkbox"
+                form={form}
+                name="status"
+                label="Status"
+                options={[
+                  { label: 'Active', value: 'active' },
+                  { label: 'Inactive', value: 'inactive' },
+                ]}
+              />
             </form>
           </Form>
         </div>
         <DialogFooter>
-          <Button type='submit' form='user-form'>
+          <Button type="submit" form="user-form">
             Save changes
           </Button>
         </DialogFooter>
       </DialogContent>
-    </Dialog >
+    </Dialog>
   )
 }

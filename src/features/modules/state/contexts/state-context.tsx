@@ -2,8 +2,6 @@ import useDialogState from '@/core/hooks/use-dialog-state'
 import React, { useState } from 'react'
 import type { State } from '../data/schema'
 
-
-
 type StateDialogType = 'invite' | 'add' | 'edit' | 'delete'
 
 interface StateContextType {
@@ -24,9 +22,10 @@ export default function StateProvider({ children }: Props) {
   const [open, setOpen] = useDialogState<StateDialogType>(null)
   const [currentRow, setCurrentRow] = useState<State | null>(null)
 
-
   return (
-    <StateContext value={{ open, setOpen, currentRow, setCurrentRow, keyName: "state" }}>
+    <StateContext
+      value={{ open, setOpen, currentRow, setCurrentRow, keyName: 'state' }}
+    >
       {children}
     </StateContext>
   )

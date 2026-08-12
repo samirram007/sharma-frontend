@@ -28,8 +28,7 @@ type PosBodyProps = {
 
 // Mirrors the entry grid column widths so the summary numbers line up
 // directly under their columns (Particulars | Qty | Rate | per | disc% | Amount | Action).
-const SUMMARY_GRID_COLS =
-  'grid-cols-[1fr_300px_150px_80px_80px_200px_120px]'
+const SUMMARY_GRID_COLS = 'grid-cols-[1fr_280px_130px_70px_70px_180px_120px]'
 
 const PosBody = ({ mainForm, scrollRef }: PosBodyProps) => {
   const { config } = useTransaction()
@@ -188,15 +187,11 @@ const PosBody = ({ mainForm, scrollRef }: PosBodyProps) => {
 
       {/* Pinned summary bar — always visible above the footer */}
       <div className="shrink-0 border-t-2 border-gray-300 bg-gray-100/80 px-2 py-2 dark:border-gray-700 dark:bg-gray-900/50">
-        <div
-          className={`${SUMMARY_GRID_COLS} grid items-center gap-0 text-sm`}
-        >
+        <div className={`${SUMMARY_GRID_COLS} grid items-center gap-0 text-sm`}>
           <div className="flex items-center gap-1.5 px-2 font-semibold text-muted-foreground">
             <IconCalculator className="h-4 w-4" />
             <span>Totals</span>
-            <span className="font-medium">
-              ({totals.itemCount} item(s))
-            </span>
+            <span className="font-medium">({totals.itemCount} item(s))</span>
           </div>
           {showActualBilling ? (
             <div className="grid grid-cols-2 pr-3 text-right font-bold text-emerald-700">

@@ -20,7 +20,9 @@ export function useRealtimeNotifications() {
 
     channel.listen('.notification.created', () => {
       // Directly update unread count for instant badge refresh
-      queryClient.invalidateQueries({ queryKey: ['app-notifications', 'unread-count'] })
+      queryClient.invalidateQueries({
+        queryKey: ['app-notifications', 'unread-count'],
+      })
       // Refresh the notification list
       queryClient.invalidateQueries({ queryKey: ['app-notifications', 'my'] })
       // Refresh the notifications page

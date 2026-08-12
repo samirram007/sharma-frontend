@@ -5,7 +5,7 @@ import type {
 } from '../../data-schema/voucher-schema'
 import { format } from 'date-fns'
 import { Package, ArrowDownCircle, ArrowUpCircle } from 'lucide-react'
-import { formatLocale } from '@/utils/format-num'
+import { formatLocale, formatQty } from '@/utils/format-num'
 import { isProductionEntry } from './columns'
 
 interface MovementDetailsProps {
@@ -19,7 +19,6 @@ function formatDate(value: string | Date | null | undefined) {
   return format(date, 'dd-MMM-yyyy')
 }
 
-const formatQty = formatLocale
 const formatAmt = formatLocale
 
 function MovementBadge({ entry }: { entry: { movementType?: string | null } }) {
@@ -65,10 +64,10 @@ function GodownBatchRow({ entry }: { entry: StockJournalGodownEntryForm }) {
         {formatDate(entry.expiryDate)}
       </td>
       <td className="py-2 px-2 text-xs tabular-nums text-right font-medium">
-        {formatQty(entry.actualQuantity)}
+        {formatQty(entry.actualQuantity, entry.stockUnit?.noOfDecimalPlaces)}
       </td>
       <td className="py-2 px-2 text-xs tabular-nums text-right">
-        {formatQty(entry.billingQuantity)}
+        {formatQty(entry.billingQuantity, entry.stockUnit?.noOfDecimalPlaces)}
       </td>
       <td className="py-2 px-2 text-xs tabular-nums text-right">
         {formatQty(entry.rate)}
@@ -128,7 +127,10 @@ export function MovementDetails({ stockJournalEntries }: MovementDetailsProps) {
                   <span>
                     Qty:{' '}
                     <strong className="text-slate-700 dark:text-slate-300">
-                      {formatQty(entry.actualQuantity)}
+                      {formatQty(
+                        entry.actualQuantity,
+                        entry.stockUnit?.noOfDecimalPlaces,
+                      )}
                     </strong>
                   </span>
                   <span>

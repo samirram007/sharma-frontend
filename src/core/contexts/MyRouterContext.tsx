@@ -1,8 +1,7 @@
-import type { AuthContextType } from '@/features/auth/contexts/AuthContext';
-import type { QueryClient } from '@tanstack/react-query';
-
+import type { AuthContextType } from '@/features/auth/contexts/AuthContext'
+import type { QueryClient } from '@tanstack/react-query'
 
 export interface MyRouterContext {
-    queryClient: QueryClient;
-    auth: AuthContextType;
+  queryClient: QueryClient
+  auth: AuthContextType
 }

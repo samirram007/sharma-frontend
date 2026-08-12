@@ -5,7 +5,10 @@ export const openingStockJournalDefaultValues = {
   journalNo: '',
   journalDate: null,
   voucherId: undefined,
-  type: 'in',
+  // The stock journal type for OPNSK vouchers is the module code 'OPNSK'
+  // (same convention as 'conv' for conversion journals). The backend also
+  // stamps it on save, so this just keeps the payload honest.
+  type: 'OPNSK',
   remarks: '',
   stockJournalEntries: [],
 }

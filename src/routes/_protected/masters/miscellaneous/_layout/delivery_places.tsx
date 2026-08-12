@@ -14,7 +14,6 @@ export const Route = createFileRoute(
     const { data: state } = useSuspenseQuery(deliveryPlaceQueryOptions())
     return (
       <Suspense fallback={<Loader className="animate-spin" />}>
-
         <DeliveryPlace data={state?.data} />
       </Suspense>
     )
@@ -22,4 +21,3 @@ export const Route = createFileRoute(
   errorComponent: () => <div>Error loading state data...</div>,
   pendingComponent: () => <Loader className="animate-spin" />,
 })
-

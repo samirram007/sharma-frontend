@@ -65,22 +65,29 @@ export function DataTableToolbar<TData>({
   const autoSelectedRef = useRef(false)
 
   useEffect(() => {
-    fetchUsedVoucherTypesService().then((res) => {
-      if (res?.data) {
-        setVoucherTypes(res.data)
-        // Auto-select default voucher types on first load
-        if (!autoSelectedRef.current && selectedVoucherTypes.length === 0) {
-          const defaultNames = ['Delivery Note', 'Receipt Note', 'Sales', 'Receipt']
-          const defaultIds = res.data
-            .filter((vt: VoucherTypeOption) => defaultNames.includes(vt.name))
-            .map((vt: VoucherTypeOption) => String(vt.id))
-          if (defaultIds.length > 0) {
-            onVoucherTypeChange?.(defaultIds)
+    fetchUsedVoucherTypesService()
+      .then((res) => {
+        if (res?.data) {
+          setVoucherTypes(res.data)
+          // Auto-select default voucher types on first load
+          if (!autoSelectedRef.current && selectedVoucherTypes.length === 0) {
+            const defaultNames = [
+              'Delivery Note',
+              'Receipt Note',
+              'Sales',
+              'Receipt',
+            ]
+            const defaultIds = res.data
+              .filter((vt: VoucherTypeOption) => defaultNames.includes(vt.name))
+              .map((vt: VoucherTypeOption) => String(vt.id))
+            if (defaultIds.length > 0) {
+              onVoucherTypeChange?.(defaultIds)
+            }
+            autoSelectedRef.current = true
           }
-          autoSelectedRef.current = true
         }
-      }
-    }).catch(() => {})
+      })
+      .catch(() => {})
   }, [onVoucherTypeChange])
 
   const exportData = useMemo(() => {
@@ -88,11 +95,18 @@ export function DataTableToolbar<TData>({
       // Compute status display value matching the status column logic
       let status = '—'
       if (row.voucherType?.id === 2001) {
-        const hasFreight = row.referencedBy?.some((ref: any) => ref.type === 'freight')
+        const hasFreight = row.referencedBy?.some(
+          (ref: any) => ref.type === 'freight',
+        )
         status = hasFreight ? 'Freight Done' : 'No Freight'
       } else if (row.module === 'freight') {
         const paymentStatus = row.paymentStatus ?? 'unpaid'
-        status = paymentStatus === 'paid' ? 'Paid' : paymentStatus === 'partially_paid' ? 'Partial' : 'Unpaid'
+        status =
+          paymentStatus === 'paid'
+            ? 'Paid'
+            : paymentStatus === 'partially_paid'
+              ? 'Partial'
+              : 'Unpaid'
       }
 
       return {
@@ -111,7 +125,11 @@ export function DataTableToolbar<TData>({
     return col.header !== 'actions' && col.header !== 'select'
   })
 
-  const isFiltered = selectedVoucherTypes.length > 0 || selectedBillingPreferences.length > 0 || selectedStatuses.length > 0 || searchValue
+  const isFiltered =
+    selectedVoucherTypes.length > 0 ||
+    selectedBillingPreferences.length > 0 ||
+    selectedStatuses.length > 0 ||
+    searchValue
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
@@ -189,34 +207,36 @@ export function DataTableToolbar<TData>({
         />
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant='outline' size='sm' className='h-8 border-dashed'>
-              <PlusCircledIcon className='mr-1 h-4 w-4' />
+            <Button variant="outline" size="sm" className="h-8 border-dashed">
+              <PlusCircledIcon className="mr-1 h-4 w-4" />
               Voucher Type
               {selectedVoucherTypes.length > 0 && (
                 <>
-                  <Separator orientation='vertical' className='mx-2 h-4' />
+                  <Separator orientation="vertical" className="mx-2 h-4" />
                   <Badge
-                    variant='secondary'
-                    className='rounded-sm px-1 font-normal lg:hidden'
+                    variant="secondary"
+                    className="rounded-sm px-1 font-normal lg:hidden"
                   >
                     {selectedVoucherTypes.length}
                   </Badge>
-                  <div className='hidden space-x-1 lg:flex'>
+                  <div className="hidden space-x-1 lg:flex">
                     {selectedVoucherTypes.length > 2 ? (
                       <Badge
-                        variant='secondary'
-                        className='rounded-sm px-1 font-normal'
+                        variant="secondary"
+                        className="rounded-sm px-1 font-normal"
                       >
                         {selectedVoucherTypes.length} selected
                       </Badge>
                     ) : (
                       voucherTypeOptions
-                        .filter((option) => selectedVoucherTypes.includes(option.value))
+                        .filter((option) =>
+                          selectedVoucherTypes.includes(option.value),
+                        )
                         .map((option) => (
                           <Badge
-                            variant='secondary'
+                            variant="secondary"
                             key={option.value}
-                            className='rounded-sm px-1 font-normal'
+                            className="rounded-sm px-1 font-normal"
                           >
                             {option.label}
                           </Badge>
@@ -227,14 +247,16 @@ export function DataTableToolbar<TData>({
               )}
             </Button>
           </PopoverTrigger>
-          <PopoverContent className='w-[200px] p-0' align='start'>
+          <PopoverContent className="w-[200px] p-0" align="start">
             <Command>
-              <CommandInput placeholder='Voucher Type' />
-              <CommandList className='max-h-full'>
+              <CommandInput placeholder="Voucher Type" />
+              <CommandList className="max-h-full">
                 <CommandEmpty>No results found.</CommandEmpty>
                 <CommandGroup>
                   {voucherTypeOptions.map((option) => {
-                    const isSelected = selectedVoucherTypes.includes(option.value)
+                    const isSelected = selectedVoucherTypes.includes(
+                      option.value,
+                    )
                     return (
                       <CommandItem
                         key={option.value}
@@ -245,12 +267,12 @@ export function DataTableToolbar<TData>({
                             'border-primary mr-2 flex h-4 w-4 items-center justify-center rounded-sm border',
                             isSelected
                               ? 'bg-primary text-primary-foreground'
-                              : 'opacity-50 [&_svg]:invisible'
+                              : 'opacity-50 [&_svg]:invisible',
                           )}
                         >
                           <CheckIcon className={cn('h-4 w-4')} />
                         </div>
-                        <span className='text-nowrap'>{option.label}</span>
+                        <span className="text-nowrap">{option.label}</span>
                       </CommandItem>
                     )
                   })}
@@ -261,7 +283,7 @@ export function DataTableToolbar<TData>({
                     <CommandGroup>
                       <CommandItem
                         onSelect={() => onVoucherTypeChange?.([])}
-                        className='justify-center text-center'
+                        className="justify-center text-center"
                       >
                         Clear filters
                       </CommandItem>
@@ -274,34 +296,36 @@ export function DataTableToolbar<TData>({
         </Popover>
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant='outline' size='sm' className='h-8 border-dashed'>
-              <PlusCircledIcon className='mr-1 h-4 w-4' />
+            <Button variant="outline" size="sm" className="h-8 border-dashed">
+              <PlusCircledIcon className="mr-1 h-4 w-4" />
               Billing Pref.
               {selectedBillingPreferences.length > 0 && (
                 <>
-                  <Separator orientation='vertical' className='mx-2 h-4' />
+                  <Separator orientation="vertical" className="mx-2 h-4" />
                   <Badge
-                    variant='secondary'
-                    className='rounded-sm px-1 font-normal lg:hidden'
+                    variant="secondary"
+                    className="rounded-sm px-1 font-normal lg:hidden"
                   >
                     {selectedBillingPreferences.length}
                   </Badge>
-                  <div className='hidden space-x-1 lg:flex'>
+                  <div className="hidden space-x-1 lg:flex">
                     {selectedBillingPreferences.length > 2 ? (
                       <Badge
-                        variant='secondary'
-                        className='rounded-sm px-1 font-normal'
+                        variant="secondary"
+                        className="rounded-sm px-1 font-normal"
                       >
                         {selectedBillingPreferences.length} selected
                       </Badge>
                     ) : (
                       billingPreferenceOptions
-                        .filter((option) => selectedBillingPreferences.includes(option.value))
+                        .filter((option) =>
+                          selectedBillingPreferences.includes(option.value),
+                        )
                         .map((option) => (
                           <Badge
-                            variant='secondary'
+                            variant="secondary"
                             key={option.value}
-                            className='rounded-sm px-1 font-normal'
+                            className="rounded-sm px-1 font-normal"
                           >
                             {option.label}
                           </Badge>
@@ -312,30 +336,36 @@ export function DataTableToolbar<TData>({
               )}
             </Button>
           </PopoverTrigger>
-          <PopoverContent className='w-[200px] p-0' align='start'>
+          <PopoverContent className="w-[200px] p-0" align="start">
             <Command>
-              <CommandInput placeholder='Billing Preference' />
-              <CommandList className='max-h-full'>
+              <CommandInput placeholder="Billing Preference" />
+              <CommandList className="max-h-full">
                 <CommandEmpty>No results found.</CommandEmpty>
                 <CommandGroup>
                   {billingPreferenceOptions.map((option) => {
-                    const isSelected = selectedBillingPreferences.includes(option.value)
+                    const isSelected = selectedBillingPreferences.includes(
+                      option.value,
+                    )
                     return (
                       <CommandItem
                         key={option.value}
-                        onSelect={() => handleBillingPreferenceToggle(option.value)}
+                        onSelect={() =>
+                          handleBillingPreferenceToggle(option.value)
+                        }
                       >
                         <div
                           className={cn(
                             'border-primary mr-2 flex h-4 w-4 items-center justify-center rounded-sm border',
                             isSelected
                               ? 'bg-primary text-primary-foreground'
-                              : 'opacity-50 [&_svg]:invisible'
+                              : 'opacity-50 [&_svg]:invisible',
                           )}
                         >
                           <CheckIcon className={cn('h-4 w-4')} />
                         </div>
-                        <span className='text-nowrap capitalize'>{option.label}</span>
+                        <span className="text-nowrap capitalize">
+                          {option.label}
+                        </span>
                       </CommandItem>
                     )
                   })}
@@ -346,7 +376,7 @@ export function DataTableToolbar<TData>({
                     <CommandGroup>
                       <CommandItem
                         onSelect={() => onBillingPreferenceChange?.([])}
-                        className='justify-center text-center'
+                        className="justify-center text-center"
                       >
                         Clear filters
                       </CommandItem>
@@ -359,34 +389,36 @@ export function DataTableToolbar<TData>({
         </Popover>
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant='outline' size='sm' className='h-8 border-dashed'>
-              <PlusCircledIcon className='mr-1 h-4 w-4' />
+            <Button variant="outline" size="sm" className="h-8 border-dashed">
+              <PlusCircledIcon className="mr-1 h-4 w-4" />
               Status
               {selectedStatuses.length > 0 && (
                 <>
-                  <Separator orientation='vertical' className='mx-2 h-4' />
+                  <Separator orientation="vertical" className="mx-2 h-4" />
                   <Badge
-                    variant='secondary'
-                    className='rounded-sm px-1 font-normal lg:hidden'
+                    variant="secondary"
+                    className="rounded-sm px-1 font-normal lg:hidden"
                   >
                     {selectedStatuses.length}
                   </Badge>
-                  <div className='hidden space-x-1 lg:flex'>
+                  <div className="hidden space-x-1 lg:flex">
                     {selectedStatuses.length > 2 ? (
                       <Badge
-                        variant='secondary'
-                        className='rounded-sm px-1 font-normal'
+                        variant="secondary"
+                        className="rounded-sm px-1 font-normal"
                       >
                         {selectedStatuses.length} selected
                       </Badge>
                     ) : (
                       statusOptions
-                        .filter((option) => selectedStatuses.includes(option.value))
+                        .filter((option) =>
+                          selectedStatuses.includes(option.value),
+                        )
                         .map((option) => (
                           <Badge
-                            variant='secondary'
+                            variant="secondary"
                             key={option.value}
-                            className='rounded-sm px-1 font-normal'
+                            className="rounded-sm px-1 font-normal"
                           >
                             {option.label}
                           </Badge>
@@ -397,10 +429,10 @@ export function DataTableToolbar<TData>({
               )}
             </Button>
           </PopoverTrigger>
-          <PopoverContent className='w-[200px] p-0' align='start'>
+          <PopoverContent className="w-[200px] p-0" align="start">
             <Command>
-              <CommandInput placeholder='Status' />
-              <CommandList className='max-h-full'>
+              <CommandInput placeholder="Status" />
+              <CommandList className="max-h-full">
                 <CommandEmpty>No results found.</CommandEmpty>
                 <CommandGroup>
                   {statusOptions.map((option) => {
@@ -415,12 +447,12 @@ export function DataTableToolbar<TData>({
                             'border-primary mr-2 flex h-4 w-4 items-center justify-center rounded-sm border',
                             isSelected
                               ? 'bg-primary text-primary-foreground'
-                              : 'opacity-50 [&_svg]:invisible'
+                              : 'opacity-50 [&_svg]:invisible',
                           )}
                         >
                           <CheckIcon className={cn('h-4 w-4')} />
                         </div>
-                        <span className='text-nowrap'>{option.label}</span>
+                        <span className="text-nowrap">{option.label}</span>
                       </CommandItem>
                     )
                   })}
@@ -431,7 +463,7 @@ export function DataTableToolbar<TData>({
                     <CommandGroup>
                       <CommandItem
                         onSelect={() => onStatusChange?.([])}
-                        className='justify-center text-center'
+                        className="justify-center text-center"
                       >
                         Clear filters
                       </CommandItem>
@@ -457,7 +489,8 @@ export function DataTableToolbar<TData>({
         variant="link"
         className="h-8 px-2 lg:px-3"
         onClick={async () => {
-          const { default: exportTableToPdf } = await import('@/utils/export-table-pdf')
+          const { default: exportTableToPdf } =
+            await import('@/utils/export-table-pdf')
           exportTableToPdf({
             title: 'Day Book',
             columnData: filteredColumn as any,
@@ -472,7 +505,8 @@ export function DataTableToolbar<TData>({
         variant="link"
         className="h-8 px-2 lg:px-3"
         onClick={async () => {
-          const { default: exportTableToExcel } = await import('@/utils/export-table-excel')
+          const { default: exportTableToExcel } =
+            await import('@/utils/export-table-excel')
           exportTableToExcel({
             title: 'Day Book',
             columnData: filteredColumn as any,

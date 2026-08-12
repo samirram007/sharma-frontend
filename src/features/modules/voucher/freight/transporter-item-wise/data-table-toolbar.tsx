@@ -1,4 +1,10 @@
-import { BarChartIcon, CheckIcon, ChevronDownIcon, Cross2Icon, PlusCircledIcon } from '@radix-ui/react-icons'
+import {
+  BarChartIcon,
+  CheckIcon,
+  ChevronDownIcon,
+  Cross2Icon,
+  PlusCircledIcon,
+} from '@radix-ui/react-icons'
 import { IconFilter } from '@tabler/icons-react'
 import { useMemo } from 'react'
 import { Button } from '@/components/ui/button'
@@ -30,6 +36,7 @@ import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 
 import ReportingPeriod from '@/features/global/components/reporting-period'
+import { formatQtyFixed } from '@/utils/format-num'
 import { date_format } from '@/utils/removeEmptyStrings'
 import type { TransporterItemWiseItem } from './data/schema'
 
@@ -64,7 +71,10 @@ export function DataTableToolbar({
     filteredRows.forEach((row) => {
       if (row.transporterName) {
         const current = transporterMap.get(row.transporterName) ?? 0
-        transporterMap.set(row.transporterName, current + (row.totalVouchers ?? 0))
+        transporterMap.set(
+          row.transporterName,
+          current + (row.totalVouchers ?? 0),
+        )
       }
     })
     return Array.from(transporterMap.entries()).map(([name, count]) => ({
@@ -75,12 +85,16 @@ export function DataTableToolbar({
 
   // ─── PDF: Summary only ──────────────────────────────────────────────
   const exportSummaryPdf = async () => {
-    const { default: exportTableToPdf } = await import('@/utils/export-table-pdf')
+    const { default: exportTableToPdf } =
+      await import('@/utils/export-table-pdf')
 
     const summaryData = filteredRows.map((t) => ({
       transporterName: t.transporterName ?? '',
       vehicleNumber: t.vehicleNumber ?? '',
-      totalQuantity: (t.totalQuantity ?? 0).toFixed(2),
+      totalQuantity: formatQtyFixed(
+        t.totalQuantity,
+        t.entries?.[0]?.noOfDecimalPlaces,
+      ),
       totalAmount: (t.totalAmount ?? 0).toFixed(2),
       totalVouchers: t.totalVouchers ?? 0,
     }))
@@ -106,12 +120,16 @@ export function DataTableToolbar({
 
   // ─── PDF: Detailed (Transporter → Voucher → Items) ──────────────────
   const exportDetailedPdf = async () => {
-    const { default: exportTableToPdf } = await import('@/utils/export-table-pdf')
+    const { default: exportTableToPdf } =
+      await import('@/utils/export-table-pdf')
 
     const summaryData = filteredRows.map((t) => ({
       transporterName: t.transporterName ?? '',
       vehicleNumber: t.vehicleNumber ?? '',
-      totalQuantity: (t.totalQuantity ?? 0).toFixed(2),
+      totalQuantity: formatQtyFixed(
+        t.totalQuantity,
+        t.entries?.[0]?.noOfDecimalPlaces,
+      ),
       totalAmount: (t.totalAmount ?? 0).toFixed(2),
       totalVouchers: t.totalVouchers ?? 0,
     }))
@@ -145,14 +163,21 @@ export function DataTableToolbar({
           const isFirstPdfRow = entryIdx === 0
           pdfRows.push({
             voucherNo: isFirstPdfRow ? voucherNo : '',
-            voucherDate: isFirstPdfRow && entry.voucherDate ? date_format(entry.voucherDate) ?? '' : '',
+            voucherDate:
+              isFirstPdfRow && entry.voucherDate
+                ? (date_format(entry.voucherDate) ?? '')
+                : '',
             partyName: isFirstPdfRow ? entry.partyName : '',
             itemName: entry.itemName,
             unitCode: entry.unitCode ?? '',
             source: isFirstPdfRow ? entry.source : '',
             destination: isFirstPdfRow ? entry.destination : '',
-            actualQuantity: (entry.actualQuantity ?? 0).toFixed(entry.noOfDecimalPlaces ?? 2),
-            billingQuantity: (entry.billingQuantity ?? 0).toFixed(entry.noOfDecimalPlaces ?? 2),
+            actualQuantity: (entry.actualQuantity ?? 0).toFixed(
+              entry.noOfDecimalPlaces ?? 2,
+            ),
+            billingQuantity: (entry.billingQuantity ?? 0).toFixed(
+              entry.noOfDecimalPlaces ?? 2,
+            ),
             amount: (entry.amount ?? 0).toFixed(2),
             totalFare: (entry.totalFare ?? 0).toFixed(2),
             paymentStatus: isFirstPdfRow ? entry.paymentStatus : '',
@@ -161,7 +186,7 @@ export function DataTableToolbar({
       })
 
       const safeName = (transporter.transporterName || 'Unknown Transporter')
-        .replace(/[\\/*?:\[\]<>|]/g, '_')
+        .replace(/[\\/*?:[\]<>|]/g, '_')
         .substring(0, 60)
 
       sections.push({
@@ -193,12 +218,16 @@ export function DataTableToolbar({
 
   // ─── Excel: Summary only ────────────────────────────────────────────
   const exportSummaryExcel = async () => {
-    const { default: exportTableToExcel } = await import('@/utils/export-table-excel')
+    const { default: exportTableToExcel } =
+      await import('@/utils/export-table-excel')
 
     const summaryData = filteredRows.map((t) => ({
       transporterName: t.transporterName ?? '',
       vehicleNumber: t.vehicleNumber ?? '',
-      totalQuantity: (t.totalQuantity ?? 0).toFixed(2),
+      totalQuantity: formatQtyFixed(
+        t.totalQuantity,
+        t.entries?.[0]?.noOfDecimalPlaces,
+      ),
       totalAmount: (t.totalAmount ?? 0).toFixed(2),
       totalVouchers: t.totalVouchers ?? 0,
     }))
@@ -223,19 +252,23 @@ export function DataTableToolbar({
 
   // ─── Excel: Detailed (current Transporter → Voucher → Items) ────────
   const exportDetailedExcel = async () => {
-    const { default: exportTableToExcel } = await import('@/utils/export-table-excel')
+    const { default: exportTableToExcel } =
+      await import('@/utils/export-table-excel')
 
     const sheets: Array<any> = []
 
     // Summary sheet — each row links to the corresponding per-transporter sheet
     const summaryData = filteredRows.map((t) => {
       const safeName = (t.transporterName || 'Unknown Transporter')
-        .replace(/[\\/*?:\[\]<>|]/g, '_')
+        .replace(/[\\/*?:[\]<>|]/g, '_')
         .substring(0, 31)
       return {
         transporterName: t.transporterName ?? '',
         vehicleNumber: t.vehicleNumber ?? '',
-        totalQuantity: (t.totalQuantity ?? 0).toFixed(2),
+        totalQuantity: formatQtyFixed(
+          t.totalQuantity,
+          t.entries?.[0]?.noOfDecimalPlaces,
+        ),
         totalAmount: (t.totalAmount ?? 0).toFixed(2),
         totalVouchers: t.totalVouchers ?? 0,
         _sheetLink: safeName,
@@ -288,7 +321,7 @@ export function DataTableToolbar({
       voucherMap.forEach((voucherEntries) => {
         const voucherNo = voucherEntries[0].voucherNo
         const voucherDate = voucherEntries[0].voucherDate
-          ? date_format(voucherEntries[0].voucherDate) ?? ''
+          ? (date_format(voucherEntries[0].voucherDate) ?? '')
           : ''
         const partyName = voucherEntries[0].partyName
         const source = voucherEntries[0].source
@@ -344,7 +377,9 @@ export function DataTableToolbar({
               itemName: entry.itemName,
               unitCode: entry.unitCode ?? '',
               actualQuantity: qty.toFixed(entry.noOfDecimalPlaces ?? 2),
-              billingQuantity: (entry.billingQuantity ?? 0).toFixed(entry.noOfDecimalPlaces ?? 2),
+              billingQuantity: (entry.billingQuantity ?? 0).toFixed(
+                entry.noOfDecimalPlaces ?? 2,
+              ),
               amount: amt.toFixed(2),
               totalFare: '',
               paymentStatus: '',
@@ -355,7 +390,9 @@ export function DataTableToolbar({
           })
 
           if (itemEntries.length > 1) {
-            const itemDecimalPlaces = Math.max(...itemEntries.map(e => e.noOfDecimalPlaces ?? 2))
+            const itemDecimalPlaces = Math.max(
+              ...itemEntries.map((e) => e.noOfDecimalPlaces ?? 2),
+            )
             excelRows.push({
               voucherNo: '',
               voucherDate: '',
@@ -377,7 +414,9 @@ export function DataTableToolbar({
         })
 
         if (voucherEntries.length > 1) {
-          const subDecimalPlaces = Math.max(...voucherEntries.map(e => e.noOfDecimalPlaces ?? 2))
+          const subDecimalPlaces = Math.max(
+            ...voucherEntries.map((e) => e.noOfDecimalPlaces ?? 2),
+          )
           excelRows.push({
             voucherNo: '',
             voucherDate: '',
@@ -409,7 +448,10 @@ export function DataTableToolbar({
         destination: '',
         itemName: '',
         unitCode: '',
-        actualQuantity: transporterTotalQty.toFixed(2),
+        actualQuantity: formatQtyFixed(
+          transporterTotalQty,
+          transporter.entries?.[0]?.noOfDecimalPlaces,
+        ),
         billingQuantity: '',
         amount: transporterTotalAmount.toFixed(2),
         totalFare: '',
@@ -420,7 +462,7 @@ export function DataTableToolbar({
       })
 
       const safeName = (transporter.transporterName || 'Unknown Transporter')
-        .replace(/[\\/*?:\[\]<>|]/g, '_')
+        .replace(/[\\/*?:[\]<>|]/g, '_')
         .substring(0, 31)
 
       sheets.push({
@@ -451,7 +493,8 @@ export function DataTableToolbar({
 
   // ─── Excel: Flat (no hierarchy, one row per entry) ──────────────────
   const exportFlatExcel = async () => {
-    const { default: exportTableToExcel } = await import('@/utils/export-table-excel')
+    const { default: exportTableToExcel } =
+      await import('@/utils/export-table-excel')
 
     const flatRows: Array<any> = []
 
@@ -462,14 +505,20 @@ export function DataTableToolbar({
           transporterName: transporter.transporterName ?? '',
           vehicleNumber: transporter.vehicleNumber ?? '',
           voucherNo: entry.voucherNo,
-          voucherDate: entry.voucherDate ? date_format(entry.voucherDate) ?? '' : '',
+          voucherDate: entry.voucherDate
+            ? (date_format(entry.voucherDate) ?? '')
+            : '',
           partyName: entry.partyName,
           itemName: entry.itemName,
           unitCode: entry.unitCode ?? '',
           source: entry.source,
           destination: entry.destination,
-          actualQuantity: (entry.actualQuantity ?? 0).toFixed(entry.noOfDecimalPlaces ?? 2),
-          billingQuantity: (entry.billingQuantity ?? 0).toFixed(entry.noOfDecimalPlaces ?? 2),
+          actualQuantity: (entry.actualQuantity ?? 0).toFixed(
+            entry.noOfDecimalPlaces ?? 2,
+          ),
+          billingQuantity: (entry.billingQuantity ?? 0).toFixed(
+            entry.noOfDecimalPlaces ?? 2,
+          ),
           amount: (entry.amount ?? 0).toFixed(2),
           totalFare: (entry.totalFare ?? 0).toFixed(2),
           paymentStatus: entry.paymentStatus,
@@ -506,7 +555,8 @@ export function DataTableToolbar({
 
   // ─── Excel: Item-wise (grouped by item across all transporters) ─────
   const exportItemWiseExcel = async () => {
-    const { default: exportTableToExcel } = await import('@/utils/export-table-excel')
+    const { default: exportTableToExcel } =
+      await import('@/utils/export-table-excel')
 
     // Collect all entries across all transporters
     const allEntries: Array<any> = []
@@ -584,13 +634,17 @@ export function DataTableToolbar({
           transporterName: entry._transporterName,
           vehicleNumber: entry._vehicleNumber,
           voucherNo: entry.voucherNo,
-          voucherDate: entry.voucherDate ? date_format(entry.voucherDate) ?? '' : '',
+          voucherDate: entry.voucherDate
+            ? (date_format(entry.voucherDate) ?? '')
+            : '',
           partyName: entry.partyName,
           unitCode: entry.unitCode ?? '',
           source: entry.source,
           destination: entry.destination,
           actualQuantity: qty.toFixed(entry.noOfDecimalPlaces ?? 2),
-          billingQuantity: (entry.billingQuantity ?? 0).toFixed(entry.noOfDecimalPlaces ?? 2),
+          billingQuantity: (entry.billingQuantity ?? 0).toFixed(
+            entry.noOfDecimalPlaces ?? 2,
+          ),
           amount: amt.toFixed(2),
           totalFare: (entry.totalFare ?? 0).toFixed(2),
           paymentStatus: entry.paymentStatus,
@@ -601,7 +655,9 @@ export function DataTableToolbar({
 
       // Item subtotal row
       if (itemEntries.length > 1) {
-        const itemDecimalPlaces = Math.max(...itemEntries.map((e: any) => e.noOfDecimalPlaces ?? 2))
+        const itemDecimalPlaces = Math.max(
+          ...itemEntries.map((e: any) => e.noOfDecimalPlaces ?? 2),
+        )
         itemWiseRows.push({
           itemName: `Subtotal - ${itemName}`,
           transporterName: '',
@@ -651,20 +707,22 @@ export function DataTableToolbar({
   }
 
   return (
-    <div className='flex items-center justify-end'>
-      <div className='flex flex-1 flex-col-reverse gap-x-8 pr-8 items-start gap-y-2 sm:flex-row sm:items-center sm:space-x-2'>
+    <div className="flex items-center justify-end">
+      <div className="flex flex-1 flex-col-reverse gap-x-8 pr-8 items-start gap-y-2 sm:flex-row sm:items-center sm:space-x-2">
         <Input
           placeholder={placeHolder}
           value={globalFilter}
           onChange={(e) => onGlobalFilterChange(e.target.value)}
-          className='h-8 w-[150px] lg:w-[250px]'
+          className="h-8 w-[150px] lg:w-[250px]"
         />
 
         <ReportingPeriod disableHotkey />
 
-        <div className='flex flex-row items-center gap-2'>
-          <div><IconFilter className='h-6 w-6 text-blue-600' /></div>
-          <div className='flex gap-x-2'>
+        <div className="flex flex-row items-center gap-2">
+          <div>
+            <IconFilter className="h-6 w-6 text-blue-600" />
+          </div>
+          <div className="flex gap-x-2">
             {/* Transporter filter dropdown */}
             {transporterOptions.length > 0 && (
               <TransporterFilterDropdown
@@ -680,38 +738,38 @@ export function DataTableToolbar({
         {onToggleChart && (
           <Button
             variant={showChart ? 'default' : 'outline'}
-            size='sm'
-            className='h-8 text-xs gap-1'
+            size="sm"
+            className="h-8 text-xs gap-1"
             onClick={onToggleChart}
           >
-            <BarChartIcon className='h-4 w-4' />
+            <BarChartIcon className="h-4 w-4" />
             {showChart ? 'Hide Chart' : 'Chart'}
           </Button>
         )}
 
         {isFiltered && (
           <Button
-            variant='ghost'
+            variant="ghost"
             onClick={() => {
               onGlobalFilterChange('')
               onTransporterFilterChange([])
             }}
-            className='h-8 px-2 lg:px-3'
+            className="h-8 px-2 lg:px-3"
           >
             Reset
-            <Cross2Icon className='ml-2 h-4 w-4' />
+            <Cross2Icon className="ml-2 h-4 w-4" />
           </Button>
         )}
 
         {/* Export dropdown — replaces the two separate buttons */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant='link' className='h-8 px-2 lg:px-3'>
+            <Button variant="link" className="h-8 px-2 lg:px-3">
               Export
-              <ChevronDownIcon className='ml-1 h-4 w-4' />
+              <ChevronDownIcon className="ml-1 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align='end' className='min-w-44'>
+          <DropdownMenuContent align="end" className="min-w-44">
             <DropdownMenuLabel>PDF</DropdownMenuLabel>
             <DropdownMenuItem onClick={exportSummaryPdf}>
               Summary PDF
@@ -753,25 +811,35 @@ function TransporterFilterDropdown({
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant='outline' size='sm' className='h-8 border-dashed'>
-          <PlusCircledIcon className='h-4 w-4' />
+        <Button variant="outline" size="sm" className="h-8 border-dashed">
+          <PlusCircledIcon className="h-4 w-4" />
           Transporter
           {selectedValues.length > 0 && (
             <>
-              <Separator orientation='vertical' className='mx-2 h-4' />
-              <Badge variant='secondary' className='rounded-sm px-1 font-normal lg:hidden'>
+              <Separator orientation="vertical" className="mx-2 h-4" />
+              <Badge
+                variant="secondary"
+                className="rounded-sm px-1 font-normal lg:hidden"
+              >
                 {selectedValues.length}
               </Badge>
-              <div className='hidden space-x-1 lg:flex'>
+              <div className="hidden space-x-1 lg:flex">
                 {selectedValues.length > 2 ? (
-                  <Badge variant='secondary' className='rounded-sm px-1 font-normal'>
+                  <Badge
+                    variant="secondary"
+                    className="rounded-sm px-1 font-normal"
+                  >
                     {selectedValues.length} selected
                   </Badge>
                 ) : (
                   options
                     .filter((option) => selectedValues.includes(option.value))
                     .map((option) => (
-                      <Badge variant='secondary' key={option.value} className='rounded-sm px-1 font-normal'>
+                      <Badge
+                        variant="secondary"
+                        key={option.value}
+                        className="rounded-sm px-1 font-normal"
+                      >
                         {option.label}
                       </Badge>
                     ))
@@ -781,10 +849,10 @@ function TransporterFilterDropdown({
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className='w-[200px] p-0' align='start'>
+      <PopoverContent className="w-[200px] p-0" align="start">
         <Command>
-          <CommandInput placeholder='Transporter...' />
-          <CommandList className='max-h-full'>
+          <CommandInput placeholder="Transporter..." />
+          <CommandList className="max-h-full">
             <CommandEmpty>No results found.</CommandEmpty>
             <CommandGroup>
               {options.map((option) => {
@@ -804,12 +872,12 @@ function TransporterFilterDropdown({
                         'border-primary flex h-4 w-4 items-center justify-center rounded-sm border',
                         isSelected
                           ? 'bg-primary text-primary-foreground'
-                          : 'opacity-50 [&_svg]:invisible'
+                          : 'opacity-50 [&_svg]:invisible',
                       )}
                     >
-                      <CheckIcon className='h-4 w-4' />
+                      <CheckIcon className="h-4 w-4" />
                     </div>
-                    <span className='text-nowrap'>{option.label}</span>
+                    <span className="text-nowrap">{option.label}</span>
                   </CommandItem>
                 )
               })}
@@ -820,7 +888,7 @@ function TransporterFilterDropdown({
                 <CommandGroup>
                   <CommandItem
                     onSelect={() => onSelectionChange([])}
-                    className='justify-center text-center'
+                    className="justify-center text-center"
                   >
                     Clear filters
                   </CommandItem>

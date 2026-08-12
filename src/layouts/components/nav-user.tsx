@@ -41,8 +41,6 @@ export function NavUser({
   const { isMobile } = useSidebar()
   const auth = useAuth()
 
-
-
   const handleLogout = async () => {
     await auth.logout()
   }
@@ -124,8 +122,6 @@ export function NavUser({
               <LogOut />
               <div>Log out</div>
             </DropdownMenuItem>
-
-
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>

@@ -143,12 +143,17 @@ describe('useLocalStorage', () => {
     })
 
     expect(window.localStorage.getItem('key-a')).toBe(JSON.stringify('from-a'))
-    expect(window.localStorage.getItem('key-b')).toBe(JSON.stringify('updated-b'))
+    expect(window.localStorage.getItem('key-b')).toBe(
+      JSON.stringify('updated-b'),
+    )
   })
 
   it('applies a deserialize transform to the stored value', () => {
     // Stored config is missing the 'b' key (e.g. a newly added section)
-    window.localStorage.setItem('key', JSON.stringify([{ key: 'a', value: false }]))
+    window.localStorage.setItem(
+      'key',
+      JSON.stringify([{ key: 'a', value: false }]),
+    )
     const defaults = [
       { key: 'a', value: true },
       { key: 'b', value: true },
@@ -171,7 +176,10 @@ describe('useLocalStorage', () => {
   })
 
   it('normalizes storage by persisting the deserialized value', () => {
-    window.localStorage.setItem('key', JSON.stringify([{ key: 'a', value: false }]))
+    window.localStorage.setItem(
+      'key',
+      JSON.stringify([{ key: 'a', value: false }]),
+    )
     const defaults = [
       { key: 'a', value: true },
       { key: 'b', value: true },
@@ -203,5 +211,52 @@ describe('useLocalStorage', () => {
       useLocalStorage('key', defaults, { deserialize: boom }),
     )
     expect(result.current[0]).toEqual(defaults)
+  })
+
+  it('supports validate-style deserialize using the passed default', () => {
+    // An outdated font name stored as a bare string (raw mode)
+    window.localStorage.setItem('key', 'comic-sans')
+    const validFonts = ['poppins', 'inter']
+    const validate = (stored: unknown, fallback: string) =>
+      (validFonts as string[]).includes(stored as string)
+        ? (stored as string)
+        : fallback
+
+    const { result } = renderHook(() =>
+      useLocalStorage('key', 'poppins', { raw: true, deserialize: validate }),
+    )
+
+    expect(result.current[0]).toBe('poppins')
+  })
+
+  it('keeps a valid value through validate-style deserialize', () => {
+    window.localStorage.setItem('key', 'inter')
+    const validFonts = ['poppins', 'inter']
+    const validate = (stored: unknown, fallback: string) =>
+      (validFonts as string[]).includes(stored as string)
+        ? (stored as string)
+        : fallback
+
+    const { result } = renderHook(() =>
+      useLocalStorage('key', 'poppins', { raw: true, deserialize: validate }),
+    )
+
+    expect(result.current[0]).toBe('inter')
+  })
+
+  it('normalizes an invalid stored value back to the default', () => {
+    window.localStorage.setItem('key', 'comic-sans')
+    const validFonts = ['poppins', 'inter']
+    const validate = (stored: unknown, fallback: string) =>
+      (validFonts as string[]).includes(stored as string)
+        ? (stored as string)
+        : fallback
+
+    renderHook(() =>
+      useLocalStorage('key', 'poppins', { raw: true, deserialize: validate }),
+    )
+
+    // The default is written back over the invalid stored value on mount.
+    expect(window.localStorage.getItem('key')).toBe('poppins')
   })
 })

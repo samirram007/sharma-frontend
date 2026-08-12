@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from 'zod'
 
 import { voucherSchema } from '../../data-schema/voucher-schema'
 

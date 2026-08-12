@@ -9,10 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import {
-  Form
-} from '@/components/ui/form'
-
+import { Form } from '@/components/ui/form'
 
 import { showSubmittedData } from '@/utils/show-submitted-data'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -26,11 +23,6 @@ import { useDayBookMutation } from '../data/queryOptions'
 import { formSchema, type DayBookSchema } from '../data/schema'
 import type { DayBookForm } from '../types/types'
 
-
-
-
-
-
 interface Props {
   currentRow?: DayBookSchema
   open: boolean
@@ -38,7 +30,6 @@ interface Props {
 }
 
 export function ActionDialog({ currentRow, open, onOpenChange }: Props) {
-
   const { mutate: saveDayBook, isPending } = useDayBookMutation()
   const isEdit = !!currentRow
 
@@ -46,19 +37,18 @@ export function ActionDialog({ currentRow, open, onOpenChange }: Props) {
     resolver: zodResolver(formSchema) as any,
     defaultValues: isEdit
       ? {
-        ...currentRow, isEdit,
-      }
-      : {    
-        isEdit,
-      },
+          ...currentRow,
+          isEdit,
+        }
+      : {
+          isEdit,
+        },
   })
 
   const onSubmit = (values: DayBookForm) => {
-
     form.reset()
     showSubmittedData(values)
-    saveDayBook(values
-    )
+    saveDayBook(values)
     onOpenChange(false)
   }
 
@@ -70,43 +60,65 @@ export function ActionDialog({ currentRow, open, onOpenChange }: Props) {
         onOpenChange(state)
       }}
     >
-      <DialogContent className='sm:max-w-lg'>
-        <DialogHeader className='text-left border-b-2 pb-2'>
-          <DialogTitle>{isEdit ? 'Edit Day Book' : 'Add New Day Book'}</DialogTitle>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader className="text-left border-b-2 pb-2">
+          <DialogTitle>
+            {isEdit ? 'Edit Day Book' : 'Add New Day Book'}
+          </DialogTitle>
           <DialogDescription>
-            {isEdit ? 'Update the Day Book here. ' : 'Create new Day Book here. '}
+            {isEdit
+              ? 'Update the Day Book here. '
+              : 'Create new Day Book here. '}
             Click save when you&apos;re done.
           </DialogDescription>
         </DialogHeader>
-        <div className='-mr-4 h-auto w-full overflow-y-auto py-1 pr-4'>
+        <div className="-mr-4 h-auto w-full overflow-y-auto py-1 pr-4">
           <Form {...form}>
             <form
-              id='user-form'
+              id="user-form"
               onSubmit={form.handleSubmit(onSubmit)}
-              className='space-y-4 p-0.5'
+              className="space-y-4 p-0.5"
             >
-              <FormInputField type='text' form={form} name='name' label='Name' />
-              <FormInputField type='text' form={form} name='code' label='Code' />
+              <FormInputField
+                type="text"
+                form={form}
+                name="name"
+                label="Name"
+              />
+              <FormInputField
+                type="text"
+                form={form}
+                name="code"
+                label="Code"
+              />
 
-              <FormInputField type='textarea' form={form} name='description' label='Description (optional)' />
+              <FormInputField
+                type="textarea"
+                form={form}
+                name="description"
+                label="Description (optional)"
+              />
 
-              <FormInputField type='checkbox' form={form} name='status' label='Status' options={[
-                { label: 'Active', value: 'active' },
-                { label: 'Inactive', value: 'inactive' },
-              ]} />
-
-
-
+              <FormInputField
+                type="checkbox"
+                form={form}
+                name="status"
+                label="Status"
+                options={[
+                  { label: 'Active', value: 'active' },
+                  { label: 'Inactive', value: 'inactive' },
+                ]}
+              />
             </form>
           </Form>
         </div>
         <DialogFooter>
-          <Button type='submit' form='user-form' disabled={isPending}>
+          <Button type="submit" form="user-form" disabled={isPending}>
             {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {isPending ? "Saving..." : "Save changes"}
+            {isPending ? 'Saving...' : 'Save changes'}
           </Button>
         </DialogFooter>
       </DialogContent>
-    </Dialog >
+    </Dialog>
   )
 }

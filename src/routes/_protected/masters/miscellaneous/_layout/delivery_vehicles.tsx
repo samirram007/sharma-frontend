@@ -1,4 +1,3 @@
-
 import { deliveryVehicleQueryOptions } from '@/features/modules/delivery_vehicle/data/queryOptions'
 import DeliveryVehicle from '@/features/modules/delivery_vehicle'
 import { useSuspenseQuery } from '@tanstack/react-query'
@@ -15,12 +14,10 @@ export const Route = createFileRoute(
     const { data: state } = useSuspenseQuery(deliveryVehicleQueryOptions())
     return (
       <Suspense fallback={<Loader className="animate-spin" />}>
-
         <DeliveryVehicle data={state?.data} />
       </Suspense>
     )
   },
-  errorComponent: () => <div>Error loading  data...</div>,
+  errorComponent: () => <div>Error loading data...</div>,
   pendingComponent: () => <Loader className="animate-spin" />,
 })
-

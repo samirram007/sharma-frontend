@@ -43,7 +43,9 @@ export function ForgotForm({ className, ...props }: ForgotFormProps) {
       console.error('Forgot password request failed:', error)
 
       const apiError = error as {
-        response?: { data?: { message?: string; errors?: Record<string, string[]> } }
+        response?: {
+          data?: { message?: string; errors?: Record<string, string[]> }
+        }
       }
 
       const fieldErrors = apiError?.response?.data?.errors
@@ -55,7 +57,11 @@ export function ForgotForm({ className, ...props }: ForgotFormProps) {
       if (fieldErrors) {
         const messages = fieldErrors['email']
         if (messages?.length) {
-          form.setError('email', { message: messages[0] }, { shouldFocus: true })
+          form.setError(
+            'email',
+            { message: messages[0] },
+            { shouldFocus: true },
+          )
         }
         return
       }
@@ -75,16 +81,16 @@ export function ForgotForm({ className, ...props }: ForgotFormProps) {
     <div className={cn('grid gap-6', className)} {...props}>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
-          <div className='grid gap-2'>
+          <div className="grid gap-2">
             <FormField
               control={form.control}
-              name='email'
+              name="email"
               render={({ field }) => (
-                <FormItem className='space-y-1'>
+                <FormItem className="space-y-1">
                   <FormLabel>Email</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder='name@example.com'
+                      placeholder="name@example.com"
                       {...field}
                       onChange={(e) => {
                         field.onChange(e)
@@ -98,7 +104,7 @@ export function ForgotForm({ className, ...props }: ForgotFormProps) {
                 </FormItem>
               )}
             />
-            <Button className='mt-2' disabled={isLoading}>
+            <Button className="mt-2" disabled={isLoading}>
               {isLoading ? 'Sending...' : 'Continue'}
             </Button>
           </div>

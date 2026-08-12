@@ -1,7 +1,5 @@
 import { z } from 'zod'
 
-
-
 import { addressSchema } from '../../address/data/schema'
 import { ActiveInactiveStatusSchema } from '@/types/active-inactive-status'
 import { stockUnitSchema } from '../../stock_unit/data/schema'
@@ -30,26 +28,26 @@ export const storageunitSchema = z.object({
     .nullable()
     .nullish(),
 
-
   address: z
     .lazy(() => addressSchema)
     .nullable()
     .nullish(),
-
-
 })
 export type StorageUnit = z.infer<typeof storageunitSchema>
 export const storageUnitListSchema = z.array(storageunitSchema)
 export type StorageUnitList = z.infer<typeof storageUnitListSchema>
 
-export const formSchema = storageunitSchema.extend({
-
-  parent: z.lazy(() => storageunitSchema).optional().nullish(),
-  isEdit: z.boolean(),
-}).omit({ id: true })
+export const formSchema = storageunitSchema
+  .extend({
+    parent: z
+      .lazy(() => storageunitSchema)
+      .optional()
+      .nullish(),
+    isEdit: z.boolean(),
+  })
+  .omit({ id: true })
 
 export type StorageUnitForm = z.infer<typeof formSchema>
-
 
 // {
 //     "data": [

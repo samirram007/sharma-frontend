@@ -1,8 +1,5 @@
-import { z } from 'zod';
-import { companySchema } from '../../company/data/schema';
-
-
-
+import { z } from 'zod'
+import { companySchema } from '../../company/data/schema'
 
 const baseFiscalYearSchema = z.object({
   id: z.number().int().positive().nullish(),
@@ -16,12 +13,15 @@ const baseFiscalYearSchema = z.object({
   company: companySchema.nullish(),
   assessmentYear: z.string().nullish(),
   closedAt: z.string().nullable().optional(),
-});
-
-export const fiscalYearSchema = baseFiscalYearSchema.refine((data) => new Date(data.endDate) > new Date(data.startDate), {
-  message: "End Date must be after Start Date",
-  path: ["endDate"],
 })
+
+export const fiscalYearSchema = baseFiscalYearSchema.refine(
+  (data) => new Date(data.endDate) > new Date(data.startDate),
+  {
+    message: 'End Date must be after Start Date',
+    path: ['endDate'],
+  },
+)
 // .transform((data) => {
 //   const startYear = data.startDate.getFullYear();
 //   const endYear = data.endDate.getFullYear();
@@ -41,13 +41,9 @@ export type FiscalYear = z.infer<typeof fiscalYearSchema>
 export const fiscalYearListSchema = z.array(fiscalYearSchema)
 export type FiscalYearList = z.infer<typeof fiscalYearListSchema>
 
-
-export const formSchema = baseFiscalYearSchema
-  .omit({ id: true })
-  .extend({
-    isEdit: z.boolean().default(false),
-    status: z.string(),
-  });
-
+export const formSchema = baseFiscalYearSchema.omit({ id: true }).extend({
+  isEdit: z.boolean().default(false),
+  status: z.string(),
+})
 
 export type FiscalYearForm = z.infer<typeof formSchema>

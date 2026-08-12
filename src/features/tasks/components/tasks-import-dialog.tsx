@@ -30,7 +30,7 @@ const formSchema = z.object({
     })
     .refine(
       (files) => ['text/csv'].includes(files?.[0]?.type),
-      'Please upload csv format.'
+      'Please upload csv format.',
     ),
 })
 
@@ -69,23 +69,23 @@ export function TasksImportDialog({ open, onOpenChange }: Props) {
         form.reset()
       }}
     >
-      <DialogContent className='gap-2 sm:max-w-sm'>
-        <DialogHeader className='text-left'>
+      <DialogContent className="gap-2 sm:max-w-sm">
+        <DialogHeader className="text-left">
           <DialogTitle>Import Tasks</DialogTitle>
           <DialogDescription>
             Import tasks quickly from a CSV file.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form id='task-import-form' onSubmit={form.handleSubmit(onSubmit)}>
+          <form id="task-import-form" onSubmit={form.handleSubmit(onSubmit)}>
             <FormField
               control={form.control}
-              name='file'
+              name="file"
               render={() => (
-                <FormItem className='mb-2 space-y-1'>
+                <FormItem className="mb-2 space-y-1">
                   <FormLabel>File</FormLabel>
                   <FormControl>
-                    <Input type='file' {...fileRef} className='h-8' />
+                    <Input type="file" {...fileRef} className="h-8" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -93,11 +93,11 @@ export function TasksImportDialog({ open, onOpenChange }: Props) {
             />
           </form>
         </Form>
-        <DialogFooter className='gap-2'>
+        <DialogFooter className="gap-2">
           <DialogClose asChild>
-            <Button variant='outline'>Close</Button>
+            <Button variant="outline">Close</Button>
           </DialogClose>
-          <Button type='submit' form='task-import-form'>
+          <Button type="submit" form="task-import-form">
             Import
           </Button>
         </DialogFooter>

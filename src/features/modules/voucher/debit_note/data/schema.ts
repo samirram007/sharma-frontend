@@ -9,12 +9,10 @@ export type DebitNoteVoucher = z.infer<typeof DebitNoteVoucherSchema>
 export const DebitNoteVoucherListSchema = z.array(DebitNoteVoucherSchema)
 export type DebitNoteVoucherList = z.infer<typeof DebitNoteVoucherListSchema>
 
-export const DebitNoteFormSchema = DebitNoteVoucherSchema
-    .extend({
-        isEdit: z.boolean().optional(),
-    })
-    .omit({
-        id: true,
-    })
+export const DebitNoteFormSchema = DebitNoteVoucherSchema.extend({
+  isEdit: z.boolean().optional(),
+}).omit({
+  id: true,
+})
 
 export type DebitNoteVoucherForm = z.infer<typeof DebitNoteFormSchema>

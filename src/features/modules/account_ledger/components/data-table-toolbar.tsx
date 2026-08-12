@@ -46,7 +46,7 @@ function buildGroupTree(groups: AccountGroupNode[]): AccountGroupNode[] {
 function flattenTree(
   nodes: AccountGroupNode[],
   depth: number = 0,
-  result: { value: string; label: string; depth: number }[] = []
+  result: { value: string; label: string; depth: number }[] = [],
 ) {
   for (const node of nodes) {
     result.push({
@@ -74,7 +74,6 @@ export function DataTableToolbar<TData>({
   })
 
   const accountGroupOptions = useMemo(() => {
-     
     const rawGroups: any[] = accountGroupsData?.data ?? []
     if (rawGroups.length === 0) return []
 
@@ -91,23 +90,21 @@ export function DataTableToolbar<TData>({
   }, [accountGroupsData])
 
   return (
-    <div className='flex items-center justify-between'>
-      <div className='flex flex-1 flex-col-reverse items-start gap-y-2 sm:flex-row sm:items-center sm:space-x-2'>
+    <div className="flex items-center justify-between">
+      <div className="flex flex-1 flex-col-reverse items-start gap-y-2 sm:flex-row sm:items-center sm:space-x-2">
         <Input
-          placeholder='Filter account ledger...'
-          value={
-            (table.getColumn('name')?.getFilterValue() as string) ?? ''
-          }
+          placeholder="Filter account ledger..."
+          value={(table.getColumn('name')?.getFilterValue() as string) ?? ''}
           onChange={(event) =>
             table.getColumn('name')?.setFilterValue(event.target.value)
           }
-          className='h-8 w-[150px] lg:w-[250px]'
+          className="h-8 w-[150px] lg:w-[250px]"
         />
-        <div className='flex gap-x-2'>
+        <div className="flex gap-x-2">
           {table.getColumn('status') && (
             <DataTableFacetedFilter
               column={table.getColumn('status')}
-              title='Status'
+              title="Status"
               options={[
                 { label: 'Active', value: 'active' },
                 { label: 'Inactive', value: 'inactive' },
@@ -117,20 +114,20 @@ export function DataTableToolbar<TData>({
           {table.getColumn('accountGroupId') && (
             <DataTableFacetedFilter
               column={table.getColumn('accountGroupId')}
-              title='Account Group'
+              title="Account Group"
               options={accountGroupOptions}
-              popoverWidth='w-[320px]'
+              popoverWidth="w-[320px]"
             />
           )}
         </div>
         {isFiltered && (
           <Button
-            variant='ghost'
+            variant="ghost"
             onClick={() => table.resetColumnFilters()}
-            className='h-8 px-2 lg:px-3'
+            className="h-8 px-2 lg:px-3"
           >
             Reset
-            <Cross2Icon className='ml-2 h-4 w-4' />
+            <Cross2Icon className="ml-2 h-4 w-4" />
           </Button>
         )}
       </div>
@@ -138,5 +135,3 @@ export function DataTableToolbar<TData>({
     </div>
   )
 }
-
-

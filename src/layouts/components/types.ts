@@ -1,6 +1,4 @@
-import type { LinkProps } from "@tanstack/react-router"
-
-
+import type { LinkProps } from '@tanstack/react-router'
 
 interface User {
   name: string
@@ -60,4 +58,3 @@ interface SidebarData {
 }
 
 export type { NavCollapsible, NavGroup, NavItem, NavLink, SidebarData }
-

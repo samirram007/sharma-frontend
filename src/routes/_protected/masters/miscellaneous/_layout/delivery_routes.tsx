@@ -12,22 +12,21 @@ export const Route = createFileRoute(
   '/_protected/masters/miscellaneous/_layout/delivery_routes',
 )({
   loader: async ({ context }) => {
-    const client = context.queryClient;
+    const client = context.queryClient
     await Promise.all([
       client.ensureQueryData(transporterQueryOptions()),
       client.ensureQueryData(godownQueryOptions()),
       client.ensureQueryData(deliveryRouteQueryOptions()),
       client.ensureQueryData(deliveryPlaceQueryOptions()),
-    ]);
+    ])
     return {
       message: 'Delivery Routes and Places data loaded',
-    };
+    }
   },
   component: () => {
     const { data: state } = useSuspenseQuery(deliveryRouteQueryOptions())
     return (
       <Suspense fallback={<Loader className="animate-spin" />}>
-
         <DeliveryRoute data={state?.data} />
       </Suspense>
     )
@@ -35,4 +34,3 @@ export const Route = createFileRoute(
   errorComponent: () => <div>Error loading state data...</div>,
   pendingComponent: () => <Loader className="animate-spin" />,
 })
-

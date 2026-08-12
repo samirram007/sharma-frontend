@@ -34,7 +34,9 @@ export const TransporterItemWiseItemSchema = z.object({
   entries: z.array(TransporterItemEntrySchema),
 })
 
-export type TransporterItemWiseItem = z.infer<typeof TransporterItemWiseItemSchema>
+export type TransporterItemWiseItem = z.infer<
+  typeof TransporterItemWiseItemSchema
+>
 
 export const TransporterItemWiseSchema = z.array(TransporterItemWiseItemSchema)
 
@@ -48,5 +50,9 @@ export const ApiResponseSchema = <T extends z.ZodTypeAny>(dataSchema: T) =>
     data: dataSchema,
   })
 
-export const TransporterItemWiseApiResponseSchema = ApiResponseSchema(TransporterItemWiseSchema)
-export type TransporterItemWiseApiResponse = z.infer<typeof TransporterItemWiseApiResponseSchema>
+export const TransporterItemWiseApiResponseSchema = ApiResponseSchema(
+  TransporterItemWiseSchema,
+)
+export type TransporterItemWiseApiResponse = z.infer<
+  typeof TransporterItemWiseApiResponseSchema
+>

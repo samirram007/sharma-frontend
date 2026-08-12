@@ -32,21 +32,28 @@ export function buildDispatchLabel(detail: VoucherDetailLike): string {
   const parts: string[] = []
 
   if (detail.dispatchedThrough) parts.push(detail.dispatchedThrough)
-  if (detail.carrierName && !parts.includes(detail.carrierName)) parts.push(detail.carrierName)
+  if (detail.carrierName && !parts.includes(detail.carrierName))
+    parts.push(detail.carrierName)
   if (detail.motorVehicleNo) parts.push(`V:${detail.motorVehicleNo}`)
 
   const route = [detail.source, detail.destination].filter(Boolean).join(' → ')
   if (route) parts.push(route)
 
   if (detail.billOfLadingNo) parts.push(`BL:${detail.billOfLadingNo}`)
-  if ((detail.weight ?? 0) > 0) parts.push(`${(detail.weight ?? 0).toFixed(1)}kg`)
-  if ((detail.volume ?? 0) > 0) parts.push(`${(detail.volume ?? 0).toFixed(1)}m³`)
+  if ((detail.weight ?? 0) > 0)
+    parts.push(`${(detail.weight ?? 0).toFixed(1)}kg`)
+  if ((detail.volume ?? 0) > 0)
+    parts.push(`${(detail.volume ?? 0).toFixed(1)}m³`)
 
   return parts.length > 0 ? parts.join(' | ') : '-'
 }
 
 /** Action button that opens the freight payment receipt dialog */
-export function VoucherPaymentAction({ detail }: { detail: VoucherDetailLike }) {
+export function VoucherPaymentAction({
+  detail,
+}: {
+  detail: VoucherDetailLike
+}) {
   const adaptedFreight = useMemo(
     () => ({
       id: detail.voucherId,
@@ -58,21 +65,21 @@ export function VoucherPaymentAction({ detail }: { detail: VoucherDetailLike }) 
         : null,
       paymentStatus: detail.paymentStatus ?? 'unpaid',
     }),
-    [detail]
+    [detail],
   )
 
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant='outline' className='h-6 text-[10px] px-1.5 gap-0.5'>
-          <IconCash className='h-3 w-3' />
+        <Button variant="outline" className="h-6 text-[10px] px-1.5 gap-0.5">
+          <IconCash className="h-3 w-3" />
           Pay
         </Button>
       </DialogTrigger>
-      <DialogContent className='sm:max-w-2xl'>
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle className='flex items-center justify-center underline decoration-1 decoration-gray-500'>
-            <IconReceiptRupee size={24} className='mr-2' />
+          <DialogTitle className="flex items-center justify-center underline decoration-1 decoration-gray-500">
+            <IconReceiptRupee size={24} className="mr-2" />
             Freight Receipt
           </DialogTitle>
         </DialogHeader>

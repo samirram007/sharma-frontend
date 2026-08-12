@@ -58,7 +58,9 @@ const VarianceSummaryTable = ({ items }: VarianceSummaryTableProps) => {
                 <div className="text-emerald-600">
                   Surplus {totals.surplus.toFixed(2)}
                 </div>
-                <div className="text-red-600">Loss {totals.loss.toFixed(2)}</div>
+                <div className="text-red-600">
+                  Loss {totals.loss.toFixed(2)}
+                </div>
               </td>
               <td className="p-2" colSpan={1}></td>
               <td className="p-2 text-right tabular-nums">
@@ -86,7 +88,8 @@ const VarianceRow = ({ line }: { line: VarianceLine }) => {
     <tr className="border-t align-top">
       <td className="p-2">
         <div className="font-medium">
-          {line.item?.stock_item?.name ?? `Item #${line.item?.stock_item_id ?? ''}`}
+          {line.item?.stock_item?.name ??
+            `Item #${line.item?.stock_item_id ?? ''}`}
         </div>
         {line.item?.stock_item?.code && (
           <div className="text-xs text-muted-foreground">
@@ -104,7 +107,9 @@ const VarianceRow = ({ line }: { line: VarianceLine }) => {
       </td>
       <td className="p-2">{line.item?.serial_no || '—'}</td>
       <td className="p-2 text-right tabular-nums">{line.book.toFixed(2)}</td>
-      <td className="p-2 text-right tabular-nums">{line.physical.toFixed(2)}</td>
+      <td className="p-2 text-right tabular-nums">
+        {line.physical.toFixed(2)}
+      </td>
       <td className="p-2 text-right">
         <div
           className={cn(

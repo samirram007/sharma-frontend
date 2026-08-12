@@ -1,12 +1,20 @@
-import { queryOptions, useMutation, useQueryClient } from '@tanstack/react-query'
+import {
+  queryOptions,
+  useMutation,
+  useQueryClient,
+} from '@tanstack/react-query'
 import { fetchOpenPreviewService, openFiscalYearService } from './api'
 
 const BASE_KEY = 'fiscalYearOpen'
 
-export const openPreviewQueryOptions = (newFiscalYearId: number, previousFiscalYearId: number) =>
+export const openPreviewQueryOptions = (
+  newFiscalYearId: number,
+  previousFiscalYearId: number,
+) =>
   queryOptions({
     queryKey: [BASE_KEY, 'preview', newFiscalYearId, previousFiscalYearId],
-    queryFn: () => fetchOpenPreviewService(newFiscalYearId, previousFiscalYearId),
+    queryFn: () =>
+      fetchOpenPreviewService(newFiscalYearId, previousFiscalYearId),
     staleTime: 1000 * 60 * 2,
     retry: 1,
   })

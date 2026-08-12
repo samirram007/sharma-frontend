@@ -1,5 +1,3 @@
-
-
 import { useUniqueQuantityCode } from '../contexts/unique_quantity_code-context'
 import { UniqueQuantityCodeActionDialog } from './unique_quantity_code-action-dialog'
 import { UniqueQuantityCodeDeleteDialog } from './unique_quantity_code-delete-dialog'
@@ -9,12 +7,10 @@ export function UniqueQuantityCodeDialogs() {
   return (
     <>
       <UniqueQuantityCodeActionDialog
-        key='stock_unit-add'
+        key="stock_unit-add"
         open={open === 'add'}
         onOpenChange={() => setOpen('add')}
       />
-
-
 
       {currentRow && (
         <>

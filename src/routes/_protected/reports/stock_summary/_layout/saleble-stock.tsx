@@ -8,9 +8,13 @@ export const Route = createFileRoute(
   '/_protected/reports/stock_summary/_layout/saleble-stock',
 )({
   loader: ({ context }) =>
-    context.queryClient.ensureQueryData(stockSummaryQueryOptions('saleble_stock')),
+    context.queryClient.ensureQueryData(
+      stockSummaryQueryOptions('saleble_stock'),
+    ),
   component: () => {
-    const { data: stocksummary } = useSuspenseQuery(stockSummaryQueryOptions('saleble_stock'))
+    const { data: stocksummary } = useSuspenseQuery(
+      stockSummaryQueryOptions('saleble_stock'),
+    )
 
     return <StockInHand data={stocksummary?.data} />
   },

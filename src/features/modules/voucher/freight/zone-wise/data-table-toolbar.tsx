@@ -50,8 +50,8 @@ export function DataTableToolbar<TData>({
   const isFiltered = table.getState().columnFilters.length > 0
 
   return (
-    <div className='flex items-center justify-end'>
-      <div className='flex flex-1 flex-col-reverse gap-x-8 pr-8 items-start gap-y-2 sm:flex-row sm:items-center sm:space-x-2'>
+    <div className="flex items-center justify-end">
+      <div className="flex flex-1 flex-col-reverse gap-x-8 pr-8 items-start gap-y-2 sm:flex-row sm:items-center sm:space-x-2">
         <Input
           placeholder={placeHolder}
           value={table.getState().globalFilter ?? ''}
@@ -61,9 +61,11 @@ export function DataTableToolbar<TData>({
 
         <ReportingPeriod disableHotkey />
 
-        <div className='flex flex-row items-center gap-2'>
-          <div><IconFilter className='h-6 w-6 text-blue-600' /></div>
-          <div className='flex gap-x-2'>
+        <div className="flex flex-row items-center gap-2">
+          <div>
+            <IconFilter className="h-6 w-6 text-blue-600" />
+          </div>
+          <div className="flex gap-x-2">
             {zoneNameColumn && zoneOptions.length > 0 && (
               <DataTableFacetedFilter
                 column={zoneNameColumn}
@@ -78,23 +80,23 @@ export function DataTableToolbar<TData>({
         {onToggleChart && (
           <Button
             variant={showChart ? 'default' : 'outline'}
-            size='sm'
-            className='h-8 text-xs gap-1'
+            size="sm"
+            className="h-8 text-xs gap-1"
             onClick={onToggleChart}
           >
-            <BarChartIcon className='h-4 w-4' />
+            <BarChartIcon className="h-4 w-4" />
             {showChart ? 'Hide Chart' : 'Chart'}
           </Button>
         )}
 
         {isFiltered && (
           <Button
-            variant='ghost'
+            variant="ghost"
             onClick={() => table.resetColumnFilters()}
-            className='h-8 px-2 lg:px-3'
+            className="h-8 px-2 lg:px-3"
           >
             Reset
-            <Cross2Icon className='ml-2 h-4 w-4' />
+            <Cross2Icon className="ml-2 h-4 w-4" />
           </Button>
         )}
 
@@ -102,10 +104,13 @@ export function DataTableToolbar<TData>({
           variant="link"
           className="h-8 px-2 lg:px-3"
           onClick={async () => {
-            const { default: exportTableToPdf } = await import('@/utils/export-table-pdf')
-            
+            const { default: exportTableToPdf } =
+              await import('@/utils/export-table-pdf')
+
             // Apply detailed section breakdown to both Freight and Delivery Note reports
-            const isDetailedReport = title === 'Delivery Note (Zone Wise)' || title === 'Freight (Zone Wise)'
+            const isDetailedReport =
+              title === 'Delivery Note (Zone Wise)' ||
+              title === 'Freight (Zone Wise)'
 
             if (isDetailedReport) {
               const sections = (filteredRows as Array<any>).map((zone) => ({
@@ -126,12 +131,18 @@ export function DataTableToolbar<TData>({
                   dispatch: buildDispatchLabel(detail),
                 })),
                 chart: {
-                  labels: (zone.godownDetails || []).map((d: any) => d.voucherNo),
-                  datasets: [{
-                    label: `Actual Quantity - ${zone.zoneName}`,
-                    data: (zone.godownDetails || []).map((d: any) => d.actualQuantity),
-                  }]
-                }
+                  labels: (zone.godownDetails || []).map(
+                    (d: any) => d.voucherNo,
+                  ),
+                  datasets: [
+                    {
+                      label: `Actual Quantity - ${zone.zoneName}`,
+                      data: (zone.godownDetails || []).map(
+                        (d: any) => d.actualQuantity,
+                      ),
+                    },
+                  ],
+                },
               }))
 
               // Add a summary section at the beginning
@@ -143,9 +154,18 @@ export function DataTableToolbar<TData>({
                   { header: 'Inward Qty', accessor: 'totalInwardQuantity' },
                   { header: 'Outward Qty', accessor: 'totalOutwardQuantity' },
                   { header: 'Closing Qty', accessor: 'totalClosingQuantity' },
-                  { header: 'Inward Billing Qty', accessor: 'totalInwardBillingQuantity' },
-                  { header: 'Outward Billing Qty', accessor: 'totalOutwardBillingQuantity' },
-                  { header: 'Closing Billing Qty', accessor: 'totalBillingClosingQuantity' },
+                  {
+                    header: 'Inward Billing Qty',
+                    accessor: 'totalInwardBillingQuantity',
+                  },
+                  {
+                    header: 'Outward Billing Qty',
+                    accessor: 'totalOutwardBillingQuantity',
+                  },
+                  {
+                    header: 'Closing Billing Qty',
+                    accessor: 'totalBillingClosingQuantity',
+                  },
                   { header: 'Total Amount', accessor: 'totalAmount' },
                 ],
                 data: (filteredRows as Array<any>).map((row) => ({
@@ -154,18 +174,27 @@ export function DataTableToolbar<TData>({
                   totalInwardQuantity: row.totalInwardQuantity ?? '',
                   totalOutwardQuantity: row.totalOutwardQuantity ?? '',
                   totalClosingQuantity: row.totalClosingQuantity ?? '',
-                  totalInwardBillingQuantity: row.totalInwardBillingQuantity ?? '',
-                  totalOutwardBillingQuantity: row.totalOutwardBillingQuantity ?? '',
-                  totalBillingClosingQuantity: row.totalBillingClosingQuantity ?? '',
+                  totalInwardBillingQuantity:
+                    row.totalInwardBillingQuantity ?? '',
+                  totalOutwardBillingQuantity:
+                    row.totalOutwardBillingQuantity ?? '',
+                  totalBillingClosingQuantity:
+                    row.totalBillingClosingQuantity ?? '',
                   totalAmount: row.totalAmount ?? '',
                 })),
                 chart: {
-                  labels: (filteredRows as Array<any>).map((row) => row.zoneName),
-                  datasets: [{
-                    label: 'Total Amount per Zone',
-                    data: (filteredRows as Array<any>).map((row) => row.totalAmount),
-                  }]
-                }
+                  labels: (filteredRows as Array<any>).map(
+                    (row) => row.zoneName,
+                  ),
+                  datasets: [
+                    {
+                      label: 'Total Amount per Zone',
+                      data: (filteredRows as Array<any>).map(
+                        (row) => row.totalAmount,
+                      ),
+                    },
+                  ],
+                },
               })
 
               exportTableToPdf({
@@ -184,11 +213,26 @@ export function DataTableToolbar<TData>({
                       { header: 'Zone', accessor: 'zoneName' },
                       { header: 'Total Entries', accessor: 'totalEntries' },
                       { header: 'Inward Qty', accessor: 'totalInwardQuantity' },
-                      { header: 'Outward Qty', accessor: 'totalOutwardQuantity' },
-                      { header: 'Closing Qty', accessor: 'totalClosingQuantity' },
-                      { header: 'Inward Billing Qty', accessor: 'totalInwardBillingQuantity' },
-                      { header: 'Outward Billing Qty', accessor: 'totalOutwardBillingQuantity' },
-                      { header: 'Closing Billing Qty', accessor: 'totalBillingClosingQuantity' },
+                      {
+                        header: 'Outward Qty',
+                        accessor: 'totalOutwardQuantity',
+                      },
+                      {
+                        header: 'Closing Qty',
+                        accessor: 'totalClosingQuantity',
+                      },
+                      {
+                        header: 'Inward Billing Qty',
+                        accessor: 'totalInwardBillingQuantity',
+                      },
+                      {
+                        header: 'Outward Billing Qty',
+                        accessor: 'totalOutwardBillingQuantity',
+                      },
+                      {
+                        header: 'Closing Billing Qty',
+                        accessor: 'totalBillingClosingQuantity',
+                      },
                       { header: 'Total Amount', accessor: 'totalAmount' },
                     ],
                     data: (filteredRows as Array<any>).map((row) => ({
@@ -197,19 +241,28 @@ export function DataTableToolbar<TData>({
                       totalInwardQuantity: row.totalInwardQuantity ?? '',
                       totalOutwardQuantity: row.totalOutwardQuantity ?? '',
                       totalClosingQuantity: row.totalClosingQuantity ?? '',
-                      totalInwardBillingQuantity: row.totalInwardBillingQuantity ?? '',
-                      totalOutwardBillingQuantity: row.totalOutwardBillingQuantity ?? '',
-                      totalBillingClosingQuantity: row.totalBillingClosingQuantity ?? '',
+                      totalInwardBillingQuantity:
+                        row.totalInwardBillingQuantity ?? '',
+                      totalOutwardBillingQuantity:
+                        row.totalOutwardBillingQuantity ?? '',
+                      totalBillingClosingQuantity:
+                        row.totalBillingClosingQuantity ?? '',
                       totalAmount: row.totalAmount ?? '',
                     })),
                     chart: {
-                      labels: (filteredRows as Array<any>).map((row) => row.zoneName),
-                      datasets: [{
-                        label: 'Total Amount per Zone',
-                        data: (filteredRows as Array<any>).map((row) => row.totalAmount),
-                      }]
-                    }
-                  }
+                      labels: (filteredRows as Array<any>).map(
+                        (row) => row.zoneName,
+                      ),
+                      datasets: [
+                        {
+                          label: 'Total Amount per Zone',
+                          data: (filteredRows as Array<any>).map(
+                            (row) => row.totalAmount,
+                          ),
+                        },
+                      ],
+                    },
+                  },
                 ],
                 orientation: 'landscape', // Landscape is better for more columns
               })
@@ -222,15 +275,20 @@ export function DataTableToolbar<TData>({
           variant="link"
           className="h-8 px-2 lg:px-3"
           onClick={async () => {
-            const { default: exportTableToExcel } = await import('@/utils/export-table-excel')
-            
+            const { default: exportTableToExcel } =
+              await import('@/utils/export-table-excel')
+
             // Apply detailed sheet breakdown to both Freight and Delivery Note reports
-            const isDetailedReport = title === 'Delivery Note (Zone Wise)' || title === 'Freight (Zone Wise)'
+            const isDetailedReport =
+              title === 'Delivery Note (Zone Wise)' ||
+              title === 'Freight (Zone Wise)'
 
             if (isDetailedReport) {
               const sheets = (filteredRows as Array<any>).map((zone) => ({
                 // Excel worksheet names cannot exceed 31 chars and cannot contain: * ? : / \ [ ]
-                title: (zone.zoneName || 'Unknown Zone').replace(/[\\/*?:[\]]/g, '').substring(0, 31),
+                title: (zone.zoneName || 'Unknown Zone')
+                  .replace(/[\\/*?:[\]]/g, '')
+                  .substring(0, 31),
                 columnData: [
                   { header: 'Voucher No', accessor: 'voucherNo' },
                   { header: 'Date', accessor: 'voucherDate' },
@@ -248,12 +306,18 @@ export function DataTableToolbar<TData>({
                 })),
                 chart: {
                   type: 'bar' as const,
-                  labels: (zone.godownDetails || []).map((d: any) => d.voucherNo),
-                  datasets: [{
-                    label: `Actual Quantity - ${zone.zoneName}`,
-                    data: (zone.godownDetails || []).map((d: any) => d.actualQuantity),
-                  }]
-                }
+                  labels: (zone.godownDetails || []).map(
+                    (d: any) => d.voucherNo,
+                  ),
+                  datasets: [
+                    {
+                      label: `Actual Quantity - ${zone.zoneName}`,
+                      data: (zone.godownDetails || []).map(
+                        (d: any) => d.actualQuantity,
+                      ),
+                    },
+                  ],
+                },
               }))
 
               // Add a summary sheet at the beginning
@@ -265,9 +329,18 @@ export function DataTableToolbar<TData>({
                   { header: 'Inward Qty', accessor: 'totalInwardQuantity' },
                   { header: 'Outward Qty', accessor: 'totalOutwardQuantity' },
                   { header: 'Closing Qty', accessor: 'totalClosingQuantity' },
-                  { header: 'Inward Billing Qty', accessor: 'totalInwardBillingQuantity' },
-                  { header: 'Outward Billing Qty', accessor: 'totalOutwardBillingQuantity' },
-                  { header: 'Closing Billing Qty', accessor: 'totalBillingClosingQuantity' },
+                  {
+                    header: 'Inward Billing Qty',
+                    accessor: 'totalInwardBillingQuantity',
+                  },
+                  {
+                    header: 'Outward Billing Qty',
+                    accessor: 'totalOutwardBillingQuantity',
+                  },
+                  {
+                    header: 'Closing Billing Qty',
+                    accessor: 'totalBillingClosingQuantity',
+                  },
                   { header: 'Total Amount', accessor: 'totalAmount' },
                 ],
                 data: (filteredRows as Array<any>).map((row) => ({
@@ -276,19 +349,28 @@ export function DataTableToolbar<TData>({
                   totalInwardQuantity: row.totalInwardQuantity ?? '',
                   totalOutwardQuantity: row.totalOutwardQuantity ?? '',
                   totalClosingQuantity: row.totalClosingQuantity ?? '',
-                  totalInwardBillingQuantity: row.totalInwardBillingQuantity ?? '',
-                  totalOutwardBillingQuantity: row.totalOutwardBillingQuantity ?? '',
-                  totalBillingClosingQuantity: row.totalBillingClosingQuantity ?? '',
+                  totalInwardBillingQuantity:
+                    row.totalInwardBillingQuantity ?? '',
+                  totalOutwardBillingQuantity:
+                    row.totalOutwardBillingQuantity ?? '',
+                  totalBillingClosingQuantity:
+                    row.totalBillingClosingQuantity ?? '',
                   totalAmount: row.totalAmount ?? '',
                 })),
                 chart: {
                   type: 'bar' as const,
-                  labels: (filteredRows as Array<any>).map((row) => row.zoneName),
-                  datasets: [{
-                    label: 'Total Amount per Zone',
-                    data: (filteredRows as Array<any>).map((row) => row.totalAmount),
-                  }]
-                }
+                  labels: (filteredRows as Array<any>).map(
+                    (row) => row.zoneName,
+                  ),
+                  datasets: [
+                    {
+                      label: 'Total Amount per Zone',
+                      data: (filteredRows as Array<any>).map(
+                        (row) => row.totalAmount,
+                      ),
+                    },
+                  ],
+                },
               })
 
               exportTableToExcel({
@@ -304,9 +386,18 @@ export function DataTableToolbar<TData>({
                   { header: 'Inward Qty', accessor: 'totalInwardQuantity' },
                   { header: 'Outward Qty', accessor: 'totalOutwardQuantity' },
                   { header: 'Closing Qty', accessor: 'totalClosingQuantity' },
-                  { header: 'Inward Billing Qty', accessor: 'totalInwardBillingQuantity' },
-                  { header: 'Outward Billing Qty', accessor: 'totalOutwardBillingQuantity' },
-                  { header: 'Closing Billing Qty', accessor: 'totalBillingClosingQuantity' },
+                  {
+                    header: 'Inward Billing Qty',
+                    accessor: 'totalInwardBillingQuantity',
+                  },
+                  {
+                    header: 'Outward Billing Qty',
+                    accessor: 'totalOutwardBillingQuantity',
+                  },
+                  {
+                    header: 'Closing Billing Qty',
+                    accessor: 'totalBillingClosingQuantity',
+                  },
                   { header: 'Total Amount', accessor: 'totalAmount' },
                 ],
                 data: (filteredRows as Array<any>).map((row) => ({
@@ -315,9 +406,12 @@ export function DataTableToolbar<TData>({
                   totalInwardQuantity: row.totalInwardQuantity ?? '',
                   totalOutwardQuantity: row.totalOutwardQuantity ?? '',
                   totalClosingQuantity: row.totalClosingQuantity ?? '',
-                  totalInwardBillingQuantity: row.totalInwardBillingQuantity ?? '',
-                  totalOutwardBillingQuantity: row.totalOutwardBillingQuantity ?? '',
-                  totalBillingClosingQuantity: row.totalBillingClosingQuantity ?? '',
+                  totalInwardBillingQuantity:
+                    row.totalInwardBillingQuantity ?? '',
+                  totalOutwardBillingQuantity:
+                    row.totalOutwardBillingQuantity ?? '',
+                  totalBillingClosingQuantity:
+                    row.totalBillingClosingQuantity ?? '',
                   totalAmount: row.totalAmount ?? '',
                 })),
                 fileName: `${title.toLowerCase().replace(/\s+/g, '-')}.xlsx`,
@@ -328,11 +422,26 @@ export function DataTableToolbar<TData>({
                       { header: 'Zone', accessor: 'zoneName' },
                       { header: 'Total Entries', accessor: 'totalEntries' },
                       { header: 'Inward Qty', accessor: 'totalInwardQuantity' },
-                      { header: 'Outward Qty', accessor: 'totalOutwardQuantity' },
-                      { header: 'Closing Qty', accessor: 'totalClosingQuantity' },
-                      { header: 'Inward Billing Qty', accessor: 'totalInwardBillingQuantity' },
-                      { header: 'Outward Billing Qty', accessor: 'totalOutwardBillingQuantity' },
-                      { header: 'Closing Billing Qty', accessor: 'totalBillingClosingQuantity' },
+                      {
+                        header: 'Outward Qty',
+                        accessor: 'totalOutwardQuantity',
+                      },
+                      {
+                        header: 'Closing Qty',
+                        accessor: 'totalClosingQuantity',
+                      },
+                      {
+                        header: 'Inward Billing Qty',
+                        accessor: 'totalInwardBillingQuantity',
+                      },
+                      {
+                        header: 'Outward Billing Qty',
+                        accessor: 'totalOutwardBillingQuantity',
+                      },
+                      {
+                        header: 'Closing Billing Qty',
+                        accessor: 'totalBillingClosingQuantity',
+                      },
                       { header: 'Total Amount', accessor: 'totalAmount' },
                     ],
                     data: (filteredRows as Array<any>).map((row) => ({
@@ -341,21 +450,30 @@ export function DataTableToolbar<TData>({
                       totalInwardQuantity: row.totalInwardQuantity ?? '',
                       totalOutwardQuantity: row.totalOutwardQuantity ?? '',
                       totalClosingQuantity: row.totalClosingQuantity ?? '',
-                      totalInwardBillingQuantity: row.totalInwardBillingQuantity ?? '',
-                      totalOutwardBillingQuantity: row.totalOutwardBillingQuantity ?? '',
-                      totalBillingClosingQuantity: row.totalBillingClosingQuantity ?? '',
+                      totalInwardBillingQuantity:
+                        row.totalInwardBillingQuantity ?? '',
+                      totalOutwardBillingQuantity:
+                        row.totalOutwardBillingQuantity ?? '',
+                      totalBillingClosingQuantity:
+                        row.totalBillingClosingQuantity ?? '',
                       totalAmount: row.totalAmount ?? '',
                     })),
                     chart: {
                       type: 'bar' as const,
-                      labels: (filteredRows as Array<any>).map((row) => row.zoneName),
-                      datasets: [{
-                        label: 'Total Amount per Zone',
-                        data: (filteredRows as Array<any>).map((row) => row.totalAmount),
-                      }]
-                    }
-                  }
-                ] as any
+                      labels: (filteredRows as Array<any>).map(
+                        (row) => row.zoneName,
+                      ),
+                      datasets: [
+                        {
+                          label: 'Total Amount per Zone',
+                          data: (filteredRows as Array<any>).map(
+                            (row) => row.totalAmount,
+                          ),
+                        },
+                      ],
+                    },
+                  },
+                ] as any,
               })
             }
           }}

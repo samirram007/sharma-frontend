@@ -20,7 +20,8 @@ export default function FormulaBar({
   className,
 }: FormulaBarProps) {
   const dp = noOfDecimalPlaces
-  const hasData = openingQuantity > 0 || inwardQuantity > 0 || outwardQuantity > 0
+  const hasData =
+    openingQuantity > 0 || inwardQuantity > 0 || outwardQuantity > 0
 
   if (!hasData) return null
 
@@ -33,34 +34,42 @@ export default function FormulaBar({
         className,
       )}
     >
-      <span className='font-medium text-blue-600 dark:text-blue-400'>Opening</span>
-      <span className='font-mono text-blue-600 dark:text-blue-400'>
+      <span className="font-medium text-blue-600 dark:text-blue-400">
+        Opening
+      </span>
+      <span className="font-mono text-blue-600 dark:text-blue-400">
         {openingQuantity.toFixed(dp)}
       </span>
 
-      <span className='text-muted-foreground mx-0.5'>+</span>
+      <span className="text-muted-foreground mx-0.5">+</span>
 
-      <span className='font-medium text-green-600 dark:text-green-400'>Inward</span>
-      <span className='font-mono text-green-600 dark:text-green-400'>
+      <span className="font-medium text-green-600 dark:text-green-400">
+        Inward
+      </span>
+      <span className="font-mono text-green-600 dark:text-green-400">
         {inwardQuantity.toFixed(dp)}
       </span>
 
-      <span className='text-muted-foreground mx-0.5'>−</span>
+      <span className="text-muted-foreground mx-0.5">−</span>
 
-      <span className='font-medium text-red-600 dark:text-red-400'>Outward</span>
-      <span className='font-mono text-red-600 dark:text-red-400'>
+      <span className="font-medium text-red-600 dark:text-red-400">
+        Outward
+      </span>
+      <span className="font-mono text-red-600 dark:text-red-400">
         {outwardQuantity.toFixed(dp)}
       </span>
 
-      <span className='text-muted-foreground mx-0.5'>=</span>
+      <span className="text-muted-foreground mx-0.5">=</span>
 
-      <span className='font-bold text-purple-600 dark:text-purple-400'>Closing</span>
-      <span className='font-mono font-bold text-purple-600 dark:text-purple-400'>
+      <span className="font-bold text-purple-600 dark:text-purple-400">
+        Closing
+      </span>
+      <span className="font-mono font-bold text-purple-600 dark:text-purple-400">
         {closingQuantity.toFixed(dp)}
       </span>
 
       {unitCode && (
-        <span className='ml-1 text-xs text-muted-foreground'>{unitCode}</span>
+        <span className="ml-1 text-xs text-muted-foreground">{unitCode}</span>
       )}
     </div>
   )

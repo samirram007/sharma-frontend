@@ -2,8 +2,6 @@ import useDialogState from '@/core/hooks/use-dialog-state'
 import React, { useState } from 'react'
 import type { Permission } from '../data/schema'
 
-
-
 type PermissionDialogType = 'invite' | 'add' | 'edit' | 'delete'
 
 interface PermissionContextType {
@@ -14,7 +12,9 @@ interface PermissionContextType {
   keyName: string
 }
 
-const PermissionContext = React.createContext<PermissionContextType | null>(null)
+const PermissionContext = React.createContext<PermissionContextType | null>(
+  null,
+)
 
 interface Props {
   children: React.ReactNode
@@ -24,9 +24,16 @@ export default function PermissionProvider({ children }: Props) {
   const [open, setOpen] = useDialogState<PermissionDialogType>(null)
   const [currentRow, setCurrentRow] = useState<Permission | null>(null)
 
-
   return (
-    <PermissionContext value={{ open, setOpen, currentRow, setCurrentRow, keyName: "permission" }}>
+    <PermissionContext
+      value={{
+        open,
+        setOpen,
+        currentRow,
+        setCurrentRow,
+        keyName: 'permission',
+      }}
+    >
       {children}
     </PermissionContext>
   )

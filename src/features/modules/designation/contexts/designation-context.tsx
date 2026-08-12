@@ -2,8 +2,6 @@ import useDialogState from '@/core/hooks/use-dialog-state'
 import React, { useState } from 'react'
 import type { Designation } from '../data/schema'
 
-
-
 type DesignationDialogType = 'invite' | 'add' | 'edit' | 'delete'
 
 interface DesignationContextType {
@@ -14,7 +12,9 @@ interface DesignationContextType {
   keyName: string
 }
 
-const DesignationContext = React.createContext<DesignationContextType | null>(null)
+const DesignationContext = React.createContext<DesignationContextType | null>(
+  null,
+)
 
 interface Props {
   children: React.ReactNode
@@ -24,9 +24,16 @@ export default function DesignationProvider({ children }: Props) {
   const [open, setOpen] = useDialogState<DesignationDialogType>(null)
   const [currentRow, setCurrentRow] = useState<Designation | null>(null)
 
-
   return (
-    <DesignationContext value={{ open, setOpen, currentRow, setCurrentRow, keyName: "designation" }}>
+    <DesignationContext
+      value={{
+        open,
+        setOpen,
+        currentRow,
+        setCurrentRow,
+        keyName: 'designation',
+      }}
+    >
       {children}
     </DesignationContext>
   )

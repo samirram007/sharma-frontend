@@ -1,7 +1,4 @@
-import { z } from 'zod';
-
-
-
+import { z } from 'zod'
 
 export const transactionLedgerSchema = z.object({
   id: z.number().int().positive().nullish(),
@@ -12,9 +9,6 @@ export const transactionLedgerSchema = z.object({
 
 export type TransactionLedgerForm = z.infer<typeof transactionLedgerSchema>
 
-
-
 export type TransactionLedger = z.infer<typeof transactionLedgerSchema>
 export const transactionLedgerListSchema = z.array(transactionLedgerSchema)
 export type TransactionLedgerList = z.infer<typeof transactionLedgerListSchema>
-

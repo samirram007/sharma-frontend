@@ -38,15 +38,22 @@ export function ChartCard({
         <CardTitle>{title}</CardTitle>
         <CardDescription>{description}</CardDescription>
       </CardHeader>
-      <CardContent className='pl-2'>
+      <CardContent className="pl-2">
         {loading ? (
-          <Skeleton className='h-[240px] w-full' />
+          <Skeleton className="h-[240px] w-full" />
         ) : error ? (
-          <div className='flex h-[240px] flex-col items-center justify-center gap-3 rounded-md border border-dashed px-4 text-center'>
-            <AlertTriangle className='h-5 w-5 text-muted-foreground' />
-            <p className='text-sm text-muted-foreground'>Couldn't load this chart.</p>
-            <Button variant='outline' size='sm' onClick={onRetry} className='gap-1.5'>
-              <RefreshCw className='h-3.5 w-3.5' />
+          <div className="flex h-[240px] flex-col items-center justify-center gap-3 rounded-md border border-dashed px-4 text-center">
+            <AlertTriangle className="h-5 w-5 text-muted-foreground" />
+            <p className="text-sm text-muted-foreground">
+              Couldn't load this chart.
+            </p>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onRetry}
+              className="gap-1.5"
+            >
+              <RefreshCw className="h-3.5 w-3.5" />
               Retry
             </Button>
           </div>

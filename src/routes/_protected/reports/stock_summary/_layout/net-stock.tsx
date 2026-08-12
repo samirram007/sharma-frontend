@@ -10,7 +10,9 @@ export const Route = createFileRoute(
   loader: ({ context }) =>
     context.queryClient.ensureQueryData(stockSummaryQueryOptions('net_stock')),
   component: () => {
-    const { data: stocksummary } = useSuspenseQuery(stockSummaryQueryOptions('net_stock'))
+    const { data: stocksummary } = useSuspenseQuery(
+      stockSummaryQueryOptions('net_stock'),
+    )
 
     return <StockInHand data={stocksummary?.data} />
   },

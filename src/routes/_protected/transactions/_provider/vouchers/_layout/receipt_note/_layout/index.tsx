@@ -1,5 +1,3 @@
-
-
 import ReceiptNote from '@/features/modules/voucher/receipt_note'
 import { createFileRoute } from '@tanstack/react-router'
 
@@ -8,4 +6,3 @@ export const Route = createFileRoute(
 )({
   component: ReceiptNote,
 })
-

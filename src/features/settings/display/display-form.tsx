@@ -64,15 +64,15 @@ export function DisplayForm() {
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit((data) => showSubmittedData(data))}
-        className='space-y-8'
+        className="space-y-8"
       >
         <FormField
           control={form.control}
-          name='items'
+          name="items"
           render={() => (
             <FormItem>
-              <div className='mb-4'>
-                <FormLabel className='text-base'>Sidebar</FormLabel>
+              <div className="mb-4">
+                <FormLabel className="text-base">Sidebar</FormLabel>
                 <FormDescription>
                   Select the items you want to display in the sidebar.
                 </FormDescription>
@@ -81,28 +81,31 @@ export function DisplayForm() {
                 <FormField
                   key={item.id}
                   control={form.control}
-                  name='items'
+                  name="items"
                   render={({ field }) => {
                     return (
                       <FormItem
                         key={item.id}
-                        className='flex flex-row items-start space-y-0 space-x-3'
+                        className="flex flex-row items-start space-y-0 space-x-3"
                       >
                         <FormControl>
                           <Checkbox
                             checked={field.value?.includes(item.id)}
                             onCheckedChange={(checked) => {
                               return checked
-                                ? field.onChange([...(field.value || []), item.id])
+                                ? field.onChange([
+                                    ...(field.value || []),
+                                    item.id,
+                                  ])
                                 : field.onChange(
                                     field.value?.filter(
-                                      (value) => value !== item.id
-                                    )
+                                      (value) => value !== item.id,
+                                    ),
                                   )
                             }}
                           />
                         </FormControl>
-                        <FormLabel className='font-normal'>
+                        <FormLabel className="font-normal">
                           {item.label}
                         </FormLabel>
                       </FormItem>
@@ -114,7 +117,7 @@ export function DisplayForm() {
             </FormItem>
           )}
         />
-        <Button type='submit'>Update display</Button>
+        <Button type="submit">Update display</Button>
       </form>
     </Form>
   )

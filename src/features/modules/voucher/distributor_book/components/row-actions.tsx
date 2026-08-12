@@ -1,36 +1,35 @@
-import { useNavigate } from "@tanstack/react-router"
-import type { Row } from "@tanstack/react-table"
+import { useNavigate } from '@tanstack/react-router'
+import type { Row } from '@tanstack/react-table'
 
-import type { DistributorBookSchema } from "../data/schema"
+import type { DistributorBookSchema } from '../data/schema'
 
-import { Button } from "@/components/ui/button"
+import { Button } from '@/components/ui/button'
 
-import { IconListDetails } from "@tabler/icons-react"
-
-
+import { IconListDetails } from '@tabler/icons-react'
 
 interface DataTableRowActionsProps {
-    row: Row<DistributorBookSchema>
+  row: Row<DistributorBookSchema>
 }
 
 const RowActions = (props: DataTableRowActionsProps) => {
-    // const { setOpen, setCurrentRow } = useDayBook()
-    const navigate = useNavigate()
-    const { row } = props
-    return (
-        <div
-            className="flex items-center gap-2">
+  // const { setOpen, setCurrentRow } = useDayBook()
+  const navigate = useNavigate()
+  const { row } = props
+  return (
+    <div className="flex items-center gap-2">
+      <Button
+        variant={'outline'}
+        size={'sm'}
+        onClick={() => {
+          navigate({
+            to: `/reports/distributor_book/${row.original.id}`,
+          })
+        }}
+      >
+        <IconListDetails size={30} /> View book in details{' '}
+      </Button>
 
-            <Button variant={'outline'} size={'sm'}
-                onClick={() => {
-
-                    navigate({
-                        to: `/reports/distributor_book/${row.original.id}`,
-                    });
-                }}
-            ><IconListDetails size={30} /> View book in details </Button>
-
-            {/* <DataTableRowActions<DistributorBookSchema>
+      {/* <DataTableRowActions<DistributorBookSchema>
             row={row}
             onEdit={(data) => {
                 // setCurrentRow(data)
@@ -44,10 +43,8 @@ const RowActions = (props: DataTableRowActionsProps) => {
                 setOpen("delete")
             }}
         /> */}
-        </div>
-    )
+    </div>
+  )
 }
 
 export default RowActions
-
-

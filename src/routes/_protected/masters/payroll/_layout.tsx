@@ -1,4 +1,3 @@
-
 import ForbiddenError from '@/features/errors/403'
 import GeneralError from '@/features/errors/general-error'
 import Payroll from '@/features/masters/payroll'
@@ -16,4 +15,3 @@ export const Route = createFileRoute('/_protected/masters/payroll/_layout')({
   notFoundComponent: () => <ForbiddenError minimal />,
   errorComponent: () => <GeneralError minimal />,
 })
-

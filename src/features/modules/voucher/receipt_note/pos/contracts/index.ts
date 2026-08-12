@@ -1,7 +1,5 @@
-import type { ReceiptNoteSchema } from "../../data/schema";
-
-
+import type { ReceiptNoteSchema } from '../../data/schema'
 
 export interface ReceiptNoteProps {
-    currentRow?: ReceiptNoteSchema
+  currentRow?: ReceiptNoteSchema
 }

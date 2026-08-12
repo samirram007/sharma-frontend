@@ -3,7 +3,11 @@ import { cn } from '@/lib/utils'
 import { format } from 'date-fns'
 import { useMemo } from 'react'
 import { useWatch } from 'react-hook-form'
-import type { FieldArrayWithId, UseFieldArrayRemove, UseFormReturn } from 'react-hook-form'
+import type {
+  FieldArrayWithId,
+  UseFieldArrayRemove,
+  UseFormReturn,
+} from 'react-hook-form'
 import { AlertTriangle, Loader2, Plus, RefreshCw, X } from 'lucide-react'
 
 import StockItemSheetSelect, {
@@ -115,7 +119,9 @@ const PosBody = ({
       {status === 'adjusted' && (
         <div className="rounded-md border bg-card p-3">
           <div className="mb-2 flex items-center justify-between">
-            <div className="text-sm font-semibold">Stock Adjustment Summary</div>
+            <div className="text-sm font-semibold">
+              Stock Adjustment Summary
+            </div>
             <span className="rounded-full border border-emerald-300 bg-emerald-50 px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400">
               Adjusted
             </span>
@@ -129,9 +135,9 @@ const PosBody = ({
         <div className="flex items-start gap-2 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:border-amber-800/60 dark:bg-amber-950/40 dark:text-amber-300">
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
           <span>
-            <span className="font-semibold">{zeroPhysicalCount} item(s)</span> have
-            physical quantity 0 — these will be booked as a complete loss. Review
-            them before verifying.
+            <span className="font-semibold">{zeroPhysicalCount} item(s)</span>{' '}
+            have physical quantity 0 — these will be booked as a complete loss.
+            Review them before verifying.
           </span>
         </div>
       )}
@@ -177,7 +183,8 @@ const PosBody = ({
                   colSpan={showBalance ? 14 : 13}
                   className="p-8 text-center text-muted-foreground"
                 >
-                  No items yet. Populate system quantities or add items manually.
+                  No items yet. Populate system quantities or add items
+                  manually.
                 </td>
               </tr>
             )}
@@ -276,8 +283,7 @@ const ItemRow = ({
   // A row counted at zero physical quantity is a complete loss — give it a
   // distinct tint so missing items are easy to spot. Rows without a selected
   // item are ignored (they're just empty rows).
-  const isZeroPhysical =
-    Boolean(values?.stock_item_id) && physicalQty === 0
+  const isZeroPhysical = Boolean(values?.stock_item_id) && physicalQty === 0
   const isFullLoss = isZeroPhysical && systemQty > 0
 
   return (
@@ -308,12 +314,7 @@ const ItemRow = ({
         />
       </td>
       <td className="p-1">
-        <DateCellInput
-          form={form}
-          index={index}
-          name="mfg_date"
-          busy={busy}
-        />
+        <DateCellInput form={form} index={index} name="mfg_date" busy={busy} />
       </td>
       <td className="p-1">
         <DateCellInput

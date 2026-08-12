@@ -18,7 +18,7 @@ const PosHeader = ({ mainForm: form }: PosHeaderProps) => {
 
   return (
     <div className="grid grid-rows-1">
-      <div className="grid grid-cols-[350px_1fr_140px]">
+      <div className="grid grid-cols-[350px_1fr]">
         <div className="space-y-0">
           <div className="grid grid-cols-[170px_200px] gap-2">
             <div className="bg-yellow-600 text-gray-100 px-2 py-0.5 shadow-md text-sm">
@@ -48,19 +48,19 @@ const PosHeader = ({ mainForm: form }: PosHeaderProps) => {
             </div>
           </div>
         </div>
-        <div className="flex items-end justify-end pr-4 text-right">
-          <div className="text-[11px] leading-snug text-slate-500">
-            <span className="font-semibold text-emerald-600">IN</span> =
-            Output of conversion (finished goods)
+        <div className="flex items-start justify-end gap-3 pr-2">
+          <div className="pt-0.5 text-right text-[11px] leading-snug text-slate-500">
+            <span className="font-semibold text-emerald-600">IN</span> = Output
+            of conversion (finished goods)
             <br />
             <span className="font-semibold text-orange-600">OUT</span> = Inputs
             consumed
           </div>
-        </div>
-        <div className="grid grid-rows-2 gap-0 justify-end items-start">
-          <div>
-            <DateBox tabIndex={2} form={form} name="voucherDate" />
-            <div className="text-right text-sm font-bold">{dayName}</div>
+          <div className="grid grid-rows-2 gap-0 justify-end items-start">
+            <div>
+              <DateBox tabIndex={2} form={form} name="voucherDate" />
+              <div className="text-right text-sm font-bold">{dayName}</div>
+            </div>
           </div>
         </div>
       </div>
@@ -153,11 +153,12 @@ const DateBox = (props: DateBoxProps) => {
       if (!isNaN(parsed.getTime())) {
         const formatted = parsed.toLocaleDateString('en-GB').replace(/\//g, '-')
         setDisplayValue(formatted)
-      }        } else {
-            setDisplayValue('')
-        }
-        parseDate()
-    }, [form.watch(name)])
+      }
+    } else {
+      setDisplayValue('')
+    }
+    parseDate()
+  }, [form.watch(name)])
 
   return (
     <>

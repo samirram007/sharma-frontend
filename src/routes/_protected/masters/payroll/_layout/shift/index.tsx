@@ -1,10 +1,9 @@
+import Shift from '@/features/modules/shift'
+import { shiftQueryOptions } from '@/features/modules/shift/data/queryOptions'
 
-import Shift from '@/features/modules/shift';
-import { shiftQueryOptions } from '@/features/modules/shift/data/queryOptions';
-
-import { useSuspenseQuery } from '@tanstack/react-query';
-import { createFileRoute } from '@tanstack/react-router';
-import { Loader } from 'lucide-react';
+import { useSuspenseQuery } from '@tanstack/react-query'
+import { createFileRoute } from '@tanstack/react-router'
+import { Loader } from 'lucide-react'
 
 export const Route = createFileRoute(
   '/_protected/masters/payroll/_layout/shift/',
@@ -19,4 +18,3 @@ export const Route = createFileRoute(
   errorComponent: () => <div>Error loading shift data.</div>,
   pendingComponent: () => <Loader className="animate-spin" />,
 })
-

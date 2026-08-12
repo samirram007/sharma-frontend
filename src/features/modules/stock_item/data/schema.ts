@@ -1,14 +1,11 @@
-import { CostingMethodSchema } from '@/features/enums/costing_method';
-import { MarketValuationMethodSchema } from '@/features/enums/market_valuation_method';
-import { TypeOfSupplyEnum } from '@/features/enums/schema';
-import { z } from 'zod';
-import { currencySchema } from '../../currency/data/schema';
-import { stockCategorySchema } from '../../stock_category/data/schema';
-import { stockGroupSchema } from '../../stock_group/data/schema';
-import { stockUnitSchema } from '../../stock_unit/data/schema';
-
-
-
+import { CostingMethodSchema } from '@/features/enums/costing_method'
+import { MarketValuationMethodSchema } from '@/features/enums/market_valuation_method'
+import { TypeOfSupplyEnum } from '@/features/enums/schema'
+import { z } from 'zod'
+import { currencySchema } from '../../currency/data/schema'
+import { stockCategorySchema } from '../../stock_category/data/schema'
+import { stockGroupSchema } from '../../stock_group/data/schema'
+import { stockUnitSchema } from '../../stock_unit/data/schema'
 
 export const stockItemSchema = z.object({
   id: z.number().int().positive().nullish(),
@@ -65,16 +62,12 @@ export const stockItemSchema = z.object({
 
   currency: currencySchema.nullish(),
   stockInHand: z.coerce.number().nullish(),
-
 })
 export type StockItem = z.infer<typeof stockItemSchema>
 export const stockItemListSchema = z.array(stockItemSchema)
 export type StockItemList = z.infer<typeof stockItemListSchema>
 
-
-
 export const formSchema = z.object({
-
   name: z.string().min(1, { message: 'Name is required.' }),
   code: z.string().min(1, { message: 'Role is required.' }),
   printName: z.string().min(1),
@@ -127,7 +120,6 @@ export const formSchema = z.object({
   stockInHand: z.coerce.number().nullish(),
 
   isEdit: z.boolean(),
-
 })
 
 export type StockItemForm = z.infer<typeof formSchema>

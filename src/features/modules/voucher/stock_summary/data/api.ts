@@ -1,12 +1,9 @@
-import { getData } from "@/utils/dataClient";
+import { getData } from '@/utils/dataClient'
 
-
-
-const API_PATH = "/stock_summaries"
+const API_PATH = '/stock_summaries'
 
 async function fetchStockSummaryService(type: string) {
-
-    return await getData(`${API_PATH}/${type}`);
+  return await getData(`${API_PATH}/${type}`)
 }
 
-export { fetchStockSummaryService };
+export { fetchStockSummaryService }

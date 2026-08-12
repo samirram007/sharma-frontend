@@ -4,9 +4,8 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { cn } from '@/lib/utils'
 import type { ColumnDef } from '@tanstack/react-table'
 
-
 import Icon from '@/components/icon'
-import { voucherTypeStatusTypes, } from '@/features/modules/voucher_type/data/data'
+import { voucherTypeStatusTypes } from '@/features/modules/voucher_type/data/data'
 import type { VoucherType } from '@/features/modules/voucher_type/data/schema'
 import { DataTableColumnHeader } from './data-table-column-header'
 import { DataTableRowActions } from './data-table-row-actions'
@@ -21,51 +20,49 @@ export const columns: ColumnDef<VoucherType>[] = [
           (table.getIsSomePageRowsSelected() && 'indeterminate')
         }
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label='Select all'
-        className='translate-y-[2px]'
+        aria-label="Select all"
+        className="translate-y-[2px]"
       />
     ),
     meta: {
       className: cn(
         'sticky md:table-cell left-0 z-10 rounded-tl',
-        'bg-background transition-colors duration-200 group-hover/row:bg-muted group-data-[state=selected]/row:bg-muted'
+        'bg-background transition-colors duration-200 group-hover/row:bg-muted group-data-[state=selected]/row:bg-muted',
       ),
     },
     cell: ({ row }) => (
-
       <Checkbox
         checked={row.getIsSelected()}
         onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label='Select row'
-        className='translate-y-[2px]'
+        aria-label="Select row"
+        className="translate-y-[2px]"
       />
     ),
     enableSorting: false,
     enableHiding: false,
   },
   {
-    accessorKey: "icon",
-    header: "Icon",
-    cell: ({ row }) => <Icon name={row.getValue('icon')} />
+    accessorKey: 'icon',
+    header: 'Icon',
+    cell: ({ row }) => <Icon name={row.getValue('icon')} />,
   },
   {
     accessorKey: 'name',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Name' />
+      <DataTableColumnHeader column={column} title="Name" />
     ),
     cell: ({ row }) => {
-
       return (
-        <LongText className='max-w-36 flex items-center gap-2'>
+        <LongText className="max-w-36 flex items-center gap-2">
           {row.getValue('name')}
         </LongText>
-      );
+      )
     },
     meta: {
       className: cn(
         'drop-shadow-[0_1px_2px_rgb(0_0_0_/_0.1)] dark:drop-shadow-[0_1px_2px_rgb(255_255_255_/_0.1)] lg:drop-shadow-none',
         'bg-background transition-colors duration-200 group-hover/row:bg-muted group-data-[state=selected]/row:bg-muted',
-        'sticky left-0 md:table-cell'
+        'sticky left-0 md:table-cell',
       ),
     },
     enableHiding: false,
@@ -74,31 +71,30 @@ export const columns: ColumnDef<VoucherType>[] = [
   {
     accessorKey: 'code',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Code' />
+      <DataTableColumnHeader column={column} title="Code" />
     ),
     cell: ({ row }) => (
-      <div className='w-fit text-nowrap'>{row.getValue('code')}</div>
+      <div className="w-fit text-nowrap">{row.getValue('code')}</div>
     ),
   },
   {
     accessorKey: 'voucherCategoryId',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Voucher Category' />
+      <DataTableColumnHeader column={column} title="Voucher Category" />
     ),
     cell: ({ row }) => {
       const { voucherCategory } = row.original
       const badgeColor = 'success'
       if (!voucherCategory) {
-        return <div className='text-muted-foreground'>N/A</div>
+        return <div className="text-muted-foreground">N/A</div>
       }
 
       return (
-        <div className='flex space-x-2'>
-          <Badge variant='default' className={cn('capitalize', badgeColor)}>
+        <div className="flex space-x-2">
+          <Badge variant="default" className={cn('capitalize', badgeColor)}>
             {/* <div className='text-muted-foreground'>{voucherCategory.name}: </div> */}
             {voucherCategory.name}
           </Badge>
-
         </div>
       )
     },
@@ -107,7 +103,7 @@ export const columns: ColumnDef<VoucherType>[] = [
   {
     accessorKey: 'description',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Description' />
+      <DataTableColumnHeader column={column} title="Description" />
     ),
     cell: ({ row }) => <div>{row.getValue('description')}</div>,
     enableSorting: false,
@@ -115,14 +111,14 @@ export const columns: ColumnDef<VoucherType>[] = [
   {
     accessorKey: 'status',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Status' />
+      <DataTableColumnHeader column={column} title="Status" />
     ),
     cell: ({ row }) => {
       const { status } = row.original
       const badgeColor = voucherTypeStatusTypes.get(status)
       return (
-        <div className='flex space-x-2'>
-          <Badge variant='outline' className={cn('capitalize', badgeColor)}>
+        <div className="flex space-x-2">
+          <Badge variant="outline" className={cn('capitalize', badgeColor)}>
             {row.getValue('status')}
           </Badge>
         </div>

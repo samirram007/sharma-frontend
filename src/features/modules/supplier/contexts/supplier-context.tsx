@@ -2,8 +2,6 @@ import useDialogState from '@/core/hooks/use-dialog-state'
 import React, { useState } from 'react'
 import type { Supplier } from '../data/schema'
 
-
-
 type SupplierDialogType = 'invite' | 'add' | 'edit' | 'delete'
 
 interface SupplierContextType {
@@ -24,9 +22,10 @@ export default function SupplierProvider({ children }: Props) {
   const [open, setOpen] = useDialogState<SupplierDialogType>(null)
   const [currentRow, setCurrentRow] = useState<Supplier | null>(null)
 
-
   return (
-    <SupplierContext value={{ open, setOpen, currentRow, setCurrentRow, keyName: "supplier" }}>
+    <SupplierContext
+      value={{ open, setOpen, currentRow, setCurrentRow, keyName: 'supplier' }}
+    >
       {children}
     </SupplierContext>
   )

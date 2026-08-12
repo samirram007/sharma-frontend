@@ -22,7 +22,9 @@ export async function loginAsAdmin(page: Page): Promise<void> {
   })
 
   if (!response.ok()) {
-    throw new Error(`E2E login failed (${response.status()}): ${await response.text()}`)
+    throw new Error(
+      `E2E login failed (${response.status()}): ${await response.text()}`,
+    )
   }
 
   const body = (await response.json()) as { token?: string }

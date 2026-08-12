@@ -92,7 +92,8 @@ export default function Transactions({ data }: TransactionProps) {
     return voucherCategories
       .map((category) => {
         const filteredTypes = category.voucherTypes?.filter((voucherType) => {
-          const haystack = `${voucherType.name} ${voucherType.description} ${category.name}`.toLowerCase()
+          const haystack =
+            `${voucherType.name} ${voucherType.description} ${category.name}`.toLowerCase()
           return haystack.includes(searchQuery)
         })
 
@@ -112,32 +113,32 @@ export default function Transactions({ data }: TransactionProps) {
           categoryName: category.name,
           voucherType,
           moduleLink: category.moduleLink ?? '',
-        }))
+        })),
       ),
-    [filteredCategories]
+    [filteredCategories],
   )
 
   return (
-    <div className='w-full px-1 pb-6 sm:px-2 lg:px-3'>
-      <div className='mb-4 flex flex-wrap items-center justify-between gap-3'>
+    <div className="w-full px-1 pb-6 sm:px-2 lg:px-3">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         {/* Search */}
-        <div className='relative min-w-0 flex-1 md:max-w-xs'>
-          <span className='pointer-events-none absolute inset-y-0 left-3 flex items-center'>
-            <IconSearch size={14} className='text-slate-400' />
+        <div className="relative min-w-0 flex-1 md:max-w-xs">
+          <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center">
+            <IconSearch size={14} className="text-slate-400" />
           </span>
           <input
-            type='text'
+            type="text"
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
-            placeholder='Search voucher items...'
-            className='h-10 w-full rounded-full border border-slate-200 bg-white px-4 pl-9 pr-9 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 dark:border-white/[0.07] dark:bg-secondary dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-blue-600 dark:focus:ring-blue-900/40'
+            placeholder="Search voucher items..."
+            className="h-10 w-full rounded-full border border-slate-200 bg-white px-4 pl-9 pr-9 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 dark:border-white/[0.07] dark:bg-secondary dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-blue-600 dark:focus:ring-blue-900/40"
           />
           {searchText && (
             <button
-              type='button'
+              type="button"
               onClick={() => setSearchText('')}
-              aria-label='Clear search'
-              className='absolute inset-y-0 right-3 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
+              aria-label="Clear search"
+              className="absolute inset-y-0 right-3 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
             >
               <IconX size={14} />
             </button>
@@ -145,25 +146,27 @@ export default function Transactions({ data }: TransactionProps) {
         </div>
 
         {/* View toggle */}
-        <div className='inline-flex items-center rounded-full border border-slate-200 bg-slate-100 p-1 dark:border-white/[0.07] dark:bg-secondary'>
+        <div className="inline-flex items-center rounded-full border border-slate-200 bg-slate-100 p-1 dark:border-white/[0.07] dark:bg-secondary">
           <button
-            type='button'
+            type="button"
             onClick={() => setViewMode('grid')}
-            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${viewMode === 'grid'
-              ? 'bg-white text-blue-700 shadow-sm dark:bg-slate-700 dark:text-blue-300'
-              : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
-              }`}
+            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+              viewMode === 'grid'
+                ? 'bg-white text-blue-700 shadow-sm dark:bg-slate-700 dark:text-blue-300'
+                : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
+            }`}
           >
             <IconLayoutGrid size={13} />
             Current View
           </button>
           <button
-            type='button'
+            type="button"
             onClick={() => setViewMode('column')}
-            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${viewMode === 'column'
-              ? 'bg-white text-blue-700 shadow-sm dark:bg-slate-700 dark:text-blue-300'
-              : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
-              }`}
+            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+              viewMode === 'column'
+                ? 'bg-white text-blue-700 shadow-sm dark:bg-slate-700 dark:text-blue-300'
+                : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
+            }`}
           >
             <IconLayoutColumns size={13} />
             Column View
@@ -172,7 +175,7 @@ export default function Transactions({ data }: TransactionProps) {
       </div>
 
       {searchQuery && (
-        <div className='mb-3 text-xs text-slate-600 dark:text-slate-400'>
+        <div className="mb-3 text-xs text-slate-600 dark:text-slate-400">
           {hasResults
             ? `Found matches in ${filteredCategories.length} group${filteredCategories.length > 1 ? 's' : ''}.`
             : 'No matching voucher items found.'}
@@ -216,7 +219,7 @@ export default function Transactions({ data }: TransactionProps) {
                   : 'w-full space-y-4 pt-3'
               }
             >
-              <h2 className='text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-100 sm:text-2xl'>
+              <h2 className="text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-100 sm:text-2xl">
                 {voucherCategory.name}
               </h2>
               <Separator />
@@ -267,9 +270,12 @@ const VoucherTypeTablet = ({
   const router = useLocation()
   const navigate = useNavigate()
   const handleClick = () => {
-    const mappedLink = moduleLinkCollection.find((item) => item.title === voucherType.name)?.href
+    const mappedLink = moduleLinkCollection.find(
+      (item) => item.title === voucherType.name,
+    )?.href
     const autoLink = `/${router.pathname}/${lowerCase(voucherType.name.replace(' ', '_'))}`
-    const targetLink = mappedLink || (moduleLink.startsWith('/') ? moduleLink : autoLink)
+    const targetLink =
+      mappedLink || (moduleLink.startsWith('/') ? moduleLink : autoLink)
     navigate({ to: targetLink })
   }
 
@@ -279,27 +285,30 @@ const VoucherTypeTablet = ({
 
   return (
     <button
-      type='button'
-      className={`group text-left rounded-xl border border-slate-200/80 bg-white/90 p-3 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_14px_28px_-18px_rgba(15,23,42,0.45)] dark:border-white/[0.08] dark:bg-white/[0.06] ${tone.card} ${isHighlighted
-        ? 'ring-1 ring-blue-300/70 shadow-[0_10px_24px_-16px_rgba(59,130,246,0.55)] dark:ring-blue-700/60'
-        : ''
-        }`}
-      onClick={handleClick} 
+      type="button"
+      className={`group text-left rounded-xl border border-slate-200/80 bg-white/90 p-3 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_14px_28px_-18px_rgba(15,23,42,0.45)] dark:border-white/[0.08] dark:bg-white/[0.06] ${tone.card} ${
+        isHighlighted
+          ? 'ring-1 ring-blue-300/70 shadow-[0_10px_24px_-16px_rgba(59,130,246,0.55)] dark:ring-blue-700/60'
+          : ''
+      }`}
+      onClick={handleClick}
     >
-      <div className='flex items-start gap-2.5'>
-        <div className={`inline-flex rounded-lg bg-linear-to-br p-2 ${tone.chip}`}>
-          <Icon name={iconName ?? ''} size={20} className='text-current' />
+      <div className="flex items-start gap-2.5">
+        <div
+          className={`inline-flex rounded-lg bg-linear-to-br p-2 ${tone.chip}`}
+        >
+          <Icon name={iconName ?? ''} size={20} className="text-current" />
         </div>
-        <div className='min-w-0'>
+        <div className="min-w-0">
           {categoryLabel ? (
-            <div className='mb-1 inline-flex rounded-full border border-slate-200/80 bg-slate-50 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-slate-600 dark:border-white/[0.08] dark:bg-secondary/70 dark:text-slate-300'>
+            <div className="mb-1 inline-flex rounded-full border border-slate-200/80 bg-slate-50 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-slate-600 dark:border-white/[0.08] dark:bg-secondary/70 dark:text-slate-300">
               {categoryLabel}
             </div>
           ) : null}
-          <div className='text-lg font-semibold tracking-tight text-slate-900 dark:text-slate-100'>
+          <div className="text-lg font-semibold tracking-tight text-slate-900 dark:text-slate-100">
             {voucherType.name}
           </div>
-          <div className='mt-0.5 text-xs leading-relaxed text-slate-700 dark:text-slate-300'>
+          <div className="mt-0.5 text-xs leading-relaxed text-slate-700 dark:text-slate-300">
             {voucherType.description}
           </div>
         </div>

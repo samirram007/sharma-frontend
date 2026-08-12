@@ -1,11 +1,10 @@
-import Permission from '@/features/modules/permission';
-import { permissionQueryOptions } from '@/features/modules/permission/data/queryOptions';
+import Permission from '@/features/modules/permission'
+import { permissionQueryOptions } from '@/features/modules/permission/data/queryOptions'
 
-
-import { requirePermission } from '@/lib/auth';
-import { useSuspenseQuery } from '@tanstack/react-query';
-import { createFileRoute } from '@tanstack/react-router';
-import { Loader } from 'lucide-react';
+import { requirePermission } from '@/lib/auth'
+import { useSuspenseQuery } from '@tanstack/react-query'
+import { createFileRoute } from '@tanstack/react-router'
+import { Loader } from 'lucide-react'
 
 export const Route = createFileRoute(
   '/_protected/administration/_layout/permission/',
@@ -21,4 +20,3 @@ export const Route = createFileRoute(
   errorComponent: () => <div>Error loading permissions.</div>,
   pendingComponent: () => <Loader className="animate-spin" />,
 })
-

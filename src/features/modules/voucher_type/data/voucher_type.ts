@@ -1,4 +1,4 @@
-import { fetchAccountGroupService } from '../../../masters/accounts/services/apis';
+import { fetchAccountGroupService } from '../../../masters/accounts/services/apis'
 
 // export const account_groups = Array.from({ length: 20 }, () => {
 //   const name = faker.person.fullName()

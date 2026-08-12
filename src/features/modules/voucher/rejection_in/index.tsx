@@ -7,17 +7,17 @@ import Pos from './pos/index'
 import type { RejectionInProps } from './pos/contracts'
 
 const RejectionInVoucherComponent = ({ currentRow }: RejectionInProps) => {
-    const { setHeaderVisible } = useTransaction()
+  const { setHeaderVisible } = useTransaction()
 
-    useEffect(() => {
-        setHeaderVisible?.(false)
-    }, [setHeaderVisible])
+  useEffect(() => {
+    setHeaderVisible?.(false)
+  }, [setHeaderVisible])
 
-    return (
-        <PosProvider>
-            <Pos currentRow={currentRow} />
-        </PosProvider>
-    )
+  return (
+    <PosProvider>
+      <Pos currentRow={currentRow} />
+    </PosProvider>
+  )
 }
 
 export default RejectionInVoucherComponent

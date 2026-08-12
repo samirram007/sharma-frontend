@@ -3,7 +3,7 @@ import { useLocalStorage } from '@/hooks/use-local-storage'
 import type { StockSummarySchema } from '../../stock_summary/data/schema'
 import useDialogState from '@/core/hooks/use-dialog-state'
 
-type ConfigItem = { key: string, value: boolean | string | number }
+type ConfigItem = { key: string; value: boolean | string | number }
 
 const CONFIG_STORAGE_KEY = 'dispatchSectionConfig'
 
@@ -20,7 +20,9 @@ const defaultConfig: Array<ConfigItem> = [
 // and unknown stored keys are dropped.
 const deserializeConfig = (stored: unknown): Array<ConfigItem> => {
   const parsed = Array.isArray(stored) ? (stored as Array<ConfigItem>) : []
-  return defaultConfig.map((def) => parsed.find((p) => p.key === def.key) ?? def)
+  return defaultConfig.map(
+    (def) => parsed.find((p) => p.key === def.key) ?? def,
+  )
 }
 
 type FreightDialogType = 'invite' | 'add' | 'edit' | 'delete'
@@ -30,7 +32,7 @@ interface FreightContextType {
   setOpen: (str: FreightDialogType | null) => void
   currentRow: StockSummarySchema | null
   setCurrentRow: React.Dispatch<React.SetStateAction<StockSummarySchema | null>>
-  keyName: string,
+  keyName: string
   config: Array<ConfigItem>
   updateConfig: (key: string, value: boolean | string | number) => void
 }
@@ -50,14 +52,27 @@ export default function FreightProvider({ children }: Props) {
     { deserialize: deserializeConfig },
   )
 
-  const updateConfig = useCallback((key: string, value: boolean | string | number) => {
-    setConfig(prev => prev.map(item =>
-      item.key === key ? { ...item, value } : item
-    ))
-  }, [setConfig])
+  const updateConfig = useCallback(
+    (key: string, value: boolean | string | number) => {
+      setConfig((prev) =>
+        prev.map((item) => (item.key === key ? { ...item, value } : item)),
+      )
+    },
+    [setConfig],
+  )
 
   return (
-    <FreightContext.Provider value={{ config, updateConfig, open, setOpen, currentRow, setCurrentRow, keyName: "day_books" }}>
+    <FreightContext.Provider
+      value={{
+        config,
+        updateConfig,
+        open,
+        setOpen,
+        currentRow,
+        setCurrentRow,
+        keyName: 'day_books',
+      }}
+    >
       {children}
     </FreightContext.Provider>
   )
@@ -67,7 +82,9 @@ export const useFreight = () => {
   const freightContext = React.useContext(FreightContext)
 
   if (!freightContext) {
-    throw new Error('useFreight has to be used within <FreightContext.Provider>')
+    throw new Error(
+      'useFreight has to be used within <FreightContext.Provider>',
+    )
   }
 
   return freightContext

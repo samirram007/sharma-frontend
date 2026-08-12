@@ -1,4 +1,3 @@
-
 import ForbiddenError from '@/features/errors/403'
 import GeneralError from '@/features/errors/general-error'
 import Administration from '@/features/masters/administration'
@@ -16,4 +15,3 @@ export const Route = createFileRoute('/_protected/administration/_layout')({
   notFoundComponent: () => <ForbiddenError minimal />,
   errorComponent: () => <GeneralError minimal />,
 })
-

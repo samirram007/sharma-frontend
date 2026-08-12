@@ -1,4 +1,3 @@
-
 import { useVoucherCategory } from '../contexts/voucher-categories-context'
 import { VoucherCategorysActionDialog } from './voucher_categories-action-dialog'
 import { VoucherCategorysDeleteDialog } from './voucher_categories-delete-dialog'
@@ -9,13 +8,13 @@ export function VoucherCategorysDialogs() {
   return (
     <>
       <VoucherCategorysActionDialog
-        key='voucher_category-add'
+        key="voucher_category-add"
         open={open === 'add'}
         onOpenChange={() => setOpen('add')}
       />
 
       <VoucherCategorysInviteDialog
-        key='voucher_category-invite'
+        key="voucher_category-invite"
         open={open === 'invite'}
         onOpenChange={() => setOpen('invite')}
       />

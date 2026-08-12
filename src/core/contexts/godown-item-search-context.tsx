@@ -1,4 +1,3 @@
-
 import { CommandMenu } from '@/layouts/components/command-menu'
 import React from 'react'
 
@@ -7,7 +6,8 @@ interface GodownItemSearchContextType {
   setOpen: React.Dispatch<React.SetStateAction<boolean>>
 }
 
-const GodownItemSearchContext = React.createContext<GodownItemSearchContextType | null>(null)
+const GodownItemSearchContext =
+  React.createContext<GodownItemSearchContextType | null>(null)
 
 interface Props {
   children: React.ReactNode
@@ -40,7 +40,9 @@ export const useGodownItemSearch = () => {
   const godownItemSearchContext = React.useContext(GodownItemSearchContext)
 
   if (!godownItemSearchContext) {
-    throw new Error('useGodownItemSearch has to be used within <GodownItemSearchProvider>')
+    throw new Error(
+      'useGodownItemSearch has to be used within <GodownItemSearchProvider>',
+    )
   }
 
   return godownItemSearchContext

@@ -44,7 +44,7 @@ import {
   ArrowUpCircle,
   ArrowDownCircle,
 } from 'lucide-react'
-import { toNum, formatLocale } from '@/utils/format-num'
+import { toNum, formatLocale, formatQty } from '@/utils/format-num'
 import { entryTotals } from './columns'
 
 declare module '@tanstack/react-table' {
@@ -174,7 +174,6 @@ export function GridTable({
   }, [data])
 
   const formatAmt = formatLocale
-  const formatQty = formatLocale
 
   // Dynamic grid columns based on visible columns
   const visibleCols = table.getVisibleLeafColumns()

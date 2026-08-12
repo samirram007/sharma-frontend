@@ -1,5 +1,5 @@
-import { z } from 'zod';
-import { voucherTypeListSchema } from '../../voucher_type/data/schema';
+import { z } from 'zod'
+import { voucherTypeListSchema } from '../../voucher_type/data/schema'
 
 const accountingEffectsSchema = z.union([
   z.literal('debit'),
@@ -9,9 +9,9 @@ export type accountingEffects = z.infer<typeof accountingEffectsSchema>
 
 const voucherCategoryStatusSchema = z.union([
   z.literal('active'),
-  z.literal('inactive'),])
+  z.literal('inactive'),
+])
 export type voucherCategoryStatus = z.infer<typeof voucherCategoryStatusSchema>
-
 
 export const voucherCategorySchema = z.object({
   id: z.number().int().positive(),
@@ -29,7 +29,7 @@ export const voucherCategoryViewSchema = z.object({
   description: z.string().optional(),
   status: voucherCategoryStatusSchema,
   moduleLink: z.string().min(1).optional().nullish(),
-  voucherTypes: z.lazy(() => voucherTypeListSchema).nullish()
+  voucherTypes: z.lazy(() => voucherTypeListSchema).nullish(),
 })
 export type VoucherCategory = z.infer<typeof voucherCategorySchema>
 export const voucherCategoryListSchema = z.array(voucherCategorySchema)
@@ -37,4 +37,6 @@ export type VoucherCategoryList = z.infer<typeof voucherCategoryListSchema>
 
 export type VoucherCategoryView = z.infer<typeof voucherCategoryViewSchema>
 export const voucherCategoryViewListSchema = z.array(voucherCategoryViewSchema)
-export type VoucherCategoryViewList = z.infer<typeof voucherCategoryViewListSchema>
+export type VoucherCategoryViewList = z.infer<
+  typeof voucherCategoryViewListSchema
+>

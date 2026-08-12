@@ -1,4 +1,3 @@
-
 import { useAccountLedger } from '../contexts/account-ledger-context'
 import { AccountLedgersActionDialog } from './account_ledgers-action-dialog'
 import { AccountLedgersDeleteDialog } from './account_ledgers-delete-dialog'
@@ -8,12 +7,10 @@ export function AccountLedgersDialogs() {
   return (
     <>
       <AccountLedgersActionDialog
-        key='account_ledger-add'
+        key="account_ledger-add"
         open={open === 'add'}
         onOpenChange={() => setOpen('add')}
       />
-
-
 
       {currentRow && (
         <>

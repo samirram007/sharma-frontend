@@ -1,8 +1,8 @@
-import StockGroup from '@/features/modules/stock_group';
-import { stockGroupQueryOptions } from '@/features/modules/stock_group/data/queryOptions';
-import { useSuspenseQuery } from '@tanstack/react-query';
-import { createFileRoute } from '@tanstack/react-router';
-import { Loader } from 'lucide-react';
+import StockGroup from '@/features/modules/stock_group'
+import { stockGroupQueryOptions } from '@/features/modules/stock_group/data/queryOptions'
+import { useSuspenseQuery } from '@tanstack/react-query'
+import { createFileRoute } from '@tanstack/react-router'
+import { Loader } from 'lucide-react'
 
 export const Route = createFileRoute(
   '/_protected/masters/inventory/_layout/stock_group/',
@@ -17,4 +17,3 @@ export const Route = createFileRoute(
   errorComponent: () => <div>Error loading stock group data.</div>,
   pendingComponent: () => <Loader className="animate-spin" />,
 })
-

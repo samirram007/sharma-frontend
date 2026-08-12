@@ -1,10 +1,18 @@
-import { queryOptions } from "@tanstack/react-query"
-import type { ReceiptNoteReportParams } from "./api"
-import { fetchReceiptNoteReport, fetchGroupedByLedger, fetchGroupedByStockItem, fetchGroupedByGodown, fetchGroupedByDate } from "./api"
+import { queryOptions } from '@tanstack/react-query'
+import type { ReceiptNoteReportParams } from './api'
+import {
+  fetchReceiptNoteReport,
+  fetchGroupedByLedger,
+  fetchGroupedByStockItem,
+  fetchGroupedByGodown,
+  fetchGroupedByDate,
+} from './api'
 
-const Key = "ReceiptNoteReport"
+const Key = 'ReceiptNoteReport'
 
-export const receiptNoteReportQueryOptions = (params?: ReceiptNoteReportParams) => {
+export const receiptNoteReportQueryOptions = (
+  params?: ReceiptNoteReportParams,
+) => {
   return queryOptions({
     queryKey: [Key, params],
     queryFn: () => fetchReceiptNoteReport(params),

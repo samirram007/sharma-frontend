@@ -6,7 +6,10 @@ export const Route = createFileRoute(
   beforeLoad: ({ context }) => {
     const fyId = context.auth?.userFiscalYear?.fiscalYearId
     if (fyId) {
-      throw redirect({ to: '/masters/organization/fiscal_year/$id/close', params: { id: fyId } })
+      throw redirect({
+        to: '/masters/organization/fiscal_year/$id/close',
+        params: { id: fyId },
+      })
     }
     throw redirect({ to: '/masters/organization/fiscal_year' })
   },

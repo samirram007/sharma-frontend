@@ -10,17 +10,20 @@ export const Route = createFileRoute(
   '/_protected/reports/stock_summary/_layout/stock-in-hand',
 )({
   loader: ({ context }) =>
-    context.queryClient.ensureQueryData(stockSummaryQueryOptions('stock_in_hand')),
+    context.queryClient.ensureQueryData(
+      stockSummaryQueryOptions('stock_in_hand'),
+    ),
   component: () => {
-    const { data: stocksummary } = useSuspenseQuery(stockSummaryQueryOptions('stock_in_hand'))
+    const { data: stocksummary } = useSuspenseQuery(
+      stockSummaryQueryOptions('stock_in_hand'),
+    )
 
     return (
       <Suspense fallback={<SkeletonTable />}>
         <StockInHand data={stocksummary?.data} />
       </Suspense>
-    ) 
+    )
   },
   errorComponent: () => <div>Error loading stock summary data.</div>,
   pendingComponent: () => <Loader className="animate-spin" />,
 })
-

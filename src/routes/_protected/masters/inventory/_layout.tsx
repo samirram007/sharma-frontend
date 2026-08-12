@@ -1,4 +1,3 @@
-
 import ForbiddenError from '@/features/errors/403'
 import GeneralError from '@/features/errors/general-error'
 import Inventory from '@/features/masters/inventory'
@@ -9,7 +8,6 @@ export const Route = createFileRoute('/_protected/masters/inventory/_layout')({
   component: () => {
     return (
       <InventoryProvider>
-
         <Inventory />
       </InventoryProvider>
     )
@@ -17,4 +15,3 @@ export const Route = createFileRoute('/_protected/masters/inventory/_layout')({
   notFoundComponent: () => <ForbiddenError minimal />,
   errorComponent: () => <GeneralError minimal />,
 })
-

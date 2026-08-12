@@ -7,7 +7,6 @@ export const Route = createFileRoute(
   '/_protected/masters/accounts/_layout/voucher_type/_layout',
 )({
   component: () => {
-
     return (
       <VoucherTypeProvider>
         <Outlet />
@@ -17,5 +16,3 @@ export const Route = createFileRoute(
   errorComponent: () => <GeneralError minimal />,
   pendingComponent: () => <Loader className="animate-spin" />,
 })
-
-

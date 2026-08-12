@@ -2,8 +2,6 @@ import useDialogState from '@/core/hooks/use-dialog-state'
 import React, { useState } from 'react'
 import type { Shift } from '../data/schema'
 
-
-
 type ShiftDialogType = 'invite' | 'add' | 'edit' | 'delete'
 
 interface ShiftContextType {
@@ -24,9 +22,10 @@ export default function ShiftProvider({ children }: Props) {
   const [open, setOpen] = useDialogState<ShiftDialogType>(null)
   const [currentRow, setCurrentRow] = useState<Shift | null>(null)
 
-
   return (
-    <ShiftContext value={{ open, setOpen, currentRow, setCurrentRow, keyName: "shift" }}>
+    <ShiftContext
+      value={{ open, setOpen, currentRow, setCurrentRow, keyName: 'shift' }}
+    >
       {children}
     </ShiftContext>
   )

@@ -2,8 +2,6 @@ import useDialogState from '@/core/hooks/use-dialog-state'
 import React, { useState } from 'react'
 import type { AppModule } from '../data/schema'
 
-
-
 type AppModuleDialogType = 'invite' | 'add' | 'edit' | 'delete'
 
 interface AppModuleContextType {
@@ -25,7 +23,15 @@ export default function AppModuleProvider({ children }: Props) {
   const [currentRow, setCurrentRow] = useState<AppModule | null>(null)
 
   return (
-    <AppModuleContext value={{ open, setOpen, currentRow, setCurrentRow, keyName: "app_modules" }}>
+    <AppModuleContext
+      value={{
+        open,
+        setOpen,
+        currentRow,
+        setCurrentRow,
+        keyName: 'app_modules',
+      }}
+    >
       {children}
     </AppModuleContext>
   )

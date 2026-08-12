@@ -1,13 +1,11 @@
-
 import { IconPlus } from '@tabler/icons-react'
 import { useStockSummary } from '../../stock_summary/contexts/stock_summary-context'
 import { Button } from '@/components/ui/button'
 
-
 export function PrimaryButtons() {
   const { setOpen } = useStockSummary()
   return (
-    <div className='flex gap-2'>
+    <div className="flex gap-2">
       {/* <Button
         variant='outline'
         className='space-x-1'
@@ -15,7 +13,11 @@ export function PrimaryButtons() {
       >
         <span>Invite User</span> <IconMailPlus size={18} />
       </Button> */}
-      <Button variant='default' className='space-x-1' onClick={() => setOpen('add')}>
+      <Button
+        variant="default"
+        className="space-x-1"
+        onClick={() => setOpen('add')}
+      >
         <span>Add Module</span> <IconPlus size={18} />
       </Button>
     </div>

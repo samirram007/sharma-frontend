@@ -1,4 +1,3 @@
-
 import { z } from 'zod'
 import { companyTypeSchema } from '../../company_type/data/schema'
 

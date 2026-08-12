@@ -6,17 +6,14 @@ import { Loader } from 'lucide-react'
 export const Route = createFileRoute(
   '/_protected/masters/organization/_layout/currency/_layout',
 )({
-
   component: () => {
     // const { data: currency } = useSuspenseQuery(currencyQueryOptions())
     return (
       <CurrencyProvider>
         <Outlet />
-      </CurrencyProvider >
+      </CurrencyProvider>
     )
   },
   errorComponent: () => <GeneralError minimal />,
   pendingComponent: () => <Loader className="animate-spin" />,
 })
-
-

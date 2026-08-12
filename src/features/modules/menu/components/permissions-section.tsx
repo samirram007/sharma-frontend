@@ -30,11 +30,13 @@ export default function PermissionsSection() {
   const [selectedRoleId, setSelectedRoleId] = useState<number | null>(null)
 
   // Fetch roles
-  const { data: rolesData, isLoading: rolesLoading } = useQuery(roleQueryOptions())
+  const { data: rolesData, isLoading: rolesLoading } =
+    useQuery(roleQueryOptions())
   const roles = rolesData?.data ?? []
 
   // Fetch menu tree
-  const { data: treeData, isLoading: treeLoading } = useQuery(MenuTreeQueryOptions)
+  const { data: treeData, isLoading: treeLoading } =
+    useQuery(MenuTreeQueryOptions)
 
   // Fetch permissions for selected role
   const { data: permData, isLoading: permLoading } = useQuery({
@@ -52,7 +54,10 @@ export default function PermissionsSection() {
     features.forEach((f: any) => {
       if (!f.code) return
       if (f.rolePermission) {
-        permMap.set(f.code, { id: f.rolePermission.id, isAllowed: f.rolePermission.isAllowed })
+        permMap.set(f.code, {
+          id: f.rolePermission.id,
+          isAllowed: f.rolePermission.isAllowed,
+        })
       } else {
         permMap.set(f.code, { isAllowed: false })
       }
@@ -87,7 +92,8 @@ export default function PermissionsSection() {
     return { granted, denied, unmanaged }
   }, [menuTree, featureMetaMap, featurePermissionMap])
 
-  const { mutate: savePermission, isPending: permSaving } = usePermissionMutation()
+  const { mutate: savePermission, isPending: permSaving } =
+    usePermissionMutation()
 
   const handleToggle = useCallback(
     (featureCode: string) => {
@@ -108,12 +114,20 @@ export default function PermissionsSection() {
         },
         {
           onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['MenuPermissions', selectedRoleId] })
+            queryClient.invalidateQueries({
+              queryKey: ['MenuPermissions', selectedRoleId],
+            })
           },
         },
       )
     },
-    [selectedRoleId, featureMetaMap, featurePermissionMap, savePermission, queryClient],
+    [
+      selectedRoleId,
+      featureMetaMap,
+      featurePermissionMap,
+      savePermission,
+      queryClient,
+    ],
   )
 
   const handleToggleAll = useCallback(
@@ -132,14 +146,22 @@ export default function PermissionsSection() {
             },
             {
               onSuccess: () => {
-                queryClient.invalidateQueries({ queryKey: ['MenuPermissions', selectedRoleId] })
+                queryClient.invalidateQueries({
+                  queryKey: ['MenuPermissions', selectedRoleId],
+                })
               },
             },
           )
         }
       })
     },
-    [selectedRoleId, featureMetaMap, featurePermissionMap, savePermission, queryClient],
+    [
+      selectedRoleId,
+      featureMetaMap,
+      featurePermissionMap,
+      savePermission,
+      queryClient,
+    ],
   )
 
   // Build permission info lookup for tree nodes
@@ -157,8 +179,8 @@ export default function PermissionsSection() {
 
   if (rolesLoading || treeLoading) {
     return (
-      <div className='flex items-center justify-center py-12'>
-        <Loader className='h-4 w-4 animate-spin text-muted-foreground' />
+      <div className="flex items-center justify-center py-12">
+        <Loader className="h-4 w-4 animate-spin text-muted-foreground" />
       </div>
     )
   }
@@ -166,19 +188,19 @@ export default function PermissionsSection() {
   return (
     <div>
       {/* Role Selector + Actions */}
-      <div className='mb-3 flex flex-wrap items-center gap-2'>
+      <div className="mb-3 flex flex-wrap items-center gap-2">
         <Select
           value={selectedRoleId?.toString() ?? ''}
           onValueChange={(v) => setSelectedRoleId(Number(v))}
         >
-          <SelectTrigger className='w-56 h-7 text-xs'>
-            <SelectValue placeholder='Choose a role...' />
+          <SelectTrigger className="w-56 h-7 text-xs">
+            <SelectValue placeholder="Choose a role..." />
           </SelectTrigger>
           <SelectContent>
             {roles.map((role: any) => (
               <SelectItem key={role.id} value={role.id.toString()}>
                 {role.name}
-                <span className='ml-2 text-[10px] text-muted-foreground font-mono'>
+                <span className="ml-2 text-[10px] text-muted-foreground font-mono">
                   ({role.code})
                 </span>
               </SelectItem>
@@ -187,45 +209,45 @@ export default function PermissionsSection() {
         </Select>
 
         {selectedRoleId && !permLoading && (
-          <div className='flex items-center gap-1 ml-auto'>
+          <div className="flex items-center gap-1 ml-auto">
             <Button
-              variant='ghost'
-              size='sm'
-              className='h-6 px-2 text-[10px] text-green-600 hover:text-green-700 hover:bg-green-50 dark:hover:bg-green-950/30'
+              variant="ghost"
+              size="sm"
+              className="h-6 px-2 text-[10px] text-green-600 hover:text-green-700 hover:bg-green-50 dark:hover:bg-green-950/30"
               onClick={() => handleToggleAll(true)}
               disabled={permSaving}
             >
-              <ShieldCheck className='h-3 w-3 mr-1' />
+              <ShieldCheck className="h-3 w-3 mr-1" />
               Grant All
             </Button>
             <Button
-              variant='ghost'
-              size='sm'
-              className='h-6 px-2 text-[10px] text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30'
+              variant="ghost"
+              size="sm"
+              className="h-6 px-2 text-[10px] text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30"
               onClick={() => handleToggleAll(false)}
               disabled={permSaving}
             >
-              <ShieldBan className='h-3 w-3 mr-1' />
+              <ShieldBan className="h-3 w-3 mr-1" />
               Deny All
             </Button>
           </div>
         )}
 
         {selectedRoleId && !permLoading && (
-          <div className='flex items-center gap-1.5 text-[10px] text-muted-foreground ml-auto lg:ml-0'>
-            <span className='flex items-center gap-0.5 text-green-600'>
-              <ShieldCheck className='h-3 w-3' />
+          <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground ml-auto lg:ml-0">
+            <span className="flex items-center gap-0.5 text-green-600">
+              <ShieldCheck className="h-3 w-3" />
               {counts.granted}
             </span>
-            <span className='text-muted-foreground/30'>/</span>
-            <span className='flex items-center gap-0.5 text-red-600'>
-              <ShieldOff className='h-3 w-3' />
+            <span className="text-muted-foreground/30">/</span>
+            <span className="flex items-center gap-0.5 text-red-600">
+              <ShieldOff className="h-3 w-3" />
               {counts.denied}
             </span>
             {counts.unmanaged > 0 && (
               <>
-                <span className='text-muted-foreground/30'>/</span>
-                <span className='text-amber-600'>{counts.unmanaged} unset</span>
+                <span className="text-muted-foreground/30">/</span>
+                <span className="text-amber-600">{counts.unmanaged} unset</span>
               </>
             )}
           </div>
@@ -234,19 +256,19 @@ export default function PermissionsSection() {
 
       {/* Permission tree */}
       {!selectedRoleId && (
-        <div className='flex items-center justify-center py-10 text-xs text-muted-foreground'>
+        <div className="flex items-center justify-center py-10 text-xs text-muted-foreground">
           Select a role above to manage its menu permissions.
         </div>
       )}
 
       {selectedRoleId && (permLoading || treeLoading) && (
-        <div className='flex items-center justify-center py-10'>
-          <Loader className='h-4 w-4 animate-spin text-muted-foreground' />
+        <div className="flex items-center justify-center py-10">
+          <Loader className="h-4 w-4 animate-spin text-muted-foreground" />
         </div>
       )}
 
       {selectedRoleId && !permLoading && !treeLoading && (
-        <div className='space-y-0.5'>
+        <div className="space-y-0.5">
           {menuTree.length > 0 ? (
             menuTree.map((node) => (
               <PermissionsTreeNode
@@ -259,8 +281,9 @@ export default function PermissionsSection() {
               />
             ))
           ) : (
-            <div className='flex items-center justify-center py-10 text-xs text-muted-foreground'>
-              No menu entries found. Create menu entries in the Menu module first.
+            <div className="flex items-center justify-center py-10 text-xs text-muted-foreground">
+              No menu entries found. Create menu entries in the Menu module
+              first.
             </div>
           )}
         </div>
@@ -274,12 +297,21 @@ export default function PermissionsSection() {
 interface PermissionsTreeNodeProps {
   node: MenuTreeNode
   depth: number
-  getPermissionInfo: (node: MenuTreeNode) => { hasPermission: boolean; isAllowed: boolean }
+  getPermissionInfo: (node: MenuTreeNode) => {
+    hasPermission: boolean
+    isAllowed: boolean
+  }
   onToggle: (featureCode: string) => void
   permSaving: boolean
 }
 
-function PermissionsTreeNode({ node, depth, getPermissionInfo, onToggle, permSaving }: PermissionsTreeNodeProps) {
+function PermissionsTreeNode({
+  node,
+  depth,
+  getPermissionInfo,
+  onToggle,
+  permSaving,
+}: PermissionsTreeNodeProps) {
   const [isOpen, setIsOpen] = useState(depth < 1)
   const hasChildren = node.children && node.children.length > 0
   const Icon = resolveIcon(node.icon ?? undefined)
@@ -289,7 +321,11 @@ function PermissionsTreeNode({ node, depth, getPermissionInfo, onToggle, permSav
   return (
     <div>
       {hasChildren ? (
-        <Collapsible open={isOpen} onOpenChange={setIsOpen} className='group/tree'>
+        <Collapsible
+          open={isOpen}
+          onOpenChange={setIsOpen}
+          className="group/tree"
+        >
           <div
             className={cn(
               'flex items-center justify-between rounded-md border px-2.5 py-1 transition-colors',
@@ -299,30 +335,44 @@ function PermissionsTreeNode({ node, depth, getPermissionInfo, onToggle, permSav
             )}
             style={depth > 0 ? { marginLeft: `${depth * 1.25}rem` } : undefined}
           >
-            <div className='flex items-center gap-1.5 min-w-0'>
+            <div className="flex items-center gap-1.5 min-w-0">
               {/* Expand/collapse */}
               <CollapsibleTrigger asChild>
-                <Button variant='ghost' size='icon' className='h-4 w-4 p-0 text-muted-foreground hover:text-foreground'>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-4 w-4 p-0 text-muted-foreground hover:text-foreground"
+                >
                   <IconChevronDown
-                    className={cn('h-3 w-3 transition-transform duration-200', isOpen ? 'rotate-0' : '-rotate-90')}
+                    className={cn(
+                      'h-3 w-3 transition-transform duration-200',
+                      isOpen ? 'rotate-0' : '-rotate-90',
+                    )}
                   />
                 </Button>
               </CollapsibleTrigger>
 
               {/* Icon */}
-              <div className='flex h-5 w-5 shrink-0 items-center justify-center rounded border bg-background'>
-                <Icon className='h-2.5 w-2.5 text-muted-foreground' />
+              <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded border bg-background">
+                <Icon className="h-2.5 w-2.5 text-muted-foreground" />
               </div>
 
               {/* Name */}
-              <span className='truncate text-xs font-medium'>{node.menuName}</span>
+              <span className="truncate text-xs font-medium">
+                {node.menuName}
+              </span>
 
               {node.isGroup && (
-                <Badge variant='secondary' className='shrink-0 text-[9px] px-1 py-0 leading-none'>Group</Badge>
+                <Badge
+                  variant="secondary"
+                  className="shrink-0 text-[9px] px-1 py-0 leading-none"
+                >
+                  Group
+                </Badge>
               )}
 
               {node.feature?.code && (
-                <code className='hidden shrink-0 truncate rounded bg-muted/60 px-1 py-0.5 text-[9px] font-mono text-muted-foreground/70 sm:inline-block max-w-24'>
+                <code className="hidden shrink-0 truncate rounded bg-muted/60 px-1 py-0.5 text-[9px] font-mono text-muted-foreground/70 sm:inline-block max-w-24">
                   {node.feature.code}
                 </code>
               )}
@@ -338,10 +388,15 @@ function PermissionsTreeNode({ node, depth, getPermissionInfo, onToggle, permSav
               )}
             </div>
 
-            <div className='flex items-center gap-1 shrink-0'>
+            <div className="flex items-center gap-1 shrink-0">
               {/* Status badge */}
               {statusBadgeColor && (
-                <span className={cn('rounded px-1 py-0 text-[9px] font-medium capitalize', statusBadgeColor)}>
+                <span
+                  className={cn(
+                    'rounded px-1 py-0 text-[9px] font-medium capitalize',
+                    statusBadgeColor,
+                  )}
+                >
                   {node.status}
                 </span>
               )}
@@ -349,8 +404,8 @@ function PermissionsTreeNode({ node, depth, getPermissionInfo, onToggle, permSav
               {/* Permission toggle */}
               {hasPermission && (
                 <Button
-                  variant='ghost'
-                  size='sm'
+                  variant="ghost"
+                  size="sm"
                   className={cn(
                     'h-5 w-5 p-0',
                     isAllowed
@@ -364,13 +419,17 @@ function PermissionsTreeNode({ node, depth, getPermissionInfo, onToggle, permSav
                   disabled={permSaving}
                   title={isAllowed ? 'Click to deny' : 'Click to allow'}
                 >
-                  {isAllowed ? <ShieldCheck className='h-3 w-3' /> : <ShieldOff className='h-3 w-3' />}
+                  {isAllowed ? (
+                    <ShieldCheck className="h-3 w-3" />
+                  ) : (
+                    <ShieldOff className="h-3 w-3" />
+                  )}
                 </Button>
               )}
             </div>
           </div>
           <CollapsibleContent>
-            <div className='relative ml-2 border-l border-border/40 pl-1'>
+            <div className="relative ml-2 border-l border-border/40 pl-1">
               {node.children.map((child) => (
                 <PermissionsTreeNode
                   key={child.id}
@@ -394,20 +453,22 @@ function PermissionsTreeNode({ node, depth, getPermissionInfo, onToggle, permSav
           )}
           style={depth > 0 ? { marginLeft: `${depth * 1.25}rem` } : undefined}
         >
-          <div className='flex items-center gap-1.5 min-w-0'>
+          <div className="flex items-center gap-1.5 min-w-0">
             {/* Spacer for expand icon */}
-            <span className='h-4 w-4 shrink-0' />
+            <span className="h-4 w-4 shrink-0" />
 
             {/* Icon */}
-            <div className='flex h-5 w-5 shrink-0 items-center justify-center rounded border bg-background'>
-              <Icon className='h-2.5 w-2.5 text-muted-foreground' />
+            <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded border bg-background">
+              <Icon className="h-2.5 w-2.5 text-muted-foreground" />
             </div>
 
             {/* Name */}
-            <span className='truncate text-xs font-medium'>{node.menuName}</span>
+            <span className="truncate text-xs font-medium">
+              {node.menuName}
+            </span>
 
             {node.feature?.code && (
-              <code className='hidden shrink-0 truncate rounded bg-muted/60 px-1 py-0.5 text-[9px] font-mono text-muted-foreground/70 sm:inline-block max-w-24'>
+              <code className="hidden shrink-0 truncate rounded bg-muted/60 px-1 py-0.5 text-[9px] font-mono text-muted-foreground/70 sm:inline-block max-w-24">
                 {node.feature.code}
               </code>
             )}
@@ -423,10 +484,15 @@ function PermissionsTreeNode({ node, depth, getPermissionInfo, onToggle, permSav
             )}
           </div>
 
-          <div className='flex items-center gap-1 shrink-0'>
+          <div className="flex items-center gap-1 shrink-0">
             {/* Status badge */}
             {statusBadgeColor && (
-              <span className={cn('rounded px-1 py-0 text-[9px] font-medium capitalize', statusBadgeColor)}>
+              <span
+                className={cn(
+                  'rounded px-1 py-0 text-[9px] font-medium capitalize',
+                  statusBadgeColor,
+                )}
+              >
                 {node.status}
               </span>
             )}
@@ -434,8 +500,8 @@ function PermissionsTreeNode({ node, depth, getPermissionInfo, onToggle, permSav
             {/* Permission toggle */}
             {hasPermission && (
               <Button
-                variant='ghost'
-                size='sm'
+                variant="ghost"
+                size="sm"
                 className={cn(
                   'h-5 w-5 p-0',
                   isAllowed
@@ -449,7 +515,11 @@ function PermissionsTreeNode({ node, depth, getPermissionInfo, onToggle, permSav
                 disabled={permSaving}
                 title={isAllowed ? 'Click to deny' : 'Click to allow'}
               >
-                {isAllowed ? <ShieldCheck className='h-3 w-3' /> : <ShieldOff className='h-3 w-3' />}
+                {isAllowed ? (
+                  <ShieldCheck className="h-3 w-3" />
+                ) : (
+                  <ShieldOff className="h-3 w-3" />
+                )}
               </Button>
             )}
           </div>

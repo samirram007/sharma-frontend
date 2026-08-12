@@ -25,12 +25,27 @@ interface VoucherChartProps {
 }
 
 const COLORS = [
-  '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6',
-  '#06b6d4', '#ec4899', '#84cc16', '#f97316', '#6366f1',
-  '#14b8a6', '#e11d48', '#a855f7', '#0ea5e9', '#22c55e',
+  '#3b82f6',
+  '#10b981',
+  '#f59e0b',
+  '#ef4444',
+  '#8b5cf6',
+  '#06b6d4',
+  '#ec4899',
+  '#84cc16',
+  '#f97316',
+  '#6366f1',
+  '#14b8a6',
+  '#e11d48',
+  '#a855f7',
+  '#0ea5e9',
+  '#22c55e',
 ]
 
-export default function VoucherChart({ data, chartTitle = 'Vouchers per Zone' }: VoucherChartProps) {
+export default function VoucherChart({
+  data,
+  chartTitle = 'Vouchers per Zone',
+}: VoucherChartProps) {
   const chartRef = useRef<HTMLDivElement>(null)
 
   const chartData: ChartDataPoint[] = data
@@ -78,42 +93,45 @@ export default function VoucherChart({ data, chartTitle = 'Vouchers per Zone' }:
 
   if (chartData.length === 0) {
     return (
-      <div className='text-center text-sm text-muted-foreground py-4'>
+      <div className="text-center text-sm text-muted-foreground py-4">
         No data available for chart.
       </div>
     )
   }
 
   return (
-    <div className='border rounded-lg p-4 bg-white dark:bg-slate-900 shadow-sm'>
-      <div className='flex items-center justify-between mb-3'>
-        <h3 className='text-sm font-semibold text-slate-700 dark:text-slate-300'>
+    <div className="border rounded-lg p-4 bg-white dark:bg-slate-900 shadow-sm">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300">
           {chartTitle}
         </h3>
         <Button
-          variant='outline'
-          size='sm'
-          className='h-7 text-xs gap-1'
+          variant="outline"
+          size="sm"
+          className="h-7 text-xs gap-1"
           onClick={handleDownload}
         >
-          <IconDownload className='h-3.5 w-3.5' />
+          <IconDownload className="h-3.5 w-3.5" />
           Download Chart
         </Button>
       </div>
       <div ref={chartRef}>
-        <ResponsiveContainer width='100%' height={Math.max(250, chartData.length * 40)}>
+        <ResponsiveContainer
+          width="100%"
+          height={Math.max(250, chartData.length * 40)}
+        >
           <BarChart
             data={chartData}
             margin={{ top: 10, right: 20, left: 0, bottom: 60 }}
           >
-            <CartesianGrid strokeDasharray='3 3' stroke='#e2e8f0' />
+            <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
             <XAxis
-              dataKey='name'
+              dataKey="name"
               tick={{ fontSize: 11, fill: '#64748b' }}
               tickLine={false}
               axisLine={{ stroke: '#cbd5e1' }}
               angle={-35}
-              textAnchor='end'
+              textAnchor="end"
               height={60}
             />
             <YAxis
@@ -129,24 +147,21 @@ export default function VoucherChart({ data, chartTitle = 'Vouchers per Zone' }:
                 border: '1px solid #e2e8f0',
                 boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
               }}
-              formatter={(value) => [
-                Number(value).toLocaleString(),
-                'Entries',
-              ]}
+              formatter={(value) => [Number(value).toLocaleString(), 'Entries']}
             />
-            <Bar dataKey='entries' radius={[4, 4, 0, 0]} maxBarSize={48}>
+            <Bar dataKey="entries" radius={[4, 4, 0, 0]} maxBarSize={48}>
               {chartData.map((_, index) => (
                 <Cell
                   key={index}
                   fill={COLORS[index % COLORS.length]}
-                  className='transition-opacity hover:opacity-80'
+                  className="transition-opacity hover:opacity-80"
                 />
               ))}
               <LabelList
-                dataKey='entries'
-                position='top'
+                dataKey="entries"
+                position="top"
                 fontSize={10}
-                fill='#475569'
+                fill="#475569"
               />
             </Bar>
           </BarChart>

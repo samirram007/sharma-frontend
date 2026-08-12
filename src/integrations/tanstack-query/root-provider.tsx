@@ -1,5 +1,3 @@
-
-
 // import { router } from '@/AppRouter'
 import { handleServerError } from '@/utils/handle-server-error'
 import {
@@ -14,7 +12,6 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: (failureCount, error) => {
-
         if (import.meta.env.DEV) console.log({ failureCount, error })
 
         if (failureCount >= 0 && import.meta.env.DEV) return false
@@ -66,9 +63,12 @@ export function getContext() {
   }
 }
 
-export function TanStackQueryProvider({ children }: { children: React.ReactNode }) {
+export function TanStackQueryProvider({
+  children,
+}: {
+  children: React.ReactNode
+}) {
   return (
     <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
   )
 }
-

@@ -2,8 +2,6 @@ import useDialogState from '@/core/hooks/use-dialog-state'
 import React, { useState } from 'react'
 import type { StockItem } from '../data/schema'
 
-
-
 type StockItemDialogType = 'invite' | 'add' | 'edit' | 'delete'
 
 interface StockItemContextType {
@@ -11,8 +9,8 @@ interface StockItemContextType {
   setOpen: (str: StockItemDialogType | null) => void
   currentRow: StockItem | null
   setCurrentRow: React.Dispatch<React.SetStateAction<StockItem | null>>
-  keyName: string,
-  config: { key: string, value: boolean }[]
+  keyName: string
+  config: { key: string; value: boolean }[]
 }
 
 const StockItemContext = React.createContext<StockItemContextType | null>(null)
@@ -31,7 +29,16 @@ export default function StockItemProvider({ children }: Props) {
   ]
 
   return (
-    <StockItemContext value={{ open, setOpen, currentRow, setCurrentRow, config, keyName: "account_nature" }}>
+    <StockItemContext
+      value={{
+        open,
+        setOpen,
+        currentRow,
+        setCurrentRow,
+        config,
+        keyName: 'account_nature',
+      }}
+    >
       {children}
     </StockItemContext>
   )

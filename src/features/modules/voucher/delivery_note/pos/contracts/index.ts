@@ -1,7 +1,5 @@
-import type { DeliveryNoteSchema } from "../../data/schema";
-
-
+import type { DeliveryNoteSchema } from '../../data/schema'
 
 export interface DeliveryNoteProps {
-    currentRow?: DeliveryNoteSchema
+  currentRow?: DeliveryNoteSchema
 }

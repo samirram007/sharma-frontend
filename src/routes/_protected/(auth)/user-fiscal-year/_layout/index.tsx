@@ -20,5 +20,6 @@ function RouteComponent() {
   return (
     <Suspense fallback={<Loader className="animate-spin" />}>
       <UserFiscalYear data={user?.data} />
-    </Suspense>)
+    </Suspense>
+  )
 }

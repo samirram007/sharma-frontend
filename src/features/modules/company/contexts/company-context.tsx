@@ -2,8 +2,6 @@ import useDialogState from '@/core/hooks/use-dialog-state'
 import React, { useState } from 'react'
 import type { Company } from '../data/schema'
 
-
-
 type CompanyDialogType = 'invite' | 'add' | 'edit' | 'delete'
 
 interface CompanyContextType {
@@ -24,9 +22,10 @@ export default function CompanyProvider({ children }: Props) {
   const [open, setOpen] = useDialogState<CompanyDialogType>(null)
   const [currentRow, setCurrentRow] = useState<Company | null>(null)
 
-
   return (
-    <CompanyContext value={{ open, setOpen, currentRow, setCurrentRow, keyName: "company" }}>
+    <CompanyContext
+      value={{ open, setOpen, currentRow, setCurrentRow, keyName: 'company' }}
+    >
       {children}
     </CompanyContext>
   )

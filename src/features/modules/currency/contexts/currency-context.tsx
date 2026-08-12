@@ -2,8 +2,6 @@ import useDialogState from '@/core/hooks/use-dialog-state'
 import React, { useState } from 'react'
 import type { Currency } from '../data/schema'
 
-
-
 type CurrencyDialogType = 'invite' | 'add' | 'edit' | 'delete'
 
 interface CurrencyContextType {
@@ -24,9 +22,16 @@ export default function CurrencyProvider({ children }: Props) {
   const [open, setOpen] = useDialogState<CurrencyDialogType>(null)
   const [currentRow, setCurrentRow] = useState<Currency | null>(null)
 
-
   return (
-    <CurrencyContext value={{ open, setOpen, currentRow, setCurrentRow, keyName: "account_nature" }}>
+    <CurrencyContext
+      value={{
+        open,
+        setOpen,
+        currentRow,
+        setCurrentRow,
+        keyName: 'account_nature',
+      }}
+    >
       {children}
     </CurrencyContext>
   )

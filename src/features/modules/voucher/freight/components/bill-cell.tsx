@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import {  useForm } from 'react-hook-form'
+import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { lowerCase } from 'lodash'
 import { formSchema } from '../data/schema'
@@ -13,7 +13,7 @@ import PrintFreightDialog from './print-freight-dialog'
 import type { FreightForm, FreightSchema } from '../data/schema'
 import type { VoucherSchema } from '../../data-schema/voucher-schema'
 import type { CellContext } from '@tanstack/react-table'
-import type {Resolver} from 'react-hook-form';
+import type { Resolver } from 'react-hook-form'
 import { Button } from '@/components/ui/button'
 import { Form } from '@/components/ui/form'
 
@@ -23,7 +23,10 @@ export default function BillCell({ row }: CellContext<VoucherSchema, unknown>) {
   const { mutate: saveFreight, isPending } = useFreightMutation()
   const [freightData, setFreightData] = useState<FreightSchema | null>(null)
   const [printDialogOpen, setPrintDialogOpen] = useState(false)
-  const [printDispatchDetail, setPrintDispatchDetail] = useState<Record<string, unknown> | null>(null)
+  const [printDispatchDetail, setPrintDispatchDetail] = useState<Record<
+    string,
+    unknown
+  > | null>(null)
 
   const form = useForm<FreightForm>({
     resolver: zodResolver(formSchema) as Resolver<FreightForm>,
@@ -32,7 +35,8 @@ export default function BillCell({ row }: CellContext<VoucherSchema, unknown>) {
       transporter: data.voucherDispatchDetail?.carrierName || '',
       source:
         data.voucherDispatchDetail?.source ||
-        data.stockJournal?.stockJournalEntries?.[0]?.stockJournalGodownEntries?.[0]?.godown?.name ||
+        data.stockJournal?.stockJournalEntries?.[0]
+          ?.stockJournalGodownEntries?.[0]?.godown?.name ||
         '',
       destination: data.voucherDispatchDetail?.destination || '',
       distance: data.voucherDispatchDetail?.distance || 0,
@@ -40,7 +44,8 @@ export default function BillCell({ row }: CellContext<VoucherSchema, unknown>) {
       weight:
         data.voucherDispatchDetail?.weight ||
         data.stockJournal?.stockJournalEntries?.reduce(
-          (sum: number, entry: any) => sum + (Number(entry.actualQuantity) || 0),
+          (sum: number, entry: any) =>
+            sum + (Number(entry.actualQuantity) || 0),
           0,
         ) ||
         0,
@@ -59,7 +64,8 @@ export default function BillCell({ row }: CellContext<VoucherSchema, unknown>) {
       freightCharges: data.voucherDispatchDetail?.freightCharges || 0,
       totalFare: data.voucherDispatchDetail?.totalFare || 0,
       dispatchSourceId:
-        data.stockJournal?.stockJournalEntries?.[0]?.stockJournalGodownEntries?.[0]?.godownId || null,
+        data.stockJournal?.stockJournalEntries?.[0]
+          ?.stockJournalGodownEntries?.[0]?.godownId || null,
       isEdit: false,
     },
   })
@@ -81,27 +87,53 @@ export default function BillCell({ row }: CellContext<VoucherSchema, unknown>) {
   // to 2dp, floored at 0) so the Freight Bill and its print match the
   // Dispatch Details calculator exactly.
   useEffect(() => {
-    const base = lowerCase(freightBasis) === 'distance'
-      ? (Number(distance) || 0) * (Number(rate) || 0)
-      : lowerCase(freightBasis) === 'volume'
-        ? (Number(volume) || 0) * (Number(rate) || 0)
-        : (Number(weight) || 0) * (Number(rate) || 0)
+    const base =
+      lowerCase(freightBasis) === 'distance'
+        ? (Number(distance) || 0) * (Number(rate) || 0)
+        : lowerCase(freightBasis) === 'volume'
+          ? (Number(volume) || 0) * (Number(rate) || 0)
+          : (Number(weight) || 0) * (Number(rate) || 0)
 
     const additional =
-      (Number(loadingCharges) || 0) + (Number(unloadingCharges) || 0) +
-      (Number(packingCharges) || 0) + (Number(insuranceCharges) || 0) +
+      (Number(loadingCharges) || 0) +
+      (Number(unloadingCharges) || 0) +
+      (Number(packingCharges) || 0) +
+      (Number(insuranceCharges) || 0) +
       (Number(otherCharges) || 0)
 
     // Weight basis: computeFare is authoritative (base = weight × rate and it
     // floors at 0 + rounds to 2dp). Distance/volume: same formula with that
     // basis's multiplier, since computeFare derives its base from weight.
-    const totalFare = lowerCase(freightBasis) === 'weight'
-      ? computeFare({ rate, weight, loadingCharges, unloadingCharges, packingCharges, insuranceCharges, otherCharges, discount }).totalFare
-      : Math.max(0, base + additional - (Number(discount) || 0))
+    const totalFare =
+      lowerCase(freightBasis) === 'weight'
+        ? computeFare({
+            rate,
+            weight,
+            loadingCharges,
+            unloadingCharges,
+            packingCharges,
+            insuranceCharges,
+            otherCharges,
+            discount,
+          }).totalFare
+        : Math.max(0, base + additional - (Number(discount) || 0))
 
     form.setValue('freightCharges', base)
     form.setValue('totalFare', Math.round(totalFare * 100) / 100)
-  }, [distance, weight, volume, freightBasis, rate, loadingCharges, unloadingCharges, packingCharges, insuranceCharges, otherCharges, discount, form])
+  }, [
+    distance,
+    weight,
+    volume,
+    freightBasis,
+    rate,
+    loadingCharges,
+    unloadingCharges,
+    packingCharges,
+    insuranceCharges,
+    otherCharges,
+    discount,
+    form,
+  ])
 
   // When the row's dispatch details change — e.g. after saving via the "D"
   // dialog (which invalidates + refetches the grid) — sync the freight bill
@@ -112,18 +144,34 @@ export default function BillCell({ row }: CellContext<VoucherSchema, unknown>) {
     if (!dd) return
 
     const sync: Array<{ field: keyof FreightForm; value: string | number }> = []
-    if (dd.carrierName) sync.push({ field: 'transporter', value: dd.carrierName })
-    if (dd.motorVehicleNo) sync.push({ field: 'vehicleNumber', value: dd.motorVehicleNo })
+    if (dd.carrierName)
+      sync.push({ field: 'transporter', value: dd.carrierName })
+    if (dd.motorVehicleNo)
+      sync.push({ field: 'vehicleNumber', value: dd.motorVehicleNo })
     if (dd.source) sync.push({ field: 'source', value: dd.source })
-    if (dd.destination) sync.push({ field: 'destination', value: dd.destination })
-    if (dd.weight != null) sync.push({ field: 'weight', value: Number(dd.weight) })
+    if (dd.destination)
+      sync.push({ field: 'destination', value: dd.destination })
+    if (dd.weight != null)
+      sync.push({ field: 'weight', value: Number(dd.weight) })
     if (dd.rate != null) sync.push({ field: 'rate', value: Number(dd.rate) })
-    if (dd.loadingCharges != null) sync.push({ field: 'loadingCharges', value: Number(dd.loadingCharges) })
-    if (dd.unloadingCharges != null) sync.push({ field: 'unloadingCharges', value: Number(dd.unloadingCharges) })
-    if (dd.packingCharges != null) sync.push({ field: 'packingCharges', value: Number(dd.packingCharges) })
-    if (dd.insuranceCharges != null) sync.push({ field: 'insuranceCharges', value: Number(dd.insuranceCharges) })
-    if (dd.otherCharges != null) sync.push({ field: 'otherCharges', value: Number(dd.otherCharges) })
-    if (dd.discount != null) sync.push({ field: 'discount', value: Number(dd.discount) })
+    if (dd.loadingCharges != null)
+      sync.push({ field: 'loadingCharges', value: Number(dd.loadingCharges) })
+    if (dd.unloadingCharges != null)
+      sync.push({
+        field: 'unloadingCharges',
+        value: Number(dd.unloadingCharges),
+      })
+    if (dd.packingCharges != null)
+      sync.push({ field: 'packingCharges', value: Number(dd.packingCharges) })
+    if (dd.insuranceCharges != null)
+      sync.push({
+        field: 'insuranceCharges',
+        value: Number(dd.insuranceCharges),
+      })
+    if (dd.otherCharges != null)
+      sync.push({ field: 'otherCharges', value: Number(dd.otherCharges) })
+    if (dd.discount != null)
+      sync.push({ field: 'discount', value: Number(dd.discount) })
 
     if (sync.length === 0) return
 
@@ -167,7 +215,7 @@ export default function BillCell({ row }: CellContext<VoucherSchema, unknown>) {
 
     saveFreight(formData, {
       onSuccess: (res) => {
-        setFreightData(res?.data as FreightSchema ?? null)
+        setFreightData((res?.data as FreightSchema) ?? null)
         setPrintDialogOpen(true)
       },
     })
@@ -180,11 +228,15 @@ export default function BillCell({ row }: CellContext<VoucherSchema, unknown>) {
           open={printDialogOpen}
           onOpenChange={setPrintDialogOpen}
           freightData={freightData}
-          dispatchDetail={printDispatchDetail ?? data.voucherDispatchDetail as Record<string, unknown> | null | undefined}
+          dispatchDetail={
+            printDispatchDetail ??
+            (data.voucherDispatchDetail as
+              Record<string, unknown> | null | undefined)
+          }
         />
       )}
       <Form {...form}>
-        <div className='flex justify-start items-center gap-2'>
+        <div className="flex justify-start items-center gap-2">
           {config.find((c) => c.key === 'freight_method')?.value === 1 ? (
             <VoucherDispatchDetail01
               form={form}
@@ -206,10 +258,10 @@ export default function BillCell({ row }: CellContext<VoucherSchema, unknown>) {
           )}
           {Number(data.voucherDispatchDetail?.totalFare) > 0 && data.id && (
             <Button
-              type='button'
-              className='focus:bg-slate-950 focus:text-zinc-50'
-              variant='outline'
-              size='sm'
+              type="button"
+              className="focus:bg-slate-950 focus:text-zinc-50"
+              variant="outline"
+              size="sm"
               onClick={handleFreightBill}
               disabled={isPending}
             >

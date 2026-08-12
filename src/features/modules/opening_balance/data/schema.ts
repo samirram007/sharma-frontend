@@ -37,21 +37,25 @@ export const openingBalanceSetupSchema = z.object({
     startDate: z.string(),
     endDate: z.string(),
   }),
-  previousFiscalYear: z.object({
-    id: z.number(),
-    name: z.string(),
-    isClosed: z.boolean(),
-  }).nullable(),
+  previousFiscalYear: z
+    .object({
+      id: z.number(),
+      name: z.string(),
+      isClosed: z.boolean(),
+    })
+    .nullable(),
   hasExistingOpening: z.boolean(),
   ledgers: z.array(ledgerSetupSchema),
   totalLedgers: z.number(),
   stockItems: z.array(stockItemSetupSchema),
   totalStockItems: z.number(),
-  godowns: z.array(z.object({
-    id: z.number(),
-    name: z.string(),
-    code: z.string().nullable(),
-  })),
+  godowns: z.array(
+    z.object({
+      id: z.number(),
+      name: z.string(),
+      code: z.string().nullable(),
+    }),
+  ),
 })
 
 export type OpeningBalanceSetup = z.infer<typeof openingBalanceSetupSchema>
@@ -93,7 +97,9 @@ export const openingBalanceStoreResponseSchema = z.object({
   voucherNo: z.string().optional(),
 })
 
-export type OpeningBalanceStoreResponse = z.infer<typeof openingBalanceStoreResponseSchema>
+export type OpeningBalanceStoreResponse = z.infer<
+  typeof openingBalanceStoreResponseSchema
+>
 
 // Status response
 export const openingBalanceStatusSchema = z.object({

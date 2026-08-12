@@ -1,8 +1,5 @@
-
 import { StrictMode } from 'react'
 import ReactDOM from 'react-dom/client'
-
-
 
 // Import the generated route tree
 
@@ -15,8 +12,6 @@ import { EchoProvider } from './core/contexts/echo-context'
 // import setupLocatorUI from "@locator/runtime";
 import './styles.css'
 import { TanStackQueryProvider } from './integrations/tanstack-query/root-provider'
-
-
 
 // Render the app
 const rootElement = document.getElementById('app')
@@ -31,13 +26,11 @@ if (rootElement && !rootElement.innerHTML) {
       <TanStackQueryProvider>
         <ThemeContextProvider defaultTheme="dark" storageKey="vite-ui-theme">
           <FontProvider>
-
             <AuthProvider>
               <EchoProvider>
                 <Toaster position="top-center" richColors />
                 <AppRouter />
               </EchoProvider>
-
             </AuthProvider>
           </FontProvider>
         </ThemeContextProvider>
@@ -45,8 +38,6 @@ if (rootElement && !rootElement.innerHTML) {
     </StrictMode>,
   )
 }
-
-
 
 // If you want to start measuring performance in your app, pass a function
 // to log results (for example: reportWebVitals(console.log))

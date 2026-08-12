@@ -14,13 +14,13 @@ export const DEFAULT_MOVEMENT_TYPE = 'out'
  * new lines fall back to `DEFAULT_MOVEMENT_TYPE` ('out').
  */
 export function resolveMovementType(
-    ...candidates: Array<string | null | undefined>
+  ...candidates: Array<string | null | undefined>
 ): string {
-    const resolved = candidates.find(
-        (candidate) => typeof candidate === 'string' && candidate.trim() !== '',
-    )
+  const resolved = candidates.find(
+    (candidate) => typeof candidate === 'string' && candidate.trim() !== '',
+  )
 
-    return resolved ?? DEFAULT_MOVEMENT_TYPE
+  return resolved ?? DEFAULT_MOVEMENT_TYPE
 }
 
 /**
@@ -39,30 +39,30 @@ export function resolveMovementType(
  * OUT convention.
  */
 export function normalizeStockJournalMovementType(
-    stockJournal?: StockJournalForm | null,
-    movementType: string = DEFAULT_MOVEMENT_TYPE,
+  stockJournal?: StockJournalForm | null,
+  movementType: string = DEFAULT_MOVEMENT_TYPE,
 ): StockJournalForm | undefined {
-    if (!stockJournal) return undefined
+  if (!stockJournal) return undefined
 
-    const normalized = movementType || DEFAULT_MOVEMENT_TYPE
+  const normalized = movementType || DEFAULT_MOVEMENT_TYPE
 
-    return {
-        ...stockJournal,
-        stockJournalEntries: (stockJournal.stockJournalEntries ?? []).map(
-            (entry) => {
-                if (!entry) return entry
-                return {
-                    ...entry,
-                    movementType: normalized,
-                    stockJournalGodownEntries: (
-                        entry.stockJournalGodownEntries ?? []
-                    ).map((godownEntry) =>
-                        godownEntry
-                            ? { ...godownEntry, movementType: normalized }
-                            : godownEntry,
-                    ),
-                }
-            },
-        ),
-    }
+  return {
+    ...stockJournal,
+    stockJournalEntries: (stockJournal.stockJournalEntries ?? []).map(
+      (entry) => {
+        if (!entry) return entry
+        return {
+          ...entry,
+          movementType: normalized,
+          stockJournalGodownEntries: (
+            entry.stockJournalGodownEntries ?? []
+          ).map((godownEntry) =>
+            godownEntry
+              ? { ...godownEntry, movementType: normalized }
+              : godownEntry,
+          ),
+        }
+      },
+    ),
+  }
 }

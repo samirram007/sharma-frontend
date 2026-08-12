@@ -78,8 +78,7 @@ const Pos = ({ currentRow }: OpeningStockProps) => {
   const existingForFy = useMemo(
     () =>
       (existingVouchers ?? []).find(
-        (v) =>
-          v.fiscalYearId === currentFyId && v.id !== currentRow?.id,
+        (v) => v.fiscalYearId === currentFyId && v.id !== currentRow?.id,
       ),
     [existingVouchers, currentFyId, currentRow?.id],
   )
@@ -96,10 +95,7 @@ const Pos = ({ currentRow }: OpeningStockProps) => {
   // not be able to re-fetch either (that would replace real opening entries
   // with last year's data).
   const hasExistingForFy = useMemo(
-    () =>
-      (existingVouchers ?? []).some(
-        (v) => v.fiscalYearId === currentFyId,
-      ),
+    () => (existingVouchers ?? []).some((v) => v.fiscalYearId === currentFyId),
     [existingVouchers, currentFyId],
   )
 
@@ -165,7 +161,9 @@ const Pos = ({ currentRow }: OpeningStockProps) => {
       journalDate: fyStartDate
         ? new Date(`${fyStartDate}T00:00:00`)
         : undefined,
-      type: 'in',
+      // The journal type for an opening stock voucher is the OPNSK module
+      // code (the backend stamps it too). Entries/godown rows stay 'in'.
+      type: 'OPNSK',
       remarks: '',
       stockJournalEntries: (normalized.stockJournalEntries ?? [])
         .filter((entry): entry is NonNullable<typeof entry> => Boolean(entry))

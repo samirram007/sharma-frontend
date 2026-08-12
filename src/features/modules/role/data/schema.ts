@@ -16,7 +16,10 @@ export const roleSchema: z.ZodType<any> = z.object({
   name: z.string().min(1),
   code: z.string().min(1),
   status: ActiveInactiveStatusSchema.default('active'),
-  permissions: z.lazy(() => permissionListSchema).optional().nullable(),
+  permissions: z
+    .lazy(() => permissionListSchema)
+    .optional()
+    .nullable(),
 })
 
 export const userRoleSchema = z.object({

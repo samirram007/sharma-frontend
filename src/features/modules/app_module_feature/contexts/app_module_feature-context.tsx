@@ -2,8 +2,6 @@ import useDialogState from '@/core/hooks/use-dialog-state'
 import React, { useState } from 'react'
 import type { AppModuleFeature } from '../data/schema'
 
-
-
 type AppModuleFeatureDialogType = 'invite' | 'add' | 'edit' | 'delete'
 
 interface AppModuleFeatureContextType {
@@ -14,7 +12,8 @@ interface AppModuleFeatureContextType {
   keyName: string
 }
 
-const AppModuleFeatureContext = React.createContext<AppModuleFeatureContextType | null>(null)
+const AppModuleFeatureContext =
+  React.createContext<AppModuleFeatureContextType | null>(null)
 
 interface Props {
   children: React.ReactNode
@@ -25,7 +24,15 @@ export default function AppModuleFeatureProvider({ children }: Props) {
   const [currentRow, setCurrentRow] = useState<AppModuleFeature | null>(null)
 
   return (
-    <AppModuleFeatureContext value={{ open, setOpen, currentRow, setCurrentRow, keyName: "app_module_features" }}>
+    <AppModuleFeatureContext
+      value={{
+        open,
+        setOpen,
+        currentRow,
+        setCurrentRow,
+        keyName: 'app_module_features',
+      }}
+    >
       {children}
     </AppModuleFeatureContext>
   )
@@ -36,7 +43,9 @@ export const useAppModuleFeature = () => {
   const appModuleFeatureContext = React.useContext(AppModuleFeatureContext)
 
   if (!appModuleFeatureContext) {
-    throw new Error('useAppModuleFeature has to be used within <AppModuleFeatureContext>')
+    throw new Error(
+      'useAppModuleFeature has to be used within <AppModuleFeatureContext>',
+    )
   }
 
   return appModuleFeatureContext

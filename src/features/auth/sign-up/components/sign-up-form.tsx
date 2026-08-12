@@ -53,7 +53,7 @@ export function SignUpForm({ className, ...props }: SignUpFormProps) {
 
   function onSubmit(data: z.infer<typeof formSchema>) {
     setIsLoading(true)
-     
+
     console.log(data)
 
     setTimeout(() => {
@@ -65,15 +65,15 @@ export function SignUpForm({ className, ...props }: SignUpFormProps) {
     <div className={cn('grid gap-6', className)} {...props}>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
-          <div className='grid gap-2'>
+          <div className="grid gap-2">
             <FormField
               control={form.control}
-              name='email'
+              name="email"
               render={({ field }) => (
-                <FormItem className='space-y-1'>
+                <FormItem className="space-y-1">
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input placeholder='name@example.com' {...field} />
+                    <Input placeholder="name@example.com" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -81,12 +81,12 @@ export function SignUpForm({ className, ...props }: SignUpFormProps) {
             />
             <FormField
               control={form.control}
-              name='password'
+              name="password"
               render={({ field }) => (
-                <FormItem className='space-y-1'>
+                <FormItem className="space-y-1">
                   <FormLabel>Password</FormLabel>
                   <FormControl>
-                    <PasswordInput placeholder='********' {...field} />
+                    <PasswordInput placeholder="********" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -94,48 +94,48 @@ export function SignUpForm({ className, ...props }: SignUpFormProps) {
             />
             <FormField
               control={form.control}
-              name='confirmPassword'
+              name="confirmPassword"
               render={({ field }) => (
-                <FormItem className='space-y-1'>
+                <FormItem className="space-y-1">
                   <FormLabel>Confirm Password</FormLabel>
                   <FormControl>
-                    <PasswordInput placeholder='********' {...field} />
+                    <PasswordInput placeholder="********" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <Button className='mt-2' disabled={isLoading}>
+            <Button className="mt-2" disabled={isLoading}>
               Create Account
             </Button>
 
-            <div className='relative my-2'>
-              <div className='absolute inset-0 flex items-center'>
-                <span className='w-full border-t' />
+            <div className="relative my-2">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
               </div>
-              <div className='relative flex justify-center text-xs uppercase'>
-                <span className='bg-background px-2 text-muted-foreground'>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">
                   Or continue with
                 </span>
               </div>
             </div>
 
-            <div className='flex items-center gap-2'>
+            <div className="flex items-center gap-2">
               <Button
-                variant='outline'
-                className='w-full'
-                type='button'
+                variant="outline"
+                className="w-full"
+                type="button"
                 disabled={isLoading}
               >
-                <IconBrandGithub className='h-4 w-4' /> GitHub
+                <IconBrandGithub className="h-4 w-4" /> GitHub
               </Button>
               <Button
-                variant='outline'
-                className='w-full'
-                type='button'
+                variant="outline"
+                className="w-full"
+                type="button"
                 disabled={isLoading}
               >
-                <IconBrandFacebook className='h-4 w-4' /> Facebook
+                <IconBrandFacebook className="h-4 w-4" /> Facebook
               </Button>
             </div>
           </div>

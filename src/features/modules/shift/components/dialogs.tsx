@@ -2,7 +2,6 @@ import { useShift } from '../contexts/shift-context'
 import { ActionDialog } from './action-dialog'
 import { DeleteDialog } from './delete-dialog'
 
-
 export function Dialogs() {
   const { open, setOpen, currentRow, setCurrentRow, keyName } = useShift()
   return (

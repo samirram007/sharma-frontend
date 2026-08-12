@@ -61,38 +61,38 @@ code {
 
 .dark {
   /* Deep rich navy — high chroma makes darkness feel intentional */
-  --background: oklch(0.185 0.048 248.0);
-  --foreground: oklch(0.930 0.008 248.0);
-  --card: oklch(0.218 0.048 248.0);
-  --card-foreground: oklch(0.930 0.008 248.0);
-  --popover: oklch(0.218 0.048 248.0);
-  --popover-foreground: oklch(0.930 0.008 248.0);
-  --primary: oklch(0.560 0.210 248.0);
+  --background: oklch(0.185 0.048 248);
+  --foreground: oklch(0.93 0.008 248);
+  --card: oklch(0.218 0.048 248);
+  --card-foreground: oklch(0.93 0.008 248);
+  --popover: oklch(0.218 0.048 248);
+  --popover-foreground: oklch(0.93 0.008 248);
+  --primary: oklch(0.56 0.21 248);
   --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.272 0.048 248.0);
-  --secondary-foreground: oklch(0.930 0.008 248.0);
-  --muted: oklch(0.252 0.044 248.0);
-  --muted-foreground: oklch(0.570 0.030 248.0);
-  --accent: oklch(0.272 0.048 248.0);
-  --accent-foreground: oklch(0.930 0.008 248.0);
-  --destructive: oklch(0.430 0.180 25.0);
-  --destructive-foreground: oklch(0.650 0.240 25.0);
-  --border: oklch(0.285 0.044 248.0);
-  --input: oklch(0.265 0.048 248.0);
-  --ring: oklch(0.500 0.180 248.0);
-  --chart-1: oklch(0.540 0.220 248.0);
+  --secondary: oklch(0.272 0.048 248);
+  --secondary-foreground: oklch(0.93 0.008 248);
+  --muted: oklch(0.252 0.044 248);
+  --muted-foreground: oklch(0.57 0.03 248);
+  --accent: oklch(0.272 0.048 248);
+  --accent-foreground: oklch(0.93 0.008 248);
+  --destructive: oklch(0.43 0.18 25);
+  --destructive-foreground: oklch(0.65 0.24 25);
+  --border: oklch(0.285 0.044 248);
+  --input: oklch(0.265 0.048 248);
+  --ring: oklch(0.5 0.18 248);
+  --chart-1: oklch(0.54 0.22 248);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.155 0.050 248.0);
-  --sidebar-foreground: oklch(0.920 0.008 248.0);
-  --sidebar-primary: oklch(0.560 0.210 248.0);
+  --sidebar: oklch(0.155 0.05 248);
+  --sidebar-foreground: oklch(0.92 0.008 248);
+  --sidebar-primary: oklch(0.56 0.21 248);
   --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.240 0.048 248.0);
-  --sidebar-accent-foreground: oklch(0.920 0.008 248.0);
-  --sidebar-border: oklch(0.240 0.048 248.0);
-  --sidebar-ring: oklch(0.500 0.180 248.0);
+  --sidebar-accent: oklch(0.24 0.048 248);
+  --sidebar-accent-foreground: oklch(0.92 0.008 248);
+  --sidebar-border: oklch(0.24 0.048 248);
+  --sidebar-ring: oklch(0.5 0.18 248);
   --btn-grad-from: oklch(0.6 0.2 248);
   --btn-grad-to: oklch(0.53 0.22 279);
   --btn-grad-from-hover: oklch(0.56 0.2 248);
@@ -165,9 +165,9 @@ code {
       margin: 0;
     }
   }
-input[type='url']{
-    @apply text-right ;
-}
+  input[type='url'] {
+    @apply text-right;
+  }
 
   input,
   select,
@@ -178,33 +178,31 @@ input[type='url']{
     @apply focus:placeholder:text-gray-200;
     @apply py-0! h-6! rounded-sm!;
     @apply text-shadow-sm!    border-b-gray-700!;
-    
   }
-  .voucher-entry{
+  .voucher-entry {
     input,
     select,
     textarea {
-    @apply shadow-none;
-    @apply focus:bg-slate-950! focus:text-gray-50 focus:font-semibold focus:text-left;
-    @apply focus:placeholder:text-gray-200;
-    @apply py-0! h-6! rounded-sm!;
-    @apply text-shadow-sm! border-x-0! border-t-0!  border-b-[1px]   border-b-gray-700/20!;
-    
-  }
+      @apply shadow-none;
+      @apply focus:bg-slate-950! focus:text-gray-50 focus:font-semibold focus:text-left;
+      @apply focus:placeholder:text-gray-200;
+      @apply py-0! h-6! rounded-sm!;
+      @apply text-shadow-sm! border-x-0! border-t-0!  border-b-[1px]   border-b-gray-700/20!;
+    }
   }
   input::selection,
-select::selection,
-button[role='combobox']::selection,
-textarea::selection {
-  color: red; /* Text color */
-  background: yellow; /* Background color */
-}
+  select::selection,
+  button[role='combobox']::selection,
+  textarea::selection {
+    color: red; /* Text color */
+    background: yellow; /* Background color */
+  }
   .command-input-wrapper input[data-slot='command-input'] {
     @apply shadow-none shadow-indigo-400/5;
     @apply focus:bg-indigo-500/10! focus:text-gray-50 focus:font-semibold focus:text-left;
     @apply focus:placeholder:text-gray-200;
   }
-  button[data-slot='popover-trigger']{
+  button[data-slot='popover-trigger'] {
     @apply hover:bg-accent! hover:text-accent-foreground!;
   }
   [data-slot='command-input-wrapper'] input {
@@ -315,7 +313,11 @@ textarea::selection {
   .btn-gradient {
     color: var(--color-primary-foreground);
     border-color: var(--btn-border);
-    background-image: linear-gradient(135deg, var(--btn-grad-from), var(--btn-grad-to));
+    background-image: linear-gradient(
+      135deg,
+      var(--btn-grad-from),
+      var(--btn-grad-to)
+    );
     box-shadow:
       0 1px 0 color-mix(in oklab, var(--color-white) 18%, transparent) inset,
       0 10px 22px color-mix(in oklab, var(--btn-grad-to) 40%, transparent);
@@ -330,7 +332,8 @@ textarea::selection {
   }
 
   .btn-gradient:active {
-    box-shadow: 0 1px 0 color-mix(in oklab, var(--color-black) 18%, transparent) inset;
+    box-shadow: 0 1px 0 color-mix(in oklab, var(--color-black) 18%, transparent)
+      inset;
   }
 
   .btn-surface {
@@ -467,11 +470,9 @@ textarea::selection {
 .border-inside-all div {
   @apply border-[0.5px] border-gray-900;
 }
-[data-slot="sheet-overlay"] {
-  @apply bg-black/5! ; 
-   
-} 
-[data-slot="sheet-content"] {
-  @apply duration-200!; 
-   
-} 
+[data-slot='sheet-overlay'] {
+  @apply bg-black/5!;
+}
+[data-slot='sheet-content'] {
+  @apply duration-200!;
+}

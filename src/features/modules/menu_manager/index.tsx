@@ -6,12 +6,21 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 import { usePermissionMutation } from '@/features/modules/permission/data/queryOptions'
 import { MenuTreeQueryOptions } from '@/features/modules/menu/data/queryOptions'
 import { resolveIcon } from '@/features/modules/menu/data/menu-icon-map'
-import { MenuTreeSchema, type MenuTreeNode } from '@/features/modules/menu/data/schema'
+import {
+  MenuTreeSchema,
+  type MenuTreeNode,
+} from '@/features/modules/menu/data/schema'
 import { roleQueryOptions } from '@/features/modules/role/data/queryOptions'
 import { ActiveInactiveStatusTypes } from '@/types/active-inactive-status'
 
@@ -33,12 +42,13 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 
-import { useQuery, useQueryClient, useSuspenseQuery } from '@tanstack/react-query'
-import { cn } from '@/lib/utils'
 import {
-  IconChevronDown,
-  IconGripVertical,
-} from '@tabler/icons-react'
+  useQuery,
+  useQueryClient,
+  useSuspenseQuery,
+} from '@tanstack/react-query'
+import { cn } from '@/lib/utils'
+import { IconChevronDown, IconGripVertical } from '@tabler/icons-react'
 import { Loader, ShieldCheck, ShieldOff } from 'lucide-react'
 import { useMemo, useState, useCallback, useEffect } from 'react'
 import { toast } from 'sonner'
@@ -49,8 +59,17 @@ import { reorderMenuService } from '@/features/modules/menu/data/api'
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
 /** Flatten tree into container groups for DnD state management. */
-function buildContainers(nodes: MenuTreeNode[], depth = 0, parentId: number | null = null) {
-  const groups: { containerId: string; parentId: number | null; depth: number; items: MenuTreeNode[] }[] = []
+function buildContainers(
+  nodes: MenuTreeNode[],
+  depth = 0,
+  parentId: number | null = null,
+) {
+  const groups: {
+    containerId: string
+    parentId: number | null
+    depth: number
+    items: MenuTreeNode[]
+  }[] = []
   groups.push({
     containerId: parentId === null ? 'root' : `parent-${parentId}`,
     parentId,
@@ -65,7 +84,14 @@ function buildContainers(nodes: MenuTreeNode[], depth = 0, parentId: number | nu
   return groups
 }
 
-function rebuildTree(containers: { containerId: string; parentId: number | null; depth: number; items: MenuTreeNode[] }[]): MenuTreeNode[] {
+function rebuildTree(
+  containers: {
+    containerId: string
+    parentId: number | null
+    depth: number
+    items: MenuTreeNode[]
+  }[],
+): MenuTreeNode[] {
   const containerMap = new Map(containers.map((c) => [c.containerId, c]))
   function buildChildren(containerId: string): MenuTreeNode[] {
     const container = containerMap.get(containerId)
@@ -75,14 +101,20 @@ function rebuildTree(containers: { containerId: string; parentId: number | null;
       const childContainer = containerMap.get(childContainerId)
       return {
         ...item,
-        children: childContainer ? buildChildren(childContainerId) : (item.children ?? []),
+        children: childContainer
+          ? buildChildren(childContainerId)
+          : (item.children ?? []),
       } as MenuTreeNode
     })
   }
   return buildChildren('root')
 }
 
-function isDescendantOf(ancestorId: number, targetId: number, nodes: MenuTreeNode[]): boolean {
+function isDescendantOf(
+  ancestorId: number,
+  targetId: number,
+  nodes: MenuTreeNode[],
+): boolean {
   const walk = (items: MenuTreeNode[]): boolean => {
     for (const n of items) {
       if (n.id === targetId) return true
@@ -107,7 +139,8 @@ export default function MenuManager() {
   const roles = rolesData?.data ?? []
 
   // Fetch menu tree
-  const { data: treeData, isLoading: treeLoading } = useQuery(MenuTreeQueryOptions)
+  const { data: treeData, isLoading: treeLoading } =
+    useQuery(MenuTreeQueryOptions)
 
   // Fetch permissions for selected role
   const { data: permData, isLoading: permLoading } = useQuery({
@@ -125,7 +158,10 @@ export default function MenuManager() {
     features.forEach((f: any) => {
       if (!f.code) return
       if (f.rolePermission) {
-        permMap.set(f.code, { id: f.rolePermission.id, isAllowed: f.rolePermission.isAllowed })
+        permMap.set(f.code, {
+          id: f.rolePermission.id,
+          isAllowed: f.rolePermission.isAllowed,
+        })
       } else {
         permMap.set(f.code, { isAllowed: false })
       }
@@ -135,7 +171,8 @@ export default function MenuManager() {
     return { featurePermissionMap: permMap, featureMetaMap: metaMap }
   }, [features])
 
-  const { mutate: savePermission, isPending: permSaving } = usePermissionMutation()
+  const { mutate: savePermission, isPending: permSaving } =
+    usePermissionMutation()
 
   const handleToggle = useCallback(
     (featureCode: string) => {
@@ -156,16 +193,27 @@ export default function MenuManager() {
         },
         {
           onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['MenuPermissions', selectedRoleId] })
+            queryClient.invalidateQueries({
+              queryKey: ['MenuPermissions', selectedRoleId],
+            })
           },
         },
       )
     },
-    [selectedRoleId, featureMetaMap, featurePermissionMap, savePermission, queryClient],
+    [
+      selectedRoleId,
+      featureMetaMap,
+      featurePermissionMap,
+      savePermission,
+      queryClient,
+    ],
   )
 
   // ── DnD state ──────────────────────────────────────────────────────
-  const menuTree = useMemo(() => MenuTreeSchema.parse(treeData?.data ?? []), [treeData])
+  const menuTree = useMemo(
+    () => MenuTreeSchema.parse(treeData?.data ?? []),
+    [treeData],
+  )
   const [containers, setContainers] = useState(() => buildContainers(menuTree))
   const [activeId, setActiveId] = useState<number | null>(null)
 
@@ -176,7 +224,8 @@ export default function MenuManager() {
   const renderTree = useMemo(() => rebuildTree(containers), [containers])
 
   const findContainer = useCallback(
-    (id: number) => containers.find((c) => c.items.some((n) => n.id === id)) ?? null,
+    (id: number) =>
+      containers.find((c) => c.items.some((n) => n.id === id)) ?? null,
     [containers],
   )
 
@@ -204,7 +253,11 @@ export default function MenuManager() {
       if (!over || active.id === over.id) return
 
       // Build reorder payload from container state
-      const payload: { id: number; sort_order: number; parent_id: number | null }[] = []
+      const payload: {
+        id: number
+        sort_order: number
+        parent_id: number | null
+      }[] = []
       for (const container of containers) {
         for (let i = 0; i < container.items.length; i++) {
           payload.push({
@@ -243,13 +296,20 @@ export default function MenuManager() {
       if (activeContainer.containerId === overContainer.containerId) return
 
       // Prevent dropping into own descendants
-      if (isDescendantOf(activeIdNum, overContainer.parentId ?? -1, menuTree)) return
+      if (isDescendantOf(activeIdNum, overContainer.parentId ?? -1, menuTree))
+        return
 
       setContainers((prev) => {
         const next = prev.map((c) => ({ ...c, items: [...c.items] }))
-        const activeCont = next.find((c) => c.containerId === activeContainer.containerId)!
-        const overCont = next.find((c) => c.containerId === overContainer.containerId)!
-        const activeIdx = activeCont.items.findIndex((n) => n.id === activeIdNum)
+        const activeCont = next.find(
+          (c) => c.containerId === activeContainer.containerId,
+        )!
+        const overCont = next.find(
+          (c) => c.containerId === overContainer.containerId,
+        )!
+        const activeIdx = activeCont.items.findIndex(
+          (n) => n.id === activeIdNum,
+        )
         if (activeIdx === -1) return prev
         const [moved] = activeCont.items.splice(activeIdx, 1)
         const overIdx = overCont.items.findIndex((n) => n.id === overIdNum)
@@ -293,30 +353,35 @@ export default function MenuManager() {
   // ── Render ────────────────────────────────────────────────────────
 
   return (
-    <div className='space-y-6'>
+    <div className="space-y-6">
       <div>
-        <h1 className='text-2xl font-bold tracking-tight'>Menu Manager</h1>
-        <p className='text-muted-foreground'>
-          Drag &amp; drop to reorder menu items. Toggle permissions to control role access.
+        <h1 className="text-2xl font-bold tracking-tight">Menu Manager</h1>
+        <p className="text-muted-foreground">
+          Drag &amp; drop to reorder menu items. Toggle permissions to control
+          role access.
         </p>
       </div>
 
       {/* Role Selector */}
-      <div className='flex flex-wrap items-center gap-3 rounded-lg border bg-card p-3 shadow-sm'>
-        <div className='flex items-center gap-2'>
-          <span className='text-xs font-medium text-muted-foreground'>Role:</span>
+      <div className="flex flex-wrap items-center gap-3 rounded-lg border bg-card p-3 shadow-sm">
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-medium text-muted-foreground">
+            Role:
+          </span>
           <Select
             value={selectedRoleId?.toString() ?? ''}
             onValueChange={(v) => setSelectedRoleId(Number(v))}
           >
-            <SelectTrigger className='w-56 h-8 text-xs'>
-              <SelectValue placeholder='Choose a role to manage…' />
+            <SelectTrigger className="w-56 h-8 text-xs">
+              <SelectValue placeholder="Choose a role to manage…" />
             </SelectTrigger>
             <SelectContent>
               {roles.map((role: any) => (
                 <SelectItem key={role.id} value={role.id.toString()}>
                   {role.name}
-                  <span className='ml-2 text-[10px] text-muted-foreground font-mono'>({role.code})</span>
+                  <span className="ml-2 text-[10px] text-muted-foreground font-mono">
+                    ({role.code})
+                  </span>
                 </SelectItem>
               ))}
             </SelectContent>
@@ -325,15 +390,25 @@ export default function MenuManager() {
 
         {/* Stats */}
         {selectedRoleId && !permLoading && (
-          <div className='flex items-center gap-2 text-xs text-muted-foreground ml-auto'>
-            <span className='flex items-center gap-1 text-green-600'>
-              <ShieldCheck className='h-3 w-3' />
-              {Array.from(featurePermissionMap.values()).filter((p) => p.isAllowed).length} allowed
+          <div className="flex items-center gap-2 text-xs text-muted-foreground ml-auto">
+            <span className="flex items-center gap-1 text-green-600">
+              <ShieldCheck className="h-3 w-3" />
+              {
+                Array.from(featurePermissionMap.values()).filter(
+                  (p) => p.isAllowed,
+                ).length
+              }{' '}
+              allowed
             </span>
-            <span className='text-muted-foreground/30'>|</span>
-            <span className='flex items-center gap-1 text-red-600'>
-              <ShieldOff className='h-3 w-3' />
-              {Array.from(featurePermissionMap.values()).filter((p) => !p.isAllowed).length} denied
+            <span className="text-muted-foreground/30">|</span>
+            <span className="flex items-center gap-1 text-red-600">
+              <ShieldOff className="h-3 w-3" />
+              {
+                Array.from(featurePermissionMap.values()).filter(
+                  (p) => !p.isAllowed,
+                ).length
+              }{' '}
+              denied
             </span>
           </div>
         )}
@@ -341,30 +416,34 @@ export default function MenuManager() {
 
       {/* Empty state */}
       {!selectedRoleId && (
-        <div className='flex items-center justify-center py-16 text-muted-foreground'>
+        <div className="flex items-center justify-center py-16 text-muted-foreground">
           Select a role above to manage its menu permissions.
         </div>
       )}
 
       {/* Loading state */}
       {selectedRoleId && (treeLoading || permLoading) && (
-        <div className='flex items-center justify-center py-16'>
-          <Loader className='h-6 w-6 animate-spin text-muted-foreground' />
+        <div className="flex items-center justify-center py-16">
+          <Loader className="h-6 w-6 animate-spin text-muted-foreground" />
         </div>
       )}
 
       {/* Tree View with DnD */}
       {selectedRoleId && !treeLoading && !permLoading && (
-        <div className='rounded-lg border bg-card shadow-sm'>
-          <div className='border-b px-3 py-1.5 flex items-center justify-between'>
-            <span className='text-xs font-medium text-muted-foreground'>Menu Structure</span>
+        <div className="rounded-lg border bg-card shadow-sm">
+          <div className="border-b px-3 py-1.5 flex items-center justify-between">
+            <span className="text-xs font-medium text-muted-foreground">
+              Menu Structure
+            </span>
             {selectedIds.size > 0 && (
-              <div className='flex items-center gap-2 text-[10px]'>
-                <span className='text-muted-foreground'>{selectedIds.size} selected</span>
+              <div className="flex items-center gap-2 text-[10px]">
+                <span className="text-muted-foreground">
+                  {selectedIds.size} selected
+                </span>
                 <Button
-                  variant='ghost'
-                  size='sm'
-                  className='h-5 px-1.5 text-[9px]'
+                  variant="ghost"
+                  size="sm"
+                  className="h-5 px-1.5 text-[9px]"
                   onClick={() => setSelectedIds(new Set())}
                 >
                   Deselect
@@ -372,7 +451,7 @@ export default function MenuManager() {
               </div>
             )}
           </div>
-          <div className='p-3'>
+          <div className="p-3">
             {renderTree.length > 0 ? (
               <DndContext
                 sensors={sensors}
@@ -393,22 +472,28 @@ export default function MenuManager() {
 
                 <DragOverlay>
                   {activeItem ? (
-                    <div className='flex items-center gap-2 rounded-md border bg-card px-2.5 py-1.5 shadow-lg'>
-                      <div className='flex h-6 w-6 items-center justify-center rounded border bg-background'>
+                    <div className="flex items-center gap-2 rounded-md border bg-card px-2.5 py-1.5 shadow-lg">
+                      <div className="flex h-6 w-6 items-center justify-center rounded border bg-background">
                         {(() => {
                           const Icon = resolveIcon(activeItem.icon ?? undefined)
-                          return <Icon className='h-3 w-3 text-muted-foreground' />
+                          return (
+                            <Icon className="h-3 w-3 text-muted-foreground" />
+                          )
                         })()}
                       </div>
-                      <span className='text-xs font-medium'>{activeItem.menuName}</span>
+                      <span className="text-xs font-medium">
+                        {activeItem.menuName}
+                      </span>
                     </div>
                   ) : null}
                 </DragOverlay>
               </DndContext>
             ) : (
-              <div className='flex flex-col items-center justify-center py-10 text-muted-foreground'>
-                <p className='text-xs font-medium'>No menu entries found</p>
-                <p className='text-[10px]'>Create menu entries in the Menu module first.</p>
+              <div className="flex flex-col items-center justify-center py-10 text-muted-foreground">
+                <p className="text-xs font-medium">No menu entries found</p>
+                <p className="text-[10px]">
+                  Create menu entries in the Menu module first.
+                </p>
               </div>
             )}
           </div>
@@ -423,14 +508,25 @@ export default function MenuManager() {
 interface TreeLevelProps {
   items: MenuTreeNode[]
   depth: number
-  getPermissionInfo: (node: MenuTreeNode) => { hasPermission: boolean; isAllowed: boolean }
+  getPermissionInfo: (node: MenuTreeNode) => {
+    hasPermission: boolean
+    isAllowed: boolean
+  }
   onToggle: (featureCode: string) => void
   permSaving: boolean
   selectedIds: Set<number>
   onToggleSelect: (id: number) => void
 }
 
-function TreeLevel({ items, depth, getPermissionInfo, onToggle, permSaving, selectedIds, onToggleSelect }: TreeLevelProps) {
+function TreeLevel({
+  items,
+  depth,
+  getPermissionInfo,
+  onToggle,
+  permSaving,
+  selectedIds,
+  onToggleSelect,
+}: TreeLevelProps) {
   if (!items.length) return null
 
   return (
@@ -438,7 +534,7 @@ function TreeLevel({ items, depth, getPermissionInfo, onToggle, permSaving, sele
       items={items.map((n) => n.id)}
       strategy={verticalListSortingStrategy}
     >
-      <div className='space-y-0.5'>
+      <div className="space-y-0.5">
         {items.map((node) => (
           <TreeNode
             key={node.id}
@@ -461,14 +557,25 @@ function TreeLevel({ items, depth, getPermissionInfo, onToggle, permSaving, sele
 interface TreeNodeProps {
   node: MenuTreeNode
   depth: number
-  getPermissionInfo: (node: MenuTreeNode) => { hasPermission: boolean; isAllowed: boolean }
+  getPermissionInfo: (node: MenuTreeNode) => {
+    hasPermission: boolean
+    isAllowed: boolean
+  }
   onToggle: (featureCode: string) => void
   permSaving: boolean
   selectedIds: Set<number>
   onToggleSelect: (id: number) => void
 }
 
-function TreeNode({ node, depth, getPermissionInfo, onToggle, permSaving, selectedIds, onToggleSelect }: TreeNodeProps) {
+function TreeNode({
+  node,
+  depth,
+  getPermissionInfo,
+  onToggle,
+  permSaving,
+  selectedIds,
+  onToggleSelect,
+}: TreeNodeProps) {
   const [isOpen, setIsOpen] = useState(depth < 1)
   const hasChildren = node.children && node.children.length > 0
   const Icon = resolveIcon(node.icon ?? undefined)
@@ -504,34 +611,38 @@ function TreeNode({ node, depth, getPermissionInfo, onToggle, permSaving, select
       style={depth > 0 ? { marginLeft: `${depth * 1.25}rem` } : undefined}
     >
       {/* Checkbox */}
-      <div className='flex w-4 shrink-0 items-center justify-center'>
+      <div className="flex w-4 shrink-0 items-center justify-center">
         <Checkbox
           checked={isSelected}
           onClick={(e) => {
             e.stopPropagation()
             onToggleSelect(node.id)
           }}
-          className='h-3.5 w-3.5'
+          className="h-3.5 w-3.5"
           aria-label={`Select ${node.menuName}`}
         />
       </div>
 
       {/* Drag handle */}
       <button
-        className='flex h-5 w-4 shrink-0 cursor-grab items-center justify-center rounded text-muted-foreground/30 hover:text-muted-foreground hover:bg-muted active:cursor-grabbing'
+        className="flex h-5 w-4 shrink-0 cursor-grab items-center justify-center rounded text-muted-foreground/30 hover:text-muted-foreground hover:bg-muted active:cursor-grabbing"
         {...attributes}
         {...listeners}
-        title='Drag to reorder'
+        title="Drag to reorder"
         tabIndex={-1}
       >
-        <IconGripVertical className='h-3 w-3' />
+        <IconGripVertical className="h-3 w-3" />
       </button>
 
       {/* Expand/collapse */}
-      <div className='flex w-4 shrink-0 items-center justify-center'>
+      <div className="flex w-4 shrink-0 items-center justify-center">
         {hasChildren ? (
           <CollapsibleTrigger asChild>
-            <Button variant='ghost' size='icon' className='h-4 w-4 p-0 text-muted-foreground hover:text-foreground'>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-4 w-4 p-0 text-muted-foreground hover:text-foreground"
+            >
               <IconChevronDown
                 className={cn(
                   'h-3 w-3 transition-transform duration-200',
@@ -541,28 +652,36 @@ function TreeNode({ node, depth, getPermissionInfo, onToggle, permSaving, select
             </Button>
           </CollapsibleTrigger>
         ) : (
-          <span className='h-4 w-4' />
+          <span className="h-4 w-4" />
         )}
       </div>
 
       {/* Icon */}
-      <div className='flex h-5 w-5 shrink-0 items-center justify-center rounded border bg-background'>
-        <Icon className='h-2.5 w-2.5 text-muted-foreground' />
+      <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded border bg-background">
+        <Icon className="h-2.5 w-2.5 text-muted-foreground" />
       </div>
 
       {/* Name + meta */}
-      <div className='flex min-w-0 flex-1 items-center gap-1.5'>
-        <span className='truncate text-xs font-medium'>{node.menuName}</span>
+      <div className="flex min-w-0 flex-1 items-center gap-1.5">
+        <span className="truncate text-xs font-medium">{node.menuName}</span>
         {node.isGroup && (
-          <Badge variant='secondary' className='shrink-0 text-[9px] px-1 py-0 leading-none'>Group</Badge>
+          <Badge
+            variant="secondary"
+            className="shrink-0 text-[9px] px-1 py-0 leading-none"
+          >
+            Group
+          </Badge>
         )}
         {node.route && (
-          <code className='hidden shrink-0 truncate rounded bg-muted/60 px-1 py-0.5 text-[9px] font-mono text-muted-foreground/70 sm:inline-block max-w-24'>
+          <code className="hidden shrink-0 truncate rounded bg-muted/60 px-1 py-0.5 text-[9px] font-mono text-muted-foreground/70 sm:inline-block max-w-24">
             {node.route}
           </code>
         )}
         {node.feature?.code && (
-          <Badge variant='outline' className='shrink-0 text-[9px] font-mono px-1 py-0 leading-none hidden md:inline-flex'>
+          <Badge
+            variant="outline"
+            className="shrink-0 text-[9px] font-mono px-1 py-0 leading-none hidden md:inline-flex"
+          >
             {node.feature.code}
           </Badge>
         )}
@@ -570,7 +689,12 @@ function TreeNode({ node, depth, getPermissionInfo, onToggle, permSaving, select
 
       {/* Status badge */}
       {statusBadgeColor && (
-        <span className={cn('shrink-0 rounded px-1 py-0 text-[9px] font-medium capitalize', statusBadgeColor)}>
+        <span
+          className={cn(
+            'shrink-0 rounded px-1 py-0 text-[9px] font-medium capitalize',
+            statusBadgeColor,
+          )}
+        >
           {node.status}
         </span>
       )}
@@ -578,8 +702,8 @@ function TreeNode({ node, depth, getPermissionInfo, onToggle, permSaving, select
       {/* Permission toggle */}
       {hasPermission && (
         <Button
-          variant='ghost'
-          size='sm'
+          variant="ghost"
+          size="sm"
           className={cn(
             'h-6 w-6 p-0 shrink-0',
             isAllowed
@@ -594,9 +718,9 @@ function TreeNode({ node, depth, getPermissionInfo, onToggle, permSaving, select
           title={isAllowed ? 'Click to deny' : 'Click to allow'}
         >
           {isAllowed ? (
-            <ShieldCheck className='h-3 w-3' />
+            <ShieldCheck className="h-3 w-3" />
           ) : (
-            <ShieldOff className='h-3 w-3' />
+            <ShieldOff className="h-3 w-3" />
           )}
         </Button>
       )}
@@ -606,10 +730,14 @@ function TreeNode({ node, depth, getPermissionInfo, onToggle, permSaving, select
   return (
     <div ref={setNodeRef} style={style} data-dnd-id={String(node.id)}>
       {hasChildren ? (
-        <Collapsible open={isOpen} onOpenChange={setIsOpen} className='group/tree'>
+        <Collapsible
+          open={isOpen}
+          onOpenChange={setIsOpen}
+          className="group/tree"
+        >
           {rowNode()}
           <CollapsibleContent>
-            <div className='relative ml-2 border-l border-border/40 pl-1'>
+            <div className="relative ml-2 border-l border-border/40 pl-1">
               <TreeLevel
                 items={node.children}
                 depth={depth + 1}
@@ -623,9 +751,7 @@ function TreeNode({ node, depth, getPermissionInfo, onToggle, permSaving, select
           </CollapsibleContent>
         </Collapsible>
       ) : (
-        <div className='group/tree'>
-          {rowNode()}
-        </div>
+        <div className="group/tree">{rowNode()}</div>
       )}
     </div>
   )

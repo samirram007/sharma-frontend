@@ -34,12 +34,18 @@ export const Header = ({
         'flex h-16 items-center gap-2 sm:gap-4 bg-background p-3 sm:p-4 transition-all duration-300',
         fixed && 'header-fixed peer/header fixed z-50 w-[inherit] rounded-lg',
         offset > 10 && fixed ? 'shadow-lg' : 'shadow-none',
-        className
+        className,
       )}
       {...props}
     >
-      <SidebarTrigger variant='ghost' className='scale-125 sm:scale-100 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200' />
-      <Separator orientation='vertical' className='h-6 bg-slate-300/40 dark:bg-slate-700/40' />
+      <SidebarTrigger
+        variant="ghost"
+        className="scale-125 sm:scale-100 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+      />
+      <Separator
+        orientation="vertical"
+        className="h-6 bg-slate-300/40 dark:bg-slate-700/40"
+      />
       {children}
     </header>
   )

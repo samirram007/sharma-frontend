@@ -1,5 +1,5 @@
 import GeneralError from '@/features/errors/general-error'
-import { requirePermission } from '@/lib/auth';
+import { requirePermission } from '@/lib/auth'
 import UserProvider from '@/features/modules/user/contexts/user-context'
 import { createFileRoute, Outlet } from '@tanstack/react-router'
 import { Loader } from 'lucide-react'
@@ -19,5 +19,3 @@ export const Route = createFileRoute(
   errorComponent: () => <GeneralError minimal />,
   pendingComponent: () => <Loader className="animate-spin" />,
 })
-
-

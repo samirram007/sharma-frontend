@@ -2,8 +2,6 @@ import useDialogState from '@/core/hooks/use-dialog-state'
 import React, { useState } from 'react'
 import type { Grade } from '../data/schema'
 
-
-
 type GradeDialogType = 'invite' | 'add' | 'edit' | 'delete'
 
 interface GradeContextType {
@@ -24,9 +22,10 @@ export default function GradeProvider({ children }: Props) {
   const [open, setOpen] = useDialogState<GradeDialogType>(null)
   const [currentRow, setCurrentRow] = useState<Grade | null>(null)
 
-
   return (
-    <GradeContext value={{ open, setOpen, currentRow, setCurrentRow, keyName: "grade" }}>
+    <GradeContext
+      value={{ open, setOpen, currentRow, setCurrentRow, keyName: 'grade' }}
+    >
       {children}
     </GradeContext>
   )

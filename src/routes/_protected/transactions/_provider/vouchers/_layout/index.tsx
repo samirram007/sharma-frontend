@@ -1,8 +1,8 @@
-import { voucherCategoryQueryOptions } from '@/features/modules/voucher_category/data/queryOptions';
-import Transactions from '@/features/transactions';
-import { useSuspenseQuery } from '@tanstack/react-query';
-import { createFileRoute } from '@tanstack/react-router';
-import { Loader } from 'lucide-react';
+import { voucherCategoryQueryOptions } from '@/features/modules/voucher_category/data/queryOptions'
+import Transactions from '@/features/transactions'
+import { useSuspenseQuery } from '@tanstack/react-query'
+import { createFileRoute } from '@tanstack/react-router'
+import { Loader } from 'lucide-react'
 
 export const Route = createFileRoute(
   '/_protected/transactions/_provider/vouchers/_layout/',
@@ -10,7 +10,9 @@ export const Route = createFileRoute(
   loader: ({ context }) =>
     context.queryClient.ensureQueryData(voucherCategoryQueryOptions()),
   component: () => {
-    const { data: voucherCategories } = useSuspenseQuery(voucherCategoryQueryOptions())
+    const { data: voucherCategories } = useSuspenseQuery(
+      voucherCategoryQueryOptions(),
+    )
 
     return <Transactions data={voucherCategories?.data} />
   },

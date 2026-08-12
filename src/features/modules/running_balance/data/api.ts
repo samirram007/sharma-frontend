@@ -4,7 +4,10 @@ export async function fetchRunningBalanceItemsService() {
   return await getData('stock_summaries/running_balance')
 }
 
-export async function fetchRunningBalanceDetailService(itemId: number, godownId?: number) {
+export async function fetchRunningBalanceDetailService(
+  itemId: number,
+  godownId?: number,
+) {
   const params = godownId ? `?godown_id=${godownId}` : ''
   return await getData(`stock_summaries/running_balance/${itemId}${params}`)
 }

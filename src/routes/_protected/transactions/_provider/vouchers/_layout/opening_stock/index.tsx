@@ -30,7 +30,9 @@ function RouteComponent() {
   const navigate = Route.useNavigate()
 
   // OPNSK type id is resolved at runtime (not stable across databases).
-  const { data: openingStockType } = useQuery(openingStockVoucherTypeQueryOptions())
+  const { data: openingStockType } = useQuery(
+    openingStockVoucherTypeQueryOptions(),
+  )
 
   const currentFyId = userFiscalYear?.fiscalYearId
   const openingStockTypeId = openingStockType?.data?.id
@@ -46,7 +48,10 @@ function RouteComponent() {
 
   useEffect(() => {
     if (existingForFy?.id) {
-      navigate({ to: '/transactions/vouchers/opening_stock/$id', params: { id: existingForFy.id } })
+      navigate({
+        to: '/transactions/vouchers/opening_stock/$id',
+        params: { id: existingForFy.id },
+      })
     }
   }, [existingForFy?.id, navigate])
 

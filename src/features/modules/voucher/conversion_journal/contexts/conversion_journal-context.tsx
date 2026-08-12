@@ -30,9 +30,7 @@ export const ConversionJournalProvider = ({
 }
 
 export const useConversionJournal = () => {
-  const conversionJournalContext = React.useContext(
-    ConversionJournalContext,
-  )
+  const conversionJournalContext = React.useContext(ConversionJournalContext)
 
   if (!conversionJournalContext) {
     throw new Error(

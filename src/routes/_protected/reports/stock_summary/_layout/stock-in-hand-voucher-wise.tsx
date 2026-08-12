@@ -3,7 +3,6 @@ import { stockSummaryQueryOptions } from '@/features/modules/voucher/stock_summa
 
 import StockInHandVoucherWise from '@/features/modules/voucher/stock_summary/stock_in_hand_voucher_wise/stock_in_hand_voucher_wise'
 
-
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { Loader } from 'lucide-react'
@@ -13,18 +12,22 @@ export const Route = createFileRoute(
   '/_protected/reports/stock_summary/_layout/stock-in-hand-voucher-wise',
 )({
   loader: ({ context }) =>
-    context.queryClient.ensureQueryData(stockSummaryQueryOptions('stock_in_hand_voucher_wise')),
+    context.queryClient.ensureQueryData(
+      stockSummaryQueryOptions('stock_in_hand_voucher_wise'),
+    ),
   component: () => {
-    const { data: stocksummary } = useSuspenseQuery(stockSummaryQueryOptions('stock_in_hand_voucher_wise'))
+    const { data: stocksummary } = useSuspenseQuery(
+      stockSummaryQueryOptions('stock_in_hand_voucher_wise'),
+    )
 
     return (
       <Suspense fallback={<SkeletonTable />}>
         <StockInHandVoucherWise data={stocksummary?.data} />
       </Suspense>
     )
-
   },
-  errorComponent: () => <div>Error loading stock_in_hand_voucher_wise data.</div>,
+  errorComponent: () => (
+    <div>Error loading stock_in_hand_voucher_wise data.</div>
+  ),
   pendingComponent: () => <Loader className="animate-spin" />,
 })
-

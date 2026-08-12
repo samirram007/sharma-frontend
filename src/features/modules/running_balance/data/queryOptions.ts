@@ -16,7 +16,10 @@ export const runningBalanceItemsQueryOptions = () =>
     retry: 1,
   })
 
-export const runningBalanceDetailQueryOptions = (itemId: number, godownId?: number) =>
+export const runningBalanceDetailQueryOptions = (
+  itemId: number,
+  godownId?: number,
+) =>
   queryOptions({
     queryKey: [BASE_KEY, 'detail', itemId, godownId],
     queryFn: () => fetchRunningBalanceDetailService(itemId, godownId),

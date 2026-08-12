@@ -5,17 +5,15 @@ import OrganizationProvider from '@/features/masters/organization/context/organi
 import { createFileRoute } from '@tanstack/react-router'
 
 export const Route = createFileRoute(
-    '/_protected/masters/organization/_layout',
+  '/_protected/masters/organization/_layout',
 )({
-    component: () => {
-        return (
-            <OrganizationProvider>
-                <Organization />
-            </OrganizationProvider>
-        )
-    },
-    notFoundComponent: () => <ForbiddenError minimal />,
-    errorComponent: () => <GeneralError minimal />,
+  component: () => {
+    return (
+      <OrganizationProvider>
+        <Organization />
+      </OrganizationProvider>
+    )
+  },
+  notFoundComponent: () => <ForbiddenError minimal />,
+  errorComponent: () => <GeneralError minimal />,
 })
-
-

@@ -1,16 +1,12 @@
 'use client'
 
-
 import type { Currency } from '../data/schema'
 import { FormAction } from './form-action'
 
-
 interface Props {
-    currentRow?: Currency
+  currentRow?: Currency
 }
 
 export function ActionPages({ currentRow }: Props) {
-
-    return <FormAction currentRow={currentRow} />
-
+  return <FormAction currentRow={currentRow} />
 }

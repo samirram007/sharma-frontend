@@ -6,17 +6,14 @@ import { Loader } from 'lucide-react'
 export const Route = createFileRoute(
   '/_protected/masters/organization/_layout/state/_layout',
 )({
-
   component: () => {
     // const { data: state } = useSuspenseQuery(stateQueryOptions())
     return (
       <StateProvider>
         <Outlet />
-      </StateProvider >
+      </StateProvider>
     )
   },
   errorComponent: () => <GeneralError minimal />,
   pendingComponent: () => <Loader className="animate-spin" />,
 })
-
-

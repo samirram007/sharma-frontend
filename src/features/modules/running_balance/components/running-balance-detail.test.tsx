@@ -16,7 +16,9 @@ const godownBase = {
 }
 
 const makeDetail = (
-  godownDetails: NonNullable<RunningBalanceDetail['transactions'][number]['godownDetails']>,
+  godownDetails: NonNullable<
+    RunningBalanceDetail['transactions'][number]['godownDetails']
+  >,
 ): RunningBalanceDetail => ({
   item: {
     itemId: 1,

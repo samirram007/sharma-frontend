@@ -7,7 +7,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Download, FileText, FileSpreadsheet, FileJson, Clipboard, Printer } from 'lucide-react'
+import {
+  Download,
+  FileText,
+  FileSpreadsheet,
+  FileJson,
+  Clipboard,
+  Printer,
+} from 'lucide-react'
 
 export interface ChartConfig {
   labelKey: string
@@ -23,8 +30,22 @@ export interface ExportDropdownProps {
   columns: { header: string; accessor: string }[]
   formatRow: (r: any) => Record<string, string>
   computeTotals: (data: any[]) => Record<string, string>
-  onExportPdf: (tab: string, title: string, columns: { header: string; accessor: string }[], data: any[], chartData?: { labels: string[]; datasets: { label: string; data: number[] }[] }) => void
-  onExportExcel: (tab: string, title: string, columns: { header: string; accessor: string }[], data: any[]) => void
+  onExportPdf: (
+    tab: string,
+    title: string,
+    columns: { header: string; accessor: string }[],
+    data: any[],
+    chartData?: {
+      labels: string[]
+      datasets: { label: string; data: number[] }[]
+    },
+  ) => void
+  onExportExcel: (
+    tab: string,
+    title: string,
+    columns: { header: string; accessor: string }[],
+    data: any[],
+  ) => void
   onDownloadCsv: (headers: string[], flatRows: string[][], tab: string) => void
   onDownloadJson: (data: unknown, tab: string) => void
   onCopyToClipboard: (text: string) => void
@@ -49,55 +70,80 @@ export function ExportDropdown({
   const totalRow = computeTotals(rawData)
   const allData = [...data, totalRow]
   const headers = columns.map((c) => c.header)
-  const flatRows = allData.map((row) => columns.map((c) => String(row[c.accessor] ?? '')))
+  const flatRows = allData.map((row) =>
+    columns.map((c) => String(row[c.accessor] ?? '')),
+  )
 
-  const chartData = chartConfig && rawData.length > 0
-    ? {
-        labels: rawData.map((r: any) => {
-          const rawLabel = String(r[chartConfig.labelKey] ?? '')
-          return chartConfig.formatLabel ? chartConfig.formatLabel(rawLabel) : rawLabel
-        }),
-        datasets: [{ label: chartConfig.chartLabel, data: rawData.map((r: any) => Number(r[chartConfig.valueKey]) ?? 0) }],
-      }
-    : undefined
+  const chartData =
+    chartConfig && rawData.length > 0
+      ? {
+          labels: rawData.map((r: any) => {
+            const rawLabel = String(r[chartConfig.labelKey] ?? '')
+            return chartConfig.formatLabel
+              ? chartConfig.formatLabel(rawLabel)
+              : rawLabel
+          }),
+          datasets: [
+            {
+              label: chartConfig.chartLabel,
+              data: rawData.map(
+                (r: any) => Number(r[chartConfig.valueKey]) ?? 0,
+              ),
+            },
+          ],
+        }
+      : undefined
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant='ghost' size='icon' className='h-7 w-7'>
-          <Download className='h-3.5 w-3.5' />
+        <Button variant="ghost" size="icon" className="h-7 w-7">
+          <Download className="h-3.5 w-3.5" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align='end' className='w-48'>
-        <DropdownMenuLabel className='text-xs font-medium'>Export as</DropdownMenuLabel>
+      <DropdownMenuContent align="end" className="w-48">
+        <DropdownMenuLabel className="text-xs font-medium">
+          Export as
+        </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onSelect={() => onExportPdf(tab, title, columns, allData, chartData)}>
-          <FileText className='mr-2 h-4 w-4' />
+        <DropdownMenuItem
+          onSelect={() => onExportPdf(tab, title, columns, allData, chartData)}
+        >
+          <FileText className="mr-2 h-4 w-4" />
           PDF Document
         </DropdownMenuItem>
-        <DropdownMenuItem onSelect={() => onExportExcel(tab, title, columns, allData)}>
-          <FileSpreadsheet className='mr-2 h-4 w-4' />
+        <DropdownMenuItem
+          onSelect={() => onExportExcel(tab, title, columns, allData)}
+        >
+          <FileSpreadsheet className="mr-2 h-4 w-4" />
           Excel Workbook
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onSelect={() => onDownloadCsv(headers, flatRows, tab)}>
-          <FileSpreadsheet className='mr-2 h-4 w-4' />
+        <DropdownMenuItem
+          onSelect={() => onDownloadCsv(headers, flatRows, tab)}
+        >
+          <FileSpreadsheet className="mr-2 h-4 w-4" />
           CSV File
         </DropdownMenuItem>
         <DropdownMenuItem onSelect={() => onDownloadJson(allData, tab)}>
-          <FileJson className='mr-2 h-4 w-4' />
+          <FileJson className="mr-2 h-4 w-4" />
           JSON File
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onSelect={() => {
-          const tsv = [headers.join('\t'), ...flatRows.map((r) => r.join('\t'))].join('\n')
-          onCopyToClipboard(tsv)
-        }}>
-          <Clipboard className='mr-2 h-4 w-4' />
+        <DropdownMenuItem
+          onSelect={() => {
+            const tsv = [
+              headers.join('\t'),
+              ...flatRows.map((r) => r.join('\t')),
+            ].join('\n')
+            onCopyToClipboard(tsv)
+          }}
+        >
+          <Clipboard className="mr-2 h-4 w-4" />
           Copy to Clipboard
         </DropdownMenuItem>
         <DropdownMenuItem onSelect={() => window.print()}>
-          <Printer className='mr-2 h-4 w-4' />
+          <Printer className="mr-2 h-4 w-4" />
           Print
         </DropdownMenuItem>
       </DropdownMenuContent>

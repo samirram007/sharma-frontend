@@ -2,9 +2,9 @@ import { useDeliveryRoute } from '@/features/modules/delivery_route/contexts/del
 import { ActionDialog } from './action-dialog'
 import { DeleteDialog } from './delete-dialog'
 
-
 export function Dialogs() {
-  const { open, setOpen, currentRow, setCurrentRow, keyName } = useDeliveryRoute()
+  const { open, setOpen, currentRow, setCurrentRow, keyName } =
+    useDeliveryRoute()
   return (
     <>
       <ActionDialog

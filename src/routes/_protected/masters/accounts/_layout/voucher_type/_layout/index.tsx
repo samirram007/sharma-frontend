@@ -1,4 +1,3 @@
-
 import { voucherTypeQueryOptions } from '@/features/modules/voucher_type/data/queryOptions'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'

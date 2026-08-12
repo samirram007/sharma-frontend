@@ -4,4 +4,4 @@
  * mismatches between local-time and UTC-midnight Date objects.
  */
 export const startOfDay = (d: Date): Date =>
-    new Date(d.getFullYear(), d.getMonth(), d.getDate())
+  new Date(d.getFullYear(), d.getMonth(), d.getDate())

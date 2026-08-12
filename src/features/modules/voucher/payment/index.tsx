@@ -1,4 +1,3 @@
-
 'use client'
 
 import { useTransaction } from '@/features/transactions/context/transaction-context'
@@ -8,17 +7,17 @@ import Pos from './pos/index'
 import type { PaymentProps } from './pos/contracts'
 
 const PaymentVoucherComponent = ({ currentRow }: PaymentProps) => {
-    const { setHeaderVisible } = useTransaction()
+  const { setHeaderVisible } = useTransaction()
 
-    useEffect(() => {
-        setHeaderVisible?.(false)
-    }, [setHeaderVisible])
+  useEffect(() => {
+    setHeaderVisible?.(false)
+  }, [setHeaderVisible])
 
-    return (
-        <PosProvider>
-            <Pos currentRow={currentRow} />
-        </PosProvider>
-    )
+  return (
+    <PosProvider>
+      <Pos currentRow={currentRow} />
+    </PosProvider>
+  )
 }
 
 export default PaymentVoucherComponent

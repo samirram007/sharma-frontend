@@ -9,10 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import {
-  Form
-} from '@/components/ui/form'
-
+import { Form } from '@/components/ui/form'
 
 import { showSubmittedData } from '@/utils/show-submitted-data'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -28,11 +25,6 @@ import { useAppModuleMutation } from '../data/queryOptions'
 import { formSchema, type AppModule } from '../data/schema'
 import type { AppModuleForm } from '../types/types'
 
-
-
-
-
-
 interface Props {
   currentRow?: AppModule
   open: boolean
@@ -40,7 +32,6 @@ interface Props {
 }
 
 export function ActionDialog({ currentRow, open, onOpenChange }: Props) {
-
   const { mutate: saveAppModule, isPending } = useAppModuleMutation()
   const isEdit = !!currentRow
 
@@ -48,21 +39,22 @@ export function ActionDialog({ currentRow, open, onOpenChange }: Props) {
     resolver: zodResolver(formSchema),
     defaultValues: isEdit
       ? {
-        ...currentRow, isEdit,
-      }
+          ...currentRow,
+          isEdit,
+        }
       : {
-        name: '',
-        code: '',
-        description: '',
-        icon: '',
-        status: 'active',
-        isEdit,
-      },
+          name: '',
+          code: '',
+          description: '',
+          icon: '',
+          status: 'active',
+          isEdit,
+        },
   })
 
   const onSubmit = (values: AppModuleForm) => {
     const formattedName = values.name
-      .replace(/_/g, ' ')                 // Replace underscores with spaces
+      .replace(/_/g, ' ') // Replace underscores with spaces
       .replace(/\b\w/g, (char) => char.toUpperCase()) // Capitalize each word
 
     // Update the form values
@@ -72,23 +64,24 @@ export function ActionDialog({ currentRow, open, onOpenChange }: Props) {
     }
     form.reset()
     showSubmittedData(formattedValues)
-    saveAppModule(
-      currentRow ? { ...values, id: currentRow.id } : values
-    )
+    saveAppModule(currentRow ? { ...values, id: currentRow.id } : values)
     onOpenChange(false)
   }
-  const name = form.watch("name")
+  const name = form.watch('name')
 
   const code = useMemo(() => {
     return name
-      ? name.toUpperCase().replace(/\s+/g, "_").replace(/[^A-Z0-9_]/g, "")
-      : ""
+      ? name
+          .toUpperCase()
+          .replace(/\s+/g, '_')
+          .replace(/[^A-Z0-9_]/g, '')
+      : ''
   }, [name])
 
   // reflect it in the input
   useEffect(() => {
-    form.setValue("code", code)
-    form.setValue("description", code)
+    form.setValue('code', code)
+    form.setValue('description', code)
   }, [code])
   return (
     <Dialog
@@ -98,46 +91,68 @@ export function ActionDialog({ currentRow, open, onOpenChange }: Props) {
         onOpenChange(state)
       }}
     >
-      <DialogContent className='sm:max-w-lg'>
-        <DialogHeader className='text-left border-b-2 pb-2'>
-          <DialogTitle>{isEdit ? 'Edit App Module' : 'Add New App Module'}</DialogTitle>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader className="text-left border-b-2 pb-2">
+          <DialogTitle>
+            {isEdit ? 'Edit App Module' : 'Add New App Module'}
+          </DialogTitle>
           <DialogDescription>
-            {isEdit ? 'Update the App Module here. ' : 'Create new App Module here. '}
+            {isEdit
+              ? 'Update the App Module here. '
+              : 'Create new App Module here. '}
             Click save when you&apos;re done.
           </DialogDescription>
         </DialogHeader>
-        <div className='-mr-4 h-auto w-full overflow-y-auto py-1 pr-4'>
+        <div className="-mr-4 h-auto w-full overflow-y-auto py-1 pr-4">
           <Form {...form}>
             <form
-              id='user-form'
+              id="user-form"
               onSubmit={form.handleSubmit(onSubmit)}
-              className='space-y-4 p-0.5'
+              className="space-y-4 p-0.5"
             >
-              <FormInputField type='text' form={form} name='name' label='Name' />
+              <FormInputField
+                type="text"
+                form={form}
+                name="name"
+                label="Name"
+              />
 
-              <FormInputField type='text' form={form} name='code' label='Code' />
+              <FormInputField
+                type="text"
+                form={form}
+                name="code"
+                label="Code"
+              />
 
-              <IconPicker form={form} name='icon' label='Icon' />
+              <IconPicker form={form} name="icon" label="Icon" />
 
-              <FormInputField type='textarea' form={form} name='description' label='Description (optional)' />
+              <FormInputField
+                type="textarea"
+                form={form}
+                name="description"
+                label="Description (optional)"
+              />
 
-              <FormInputField type='checkbox' form={form} name='status' label='Status' options={[
-                { label: 'Active', value: 'active' },
-                { label: 'Inactive', value: 'inactive' },
-              ]} />
-
-
-
+              <FormInputField
+                type="checkbox"
+                form={form}
+                name="status"
+                label="Status"
+                options={[
+                  { label: 'Active', value: 'active' },
+                  { label: 'Inactive', value: 'inactive' },
+                ]}
+              />
             </form>
           </Form>
         </div>
         <DialogFooter>
-          <Button type='submit' form='user-form' disabled={isPending}>
+          <Button type="submit" form="user-form" disabled={isPending}>
             {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {isPending ? "Saving..." : "Save changes"}
+            {isPending ? 'Saving...' : 'Save changes'}
           </Button>
         </DialogFooter>
       </DialogContent>
-    </Dialog >
+    </Dialog>
   )
 }

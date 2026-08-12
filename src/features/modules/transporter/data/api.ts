@@ -1,18 +1,17 @@
-import { getData, postData, putData } from "@/utils/dataClient"
+import { getData, postData, putData } from '@/utils/dataClient'
 
-
-const API_PATH = "/transporters"
+const API_PATH = '/transporters'
 export async function fetchTransporterService() {
-    return await getData(API_PATH)
+  return await getData(API_PATH)
 }
 export async function fetchTransporterByIdService(id: number) {
-    return await getData(`${API_PATH}/${id}`)
+  return await getData(`${API_PATH}/${id}`)
 }
 
 export async function storeTransporterService(payload: any) {
-    console.log("Transporter payload: ", payload)
-    return await postData(API_PATH, payload)
+  console.log('Transporter payload: ', payload)
+  return await postData(API_PATH, payload)
 }
 export async function updateTransporterService(payload: any) {
-    return await putData(`${API_PATH}/${payload.id}`, payload)
+  return await putData(`${API_PATH}/${payload.id}`, payload)
 }

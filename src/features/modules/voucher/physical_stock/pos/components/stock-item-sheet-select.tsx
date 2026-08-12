@@ -115,9 +115,13 @@ const StockItemSheetSelect = ({
     form.setValue(`items.${index}.system_quantity`, 0, { shouldDirty: true })
     // Serial-numbered items are counted one unit at a time, so default the
     // physical quantity to 1; every other item starts at 0.
-    form.setValue(`items.${index}.physical_quantity`, item?.isMaintainSerial ? 1 : 0, {
-      shouldDirty: true,
-    })
+    form.setValue(
+      `items.${index}.physical_quantity`,
+      item?.isMaintainSerial ? 1 : 0,
+      {
+        shouldDirty: true,
+      },
+    )
     form.setValue(`items.${index}.rate`, Number(item?.standardCost) || 0, {
       shouldDirty: true,
     })

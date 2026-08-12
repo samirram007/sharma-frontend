@@ -1,4 +1,3 @@
-
 import { deliveryVehicleQueryOptions } from '@/features/modules/delivery_vehicle/data/queryOptions'
 import DeliveryVehicle from '@/features/modules/delivery_vehicle'
 import { useSuspenseQuery } from '@tanstack/react-query'
@@ -7,12 +6,11 @@ import { Loader } from 'lucide-react'
 import { Suspense } from 'react'
 import z from 'zod'
 
-
 const paramsSchema = z.object({
   id: z.union([
-    z.literal("new"),
+    z.literal('new'),
     z.coerce.number().refine((n) => !Number.isNaN(n), {
-      message: "Invalid number",
+      message: 'Invalid number',
     }),
   ]),
 })
@@ -24,21 +22,20 @@ export const Route = createFileRoute(
     stringify: ({ id }) => ({ id: `${id}` }),
   },
   loader: ({ context, params: { id } }) => {
-
-    if (id === "new") return null
+    if (id === 'new') return null
     return context.queryClient.ensureQueryData(deliveryVehicleQueryOptions(id))
   },
 
   component: () => {
-    const { data: deliveryVehicles } = useSuspenseQuery(deliveryVehicleQueryOptions())
+    const { data: deliveryVehicles } = useSuspenseQuery(
+      deliveryVehicleQueryOptions(),
+    )
     return (
       <Suspense fallback={<Loader className="animate-spin" />}>
-
         <DeliveryVehicle data={deliveryVehicles?.data} />
       </Suspense>
     )
   },
-  errorComponent: () => <div>Error loading  data...</div>,
+  errorComponent: () => <div>Error loading data...</div>,
   pendingComponent: () => <Loader className="animate-spin" />,
 })
-

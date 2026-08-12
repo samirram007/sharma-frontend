@@ -9,7 +9,6 @@ export default defineConfig(({ mode }) => {
   // const isProd = mode === 'production'
   const env = loadEnv(mode, process.cwd())
   return {
-
     // base: isProd ? '/frontend/' : '/',
     base: env.VITE_BASE_URL,
     server: {
@@ -29,7 +28,6 @@ export default defineConfig(({ mode }) => {
       rollupOptions: {
         output: {
           manualChunks(id) {
-
             // if (id.includes('src/features/accounts/settings')) {
             //   return 'accounts-settings'
             // }
@@ -48,7 +46,10 @@ export default defineConfig(({ mode }) => {
           const originalWarn = console.warn
           console.warn = (...args) => {
             const message = typeof args[0] === 'string' ? args[0] : ''
-            if (message.includes('direct `eval`') || message.includes('direct eval')) {
+            if (
+              message.includes('direct `eval`') ||
+              message.includes('direct eval')
+            ) {
               return
             }
             originalWarn.apply(console, args)
@@ -81,7 +82,6 @@ export default defineConfig(({ mode }) => {
       // them so `pnpm test` only collects unit/integration tests.
       exclude: ['e2e/**', 'node_modules/**', 'dist/**'],
     },
-    
 
     resolve: {
       tsconfigPaths: true,
@@ -90,5 +90,4 @@ export default defineConfig(({ mode }) => {
       },
     },
   }
-}
-)
+})

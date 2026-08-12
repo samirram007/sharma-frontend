@@ -2,9 +2,6 @@ import useDialogState from '@/core/hooks/use-dialog-state'
 import React, { useState } from 'react'
 import type { ReceiptSchema } from '../data/schema'
 
-
-
-
 type ReceiptDialogType = 'invite' | 'add' | 'edit' | 'delete'
 
 interface ReceiptContextType {
@@ -26,7 +23,9 @@ export default function ReceiptProvider({ children }: Props) {
   const [currentRow, setCurrentRow] = useState<ReceiptSchema | null>(null)
 
   return (
-    <ReceiptContext value={{ open, setOpen, currentRow, setCurrentRow, keyName: "day_books" }}>
+    <ReceiptContext
+      value={{ open, setOpen, currentRow, setCurrentRow, keyName: 'day_books' }}
+    >
       {children}
     </ReceiptContext>
   )

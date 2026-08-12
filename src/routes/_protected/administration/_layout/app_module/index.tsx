@@ -1,9 +1,9 @@
-import { requirePermission } from '@/lib/auth';
-import AppModule from '@/features/modules/app_module';
-import { appModuleQueryOptions } from '@/features/modules/app_module/data/queryOptions';
-import { useSuspenseQuery } from '@tanstack/react-query';
-import { createFileRoute } from '@tanstack/react-router';
-import { Loader } from 'lucide-react';
+import { requirePermission } from '@/lib/auth'
+import AppModule from '@/features/modules/app_module'
+import { appModuleQueryOptions } from '@/features/modules/app_module/data/queryOptions'
+import { useSuspenseQuery } from '@tanstack/react-query'
+import { createFileRoute } from '@tanstack/react-router'
+import { Loader } from 'lucide-react'
 
 export const Route = createFileRoute(
   '/_protected/administration/_layout/app_module/',
@@ -19,4 +19,3 @@ export const Route = createFileRoute(
   errorComponent: () => <div>Error loading modules.</div>,
   pendingComponent: () => <Loader className="animate-spin" />,
 })
-

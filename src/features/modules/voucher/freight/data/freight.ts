@@ -1,5 +1,3 @@
-
-
 // export const account_groups = Array.from({ length: 20 }, () => {
 //   const name = faker.person.fullName()
 //   const code = faker.string.alphanumeric({ length: 5 })
@@ -14,15 +12,13 @@
 //     ]),
 //     accounting_effect: faker.helpers.arrayElement(['debit', 'credit', null])
 
-import { fetchFreightService } from "./api"
-
-
+import { fetchFreightService } from './api'
 
 //   }
 // })
 
 export const day_books = async () => {
-  const data = await fetchFreightService("stock_in_hand")
+  const data = await fetchFreightService('stock_in_hand')
   if (!data) {
     return []
   }

@@ -2,8 +2,6 @@ import useDialogState from '@/core/hooks/use-dialog-state'
 import React, { useState } from 'react'
 import type { StockCategory } from '../data/schema'
 
-
-
 type StockCategoryDialogType = 'invite' | 'add' | 'edit' | 'delete'
 
 interface StockCategoryContextType {
@@ -13,7 +11,8 @@ interface StockCategoryContextType {
   setCurrentRow: React.Dispatch<React.SetStateAction<StockCategory | null>>
 }
 
-const StockCategoryContext = React.createContext<StockCategoryContextType | null>(null)
+const StockCategoryContext =
+  React.createContext<StockCategoryContextType | null>(null)
 
 interface Props {
   children: React.ReactNode
@@ -35,7 +34,9 @@ export const useStockCategory = () => {
   const stockCategoryContext = React.useContext(StockCategoryContext)
 
   if (!stockCategoryContext) {
-    throw new Error('useStockCategory has to be used within <StockCategoryContext>')
+    throw new Error(
+      'useStockCategory has to be used within <StockCategoryContext>',
+    )
   }
 
   return stockCategoryContext

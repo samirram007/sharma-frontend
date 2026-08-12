@@ -17,7 +17,12 @@ import type { ConversionJournalProps } from './contracts'
 
 const Pos = ({ currentRow }: ConversionJournalProps) => {
   const areaRef = useRef<HTMLDivElement>(null)
-  const { setMovementType, setPerRowMovementType } = usePos()
+  const {
+    setMovementType,
+    setPerRowMovementType,
+    setFirstRowMovementType,
+    setLockFirstRowMovementType,
+  } = usePos()
   useFocusArea(areaRef as React.RefObject<HTMLElement>)
   useRestrictFocusToRef(areaRef as React.RefObject<HTMLElement>)
   const isEdit = !!currentRow?.id
@@ -31,10 +36,19 @@ const Pos = ({ currentRow }: ConversionJournalProps) => {
       : { ...ConversionJournalDefaultValues, isEdit: false },
   })
   useEffect(() => {
-    // New lines default to output (IN); users toggle inputs to OUT per line
+    // Rows after the first default to IN (output of conversion / finished
+    // goods); the FIRST row is the raw material input — forced to OUT and
+    // locked so it can't be switched.
     setMovementType?.('in')
     setPerRowMovementType?.(true)
-  }, [setMovementType, setPerRowMovementType])
+    setFirstRowMovementType?.('out')
+    setLockFirstRowMovementType?.(true)
+  }, [
+    setMovementType,
+    setPerRowMovementType,
+    setFirstRowMovementType,
+    setLockFirstRowMovementType,
+  ])
 
   return (
     <>

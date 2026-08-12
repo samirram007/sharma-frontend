@@ -1,14 +1,10 @@
-import { z } from 'zod';
-import { deliveryPlaceSchema } from '../../delivery_place/data/schema';
-import { stockUnitSchema } from '../../stock_unit/data/schema';
-import { transporterSchema } from '../../transporter/data/schema';
-import { godownSchema } from '../../godown/data/schema';
-
-
-
+import { z } from 'zod'
+import { deliveryPlaceSchema } from '../../delivery_place/data/schema'
+import { stockUnitSchema } from '../../stock_unit/data/schema'
+import { transporterSchema } from '../../transporter/data/schema'
+import { godownSchema } from '../../godown/data/schema'
 
 export const deliveryRouteSchema = z.object({
-
   id: z.number().int().positive().optional(),
   transporterId: z.number().int().positive(),
   sourcePlaceId: z.number().int().positive(),
@@ -37,8 +33,3 @@ export const formSchema = deliveryRouteSchema
   })
 
 export type DeliveryRouteForm = z.infer<typeof formSchema>
-
-
-
-
-

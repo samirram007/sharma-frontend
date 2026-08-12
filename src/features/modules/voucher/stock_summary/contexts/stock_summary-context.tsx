@@ -2,9 +2,6 @@ import useDialogState from '@/core/hooks/use-dialog-state'
 import React, { useState } from 'react'
 import type { StockSummarySchema } from '../data/schema'
 
-
-
-
 type StockSummaryDialogType = 'invite' | 'add' | 'edit' | 'delete'
 
 interface StockSummaryContextType {
@@ -17,7 +14,9 @@ interface StockSummaryContextType {
   keyName: string
 }
 
-const StockSummaryContext = React.createContext<StockSummaryContextType | null>(null)
+const StockSummaryContext = React.createContext<StockSummaryContextType | null>(
+  null,
+)
 
 interface Props {
   children: React.ReactNode
@@ -26,12 +25,19 @@ interface Props {
 export default function StockSummaryProvider({ children }: Props) {
   const [open, setOpen] = useDialogState<StockSummaryDialogType>(null)
   const [currentRow, setCurrentRow] = useState<StockSummarySchema | null>(null)
-  const [currentReport, setCurrentReport] = useState('stock_in_hand');
+  const [currentReport, setCurrentReport] = useState('stock_in_hand')
   return (
-    <StockSummaryContext.Provider value={{
-      open, setOpen,
-      currentRow, setCurrentRow, currentReport, setCurrentReport, keyName: "day_books"
-    }}>
+    <StockSummaryContext.Provider
+      value={{
+        open,
+        setOpen,
+        currentRow,
+        setCurrentRow,
+        currentReport,
+        setCurrentReport,
+        keyName: 'day_books',
+      }}
+    >
       {children}
     </StockSummaryContext.Provider>
   )
@@ -42,7 +48,9 @@ export const useStockSummary = () => {
   const stockSummaryContext = React.useContext(StockSummaryContext)
 
   if (!stockSummaryContext) {
-    throw new Error('useStockSummary has to be used within <StockSummaryContext>')
+    throw new Error(
+      'useStockSummary has to be used within <StockSummaryContext>',
+    )
   }
 
   return stockSummaryContext

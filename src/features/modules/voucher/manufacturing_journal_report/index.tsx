@@ -55,7 +55,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import type { SortingState } from '@tanstack/react-table'
-import { toNum, formatFixed } from '@/utils/format-num'
+import {
+  toNum,
+  formatFixed,
+  formatQty,
+  formatQtyFixed,
+} from '@/utils/format-num'
 import ReportingPeriod from '@/features/global/components/reporting-period'
 
 interface ManufacturingJournalReportProps {
@@ -210,7 +215,6 @@ export default function ManufacturingJournalReport({
           year: 'numeric',
         })
   }
-  const formatQty = (val: unknown) => toNum(val).toFixed(2)
 
   // Export data for the List View (summary per voucher)
   const listExportColumns = useMemo(
@@ -601,8 +605,8 @@ export default function ManufacturingJournalReport({
                   formatRow={(r: any) => ({
                     stock_item_name: r.stock_item_name,
                     voucher_count: r.voucher_count,
-                    total_out_quantity: formatQty(r.total_out_quantity),
-                    total_in_quantity: formatQty(r.total_in_quantity),
+                    total_out_quantity: formatQtyFixed(r.total_out_quantity),
+                    total_in_quantity: formatQtyFixed(r.total_in_quantity),
                     total_out_amount: formatAmt(r.total_out_amount),
                     total_in_amount: formatAmt(r.total_in_amount),
                   })}
@@ -630,8 +634,8 @@ export default function ManufacturingJournalReport({
                     return {
                       stock_item_name: 'TOTAL',
                       voucher_count: sVch,
-                      total_out_quantity: formatQty(sOutQty),
-                      total_in_quantity: formatQty(sInQty),
+                      total_out_quantity: formatQtyFixed(sOutQty),
+                      total_in_quantity: formatQtyFixed(sInQty),
                       total_out_amount: formatAmt(sOutAmt),
                       total_in_amount: formatAmt(sInAmt),
                     }
@@ -844,8 +848,8 @@ export default function ManufacturingJournalReport({
                   formatRow={(r: any) => ({
                     godown_name: r.godown_name,
                     voucher_count: r.voucher_count,
-                    total_out_quantity: formatQty(r.total_out_quantity),
-                    total_in_quantity: formatQty(r.total_in_quantity),
+                    total_out_quantity: formatQtyFixed(r.total_out_quantity),
+                    total_in_quantity: formatQtyFixed(r.total_in_quantity),
                   })}
                   computeTotals={(data: any[]) => {
                     const sOutQty = data.reduce(
@@ -863,8 +867,8 @@ export default function ManufacturingJournalReport({
                     return {
                       godown_name: 'TOTAL',
                       voucher_count: sVch,
-                      total_out_quantity: formatQty(sOutQty),
-                      total_in_quantity: formatQty(sInQty),
+                      total_out_quantity: formatQtyFixed(sOutQty),
+                      total_in_quantity: formatQtyFixed(sInQty),
                     }
                   }}
                   onExportPdf={exportGroupedPdf}
@@ -1047,8 +1051,8 @@ export default function ManufacturingJournalReport({
                       ? formatDate(r.voucher_date)
                       : '',
                     voucher_count: r.voucher_count,
-                    total_out_quantity: formatQty(r.total_out_quantity),
-                    total_in_quantity: formatQty(r.total_in_quantity),
+                    total_out_quantity: formatQtyFixed(r.total_out_quantity),
+                    total_in_quantity: formatQtyFixed(r.total_in_quantity),
                     total_out_amount: formatAmt(r.total_out_amount),
                     total_in_amount: formatAmt(r.total_in_amount),
                   })}
@@ -1076,8 +1080,8 @@ export default function ManufacturingJournalReport({
                     return {
                       voucher_date: 'TOTAL',
                       voucher_count: sVch,
-                      total_out_quantity: formatQty(sOutQty),
-                      total_in_quantity: formatQty(sInQty),
+                      total_out_quantity: formatQtyFixed(sOutQty),
+                      total_in_quantity: formatQtyFixed(sInQty),
                       total_out_amount: formatAmt(sOutAmt),
                       total_in_amount: formatAmt(sInAmt),
                     }

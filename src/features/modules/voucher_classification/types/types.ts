@@ -1,1 +1,1 @@
-export type { VoucherClassificationForm } from "../data/schema";
+export type { VoucherClassificationForm } from '../data/schema'

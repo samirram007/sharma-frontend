@@ -1,17 +1,15 @@
-import { getData, postData, putData } from "@/utils/dataClient"
+import { getData, postData, putData } from '@/utils/dataClient'
 
-
-const API_PATH = "/roles"
+const API_PATH = '/roles'
 export async function fetchRoleService() {
-    return await getData(API_PATH)
+  return await getData(API_PATH)
 }
 export async function fetchRoleByIdService(id: number) {
-    return await getData(`${API_PATH}/${id}`)
+  return await getData(`${API_PATH}/${id}`)
 }
 export async function storeRoleService(payload: any) {
-    
-    return await postData(API_PATH, payload)
+  return await postData(API_PATH, payload)
 }
 export async function updateRoleService(payload: any) {
-    return await putData(`${API_PATH}/${payload.id}`, payload)
+  return await putData(`${API_PATH}/${payload.id}`, payload)
 }

@@ -9,11 +9,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import {
-  Form
-} from '@/components/ui/form'
+import { Form } from '@/components/ui/form'
 
-import type { StorageUnit, StorageUnitForm } from '@/features/modules/storage_unit/data/schema'
+import type {
+  StorageUnit,
+  StorageUnitForm,
+} from '@/features/modules/storage_unit/data/schema'
 import { showSubmittedData } from '@/utils/show-submitted-data'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
@@ -23,8 +24,6 @@ import { useForm } from 'react-hook-form'
 import { lowerCase } from '../../../../utils/removeEmptyStrings'
 import { storeStorageUnitService, updateStorageUnitService } from '../data/api'
 import { formSchema } from '../data/schema'
-
-
 
 interface Props {
   currentRow?: StorageUnit
@@ -39,12 +38,11 @@ export function ActionDialog({ currentRow, open, onOpenChange }: Props) {
     mutationFn: async (data: StorageUnitForm) => {
       // Here you would typically make an API call to save the StorageUnit
       // For example:
-      console.log('Saving StorageUnit:', data);
+      console.log('Saving StorageUnit:', data)
       if (isEdit && currentRow) {
         return await updateStorageUnitService({ ...data, id: currentRow.id })
-      }
-      else if (!isEdit) {
-        return await storeStorageUnitService(data);
+      } else if (!isEdit) {
+        return await storeStorageUnitService(data)
       }
     },
     onSuccess: (data) => {
@@ -57,27 +55,26 @@ export function ActionDialog({ currentRow, open, onOpenChange }: Props) {
     resolver: zodResolver(formSchema) as never,
     defaultValues: isEdit
       ? {
-        ...currentRow, isEdit,
-      }
+          ...currentRow,
+          isEdit,
+        }
       : {
-        name: '',
-        code: '',
-        description: '',
-        status: 'active',
-        isEdit,
-      },
+          name: '',
+          code: '',
+          description: '',
+          status: 'active',
+          isEdit,
+        },
   })
   //  const storageunitStatusOptions: ActiveInactiveStatus[] = ['active', 'inactive'];
 
-  const moduleName = "StorageUnit"
+  const moduleName = 'StorageUnit'
   const onSubmit = (values: StorageUnitForm) => {
     form.reset()
     showSubmittedData(values)
     mutateStorageUnit.mutate(values)
     onOpenChange(false)
   }
-
-
 
   return (
     <Dialog
@@ -87,40 +84,63 @@ export function ActionDialog({ currentRow, open, onOpenChange }: Props) {
         onOpenChange(state)
       }}
     >
-      <DialogContent className='sm:max-w-lg'>
-        <DialogHeader className='text-left'>
-          <DialogTitle>{isEdit ? 'Edit ' : 'Add New '} {moduleName}</DialogTitle>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader className="text-left">
+          <DialogTitle>
+            {isEdit ? 'Edit ' : 'Add New '} {moduleName}
+          </DialogTitle>
           <DialogDescription>
-            {isEdit ? `Update the ${lowerCase(moduleName)} here. `
+            {isEdit
+              ? `Update the ${lowerCase(moduleName)} here. `
               : `Create new ${lowerCase(moduleName)} here. `}
             Click save when you&apos;re done.
           </DialogDescription>
         </DialogHeader>
-        <div className='-mr-4 h-[26.25rem] w-full overflow-y-auto py-1 pr-4'>
+        <div className="-mr-4 h-[26.25rem] w-full overflow-y-auto py-1 pr-4">
           <Form {...form}>
             <form
-              id='user-form'
+              id="user-form"
               onSubmit={form.handleSubmit(onSubmit)}
-              className='space-y-4 p-0.5'
+              className="space-y-4 p-0.5"
             >
-              <FormInputField type='text' form={form} name='name' label='Name' />
-              <FormInputField type='text' form={form} name='code' label='Code' />
+              <FormInputField
+                type="text"
+                form={form}
+                name="name"
+                label="Name"
+              />
+              <FormInputField
+                type="text"
+                form={form}
+                name="code"
+                label="Code"
+              />
 
-              <FormInputField type='textarea' form={form} name='description' label='Description (optional)' />
-              <FormInputField type='checkbox' form={form} name='status' label='Status' options={[
-                { label: 'Active', value: 'active' },
-                { label: 'Inactive', value: 'inactive' },
-              ]} />
-
+              <FormInputField
+                type="textarea"
+                form={form}
+                name="description"
+                label="Description (optional)"
+              />
+              <FormInputField
+                type="checkbox"
+                form={form}
+                name="status"
+                label="Status"
+                options={[
+                  { label: 'Active', value: 'active' },
+                  { label: 'Inactive', value: 'inactive' },
+                ]}
+              />
             </form>
           </Form>
         </div>
         <DialogFooter>
-          <Button type='submit' form='user-form'>
+          <Button type="submit" form="user-form">
             Save changes
           </Button>
         </DialogFooter>
       </DialogContent>
-    </Dialog >
+    </Dialog>
   )
 }

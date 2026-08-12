@@ -1,16 +1,12 @@
 'use client'
 
-
 import type { FiscalYear } from '../data/schema'
 import { FormAction } from './form-action'
 
-
 interface Props {
-    currentRow?: FiscalYear
+  currentRow?: FiscalYear
 }
 
 export function ActionPages({ currentRow }: Props) {
-
-    return <FormAction currentRow={currentRow} />
-
+  return <FormAction currentRow={currentRow} />
 }

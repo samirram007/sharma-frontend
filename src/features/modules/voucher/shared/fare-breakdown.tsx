@@ -43,11 +43,26 @@ export const buildChargeRows = (
     discount: Number(dispatchDetail?.discount) || 0,
     rows: [
       { label: 'Freight Charges', value: freightCharges },
-      { label: 'Loading Charges', value: Number(dispatchDetail?.loadingCharges) || 0 },
-      { label: 'Unloading Charges', value: Number(dispatchDetail?.unloadingCharges) || 0 },
-      { label: 'Packing Charges', value: Number(dispatchDetail?.packingCharges) || 0 },
-      { label: 'Insurance Charges', value: Number(dispatchDetail?.insuranceCharges) || 0 },
-      { label: 'Other Charges', value: Number(dispatchDetail?.otherCharges) || 0 },
+      {
+        label: 'Loading Charges',
+        value: Number(dispatchDetail?.loadingCharges) || 0,
+      },
+      {
+        label: 'Unloading Charges',
+        value: Number(dispatchDetail?.unloadingCharges) || 0,
+      },
+      {
+        label: 'Packing Charges',
+        value: Number(dispatchDetail?.packingCharges) || 0,
+      },
+      {
+        label: 'Insurance Charges',
+        value: Number(dispatchDetail?.insuranceCharges) || 0,
+      },
+      {
+        label: 'Other Charges',
+        value: Number(dispatchDetail?.otherCharges) || 0,
+      },
     ].filter((row) => row.value > 0),
   }
 }
@@ -112,7 +127,10 @@ export const FareBreakdown = ({
           <div className="text-right">{fmt(totalFare)}</div>
         </div>
         {otherRows.map((row) => (
-          <div key={row.label} className="grid grid-cols-[1fr_150px_150px_150px] gap-2 text-sm">
+          <div
+            key={row.label}
+            className="grid grid-cols-[1fr_150px_150px_150px] gap-2 text-sm"
+          >
             <div className="col-span-3 text-right pr-2">{row.label}</div>
             <div className="text-right">{fmt(row.value)}</div>
           </div>
@@ -124,9 +142,15 @@ export const FareBreakdown = ({
           </div>
         )}
         {showNetAdjustment && netAdjustment !== 0 && (
-          <div className={`grid grid-cols-[1fr_150px_150px_150px] gap-2 text-sm font-semibold ${netAdjustment < 0 ? 'text-emerald-600' : ''}`}>
+          <div
+            className={`grid grid-cols-[1fr_150px_150px_150px] gap-2 text-sm font-semibold ${netAdjustment < 0 ? 'text-emerald-600' : ''}`}
+          >
             <div className="col-span-3 text-right pr-2">Net Adjustment</div>
-            <div className="text-right">{netAdjustment >= 0 ? `+ ${fmt(netAdjustment)}` : `− ${fmt(Math.abs(netAdjustment))}`}</div>
+            <div className="text-right">
+              {netAdjustment >= 0
+                ? `+ ${fmt(netAdjustment)}`
+                : `− ${fmt(Math.abs(netAdjustment))}`}
+            </div>
           </div>
         )}
         {freightRow && (
@@ -171,30 +195,48 @@ export const FareBreakdown = ({
   // flex — the default, used by the freight print dialog
   return (
     <>
-      <div className={totalRowClassName ?? `mb-1 flex items-baseline justify-between gap-4 border-b border-gray-900 pb-1 text-sm font-bold ${rowClassName}`}>
+      <div
+        className={
+          totalRowClassName ??
+          `mb-1 flex items-baseline justify-between gap-4 border-b border-gray-900 pb-1 text-sm font-bold ${rowClassName}`
+        }
+      >
         <span>Total Fare</span>
         <span>{fmt(totalFare)}</span>
       </div>
       {otherRows.map((row) => (
-        <div key={row.label} className={`flex items-baseline justify-between gap-4 py-0.5 text-sm ${rowClassName}`}>
+        <div
+          key={row.label}
+          className={`flex items-baseline justify-between gap-4 py-0.5 text-sm ${rowClassName}`}
+        >
           <span>{row.label}</span>
           <span>{fmt(row.value)}</span>
         </div>
       ))}
       {discount > 0 && (
-        <div className={`flex items-baseline justify-between gap-4 py-0.5 text-sm font-semibold text-red-600 ${rowClassName}`}>
+        <div
+          className={`flex items-baseline justify-between gap-4 py-0.5 text-sm font-semibold text-red-600 ${rowClassName}`}
+        >
           <span>Less: Discount</span>
           <span>− {fmt(discount)}</span>
         </div>
       )}
       {showNetAdjustment && netAdjustment !== 0 && (
-        <div className={`flex items-baseline justify-between gap-4 py-0.5 text-sm font-semibold ${netAdjustment < 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-700 dark:text-slate-300'} ${rowClassName}`}>
+        <div
+          className={`flex items-baseline justify-between gap-4 py-0.5 text-sm font-semibold ${netAdjustment < 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-700 dark:text-slate-300'} ${rowClassName}`}
+        >
           <span>Net Adjustment</span>
-          <span>{netAdjustment >= 0 ? `+ ${fmt(netAdjustment)}` : `− ${fmt(Math.abs(netAdjustment))}`}</span>
+          <span>
+            {netAdjustment >= 0
+              ? `+ ${fmt(netAdjustment)}`
+              : `− ${fmt(Math.abs(netAdjustment))}`}
+          </span>
         </div>
       )}
       {freightRow && (
-        <div className={`flex items-baseline justify-between gap-4 py-0.5 text-sm ${rowClassName}`}>
+        <div
+          className={`flex items-baseline justify-between gap-4 py-0.5 text-sm ${rowClassName}`}
+        >
           <span>{freightRow.label}</span>
           <span>{fmt(freightRow.value)}</span>
         </div>

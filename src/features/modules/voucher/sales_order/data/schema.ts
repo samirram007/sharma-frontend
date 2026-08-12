@@ -10,11 +10,11 @@ export const salesOrderVoucherListSchema = z.array(salesOrderVoucherSchema)
 export type SalesOrderVoucherList = z.infer<typeof salesOrderVoucherListSchema>
 
 export const salesOrderFormSchema = salesOrderVoucherSchema
-    .extend({
-        isEdit: z.boolean().optional(),
-    })
-    .omit({
-        id: true,
-    })
+  .extend({
+    isEdit: z.boolean().optional(),
+  })
+  .omit({
+    id: true,
+  })
 
 export type SalesOrderVoucherForm = z.infer<typeof salesOrderFormSchema>

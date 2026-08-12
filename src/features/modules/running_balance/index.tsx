@@ -41,7 +41,9 @@ export default function RunningBalanceDashboard() {
   const [view, setView] = useState<View>('item-grid')
   const [selectedItemId, setSelectedItemId] = useState<number | null>(null)
   const [selectedGodownId, setSelectedGodownId] = useState<number | null>(null)
-  const [selectedGodownDetailId, setSelectedGodownDetailId] = useState<number | null>(null)
+  const [selectedGodownDetailId, setSelectedGodownDetailId] = useState<
+    number | null
+  >(null)
 
   // Item-wise queries
   const {
@@ -59,10 +61,7 @@ export default function RunningBalanceDashboard() {
     refetch: refetchGodowns,
   } = useQuery(runningBalanceGodownsQueryOptions())
 
-  const {
-    data: godownItemsData,
-    isLoading: godownItemsLoading,
-  } = useQuery({
+  const { data: godownItemsData, isLoading: godownItemsLoading } = useQuery({
     ...godownRunningBalanceItemsQueryOptions(selectedGodownId ?? 0),
     enabled: view === 'godown-items' && !!selectedGodownId,
   })
@@ -76,13 +75,17 @@ export default function RunningBalanceDashboard() {
     isLoading: detailLoading,
     isError: detailError,
   } = useQuery({
-    ...runningBalanceDetailQueryOptions(selectedItemId ?? 0, selectedFilterGodownId ?? undefined),
+    ...runningBalanceDetailQueryOptions(
+      selectedItemId ?? 0,
+      selectedFilterGodownId ?? undefined,
+    ),
     enabled: view === 'detail' && !!selectedItemId,
   })
 
   const items = (itemsData?.data ?? []) as RunningBalanceItem[]
   const godowns = (godownsData?.data ?? []) as RunningBalanceGodown[]
-  const godownItems = godownItemsData?.data as GodownRunningBalanceResponse | undefined
+  const godownItems = godownItemsData?.data as
+    GodownRunningBalanceResponse | undefined
   const detail = detailData?.data as RunningBalanceDetail | undefined
 
   const handleSelectItem = (itemId: number) => {
@@ -130,20 +133,22 @@ export default function RunningBalanceDashboard() {
 
   if (isLoading) {
     return (
-      <Main className='flex items-center justify-center min-h-[60vh]'>
-        <IconLoader2 className='h-8 w-8 animate-spin text-muted-foreground' />
+      <Main className="flex items-center justify-center min-h-[60vh]">
+        <IconLoader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </Main>
     )
   }
 
   if (isError) {
     return (
-      <Main className='flex items-center justify-center min-h-[60vh]'>
-        <div className='text-center space-y-4'>
-          <IconX className='h-12 w-12 text-destructive mx-auto' />
-          <p className='text-lg font-medium text-destructive'>Failed to load running balance data</p>
-          <Button variant='outline' onClick={handleRefresh}>
-            <IconRefresh className='mr-2 h-4 w-4' />
+      <Main className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center space-y-4">
+          <IconX className="h-12 w-12 text-destructive mx-auto" />
+          <p className="text-lg font-medium text-destructive">
+            Failed to load running balance data
+          </p>
+          <Button variant="outline" onClick={handleRefresh}>
+            <IconRefresh className="mr-2 h-4 w-4" />
             Retry
           </Button>
         </div>
@@ -154,30 +159,38 @@ export default function RunningBalanceDashboard() {
   const isGrid = view === 'item-grid' || view === 'godown-grid'
 
   return (
-    <Main className='max-w-7xl mx-auto space-y-6 py-6'>
+    <Main className="max-w-7xl mx-auto space-y-6 py-6">
       {/* Header */}
-      <div className='flex flex-wrap items-start justify-between gap-4'>
-        <div className='space-y-1'>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="space-y-1">
           {isGrid ? (
             <>
-              <div className='flex items-center gap-3'>
-                <h1 className='text-3xl font-bold tracking-tight'>Running Balance</h1>
-                <Badge variant='secondary' className='px-3 py-1'>
-                  <IconChartBar className='mr-1 h-3.5 w-3.5' />
+              <div className="flex items-center gap-3">
+                <h1 className="text-3xl font-bold tracking-tight">
+                  Running Balance
+                </h1>
+                <Badge variant="secondary" className="px-3 py-1">
+                  <IconChartBar className="mr-1 h-3.5 w-3.5" />
                   Dashboard
                 </Badge>
               </div>
-              <p className='text-muted-foreground'>
-                View stock movement from opening balance through transactions to current stock.
-                Drill down by item or godown to see full running balance with voucher-level detail.
+              <p className="text-muted-foreground">
+                View stock movement from opening balance through transactions to
+                current stock. Drill down by item or godown to see full running
+                balance with voucher-level detail.
               </p>
             </>
           ) : (
-            <div className='flex items-center gap-3'>
-              <Button variant='ghost' size='sm' onClick={handleBackToGrid} className='-ml-2'>
-                <IconEye className='h-4 w-4' />
+            <div className="flex items-center gap-3">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleBackToGrid}
+                className="-ml-2"
+              >
+                <IconEye className="h-4 w-4" />
               </Button>
-              <h2 className='text-2xl font-bold'>
+              <h2 className="text-2xl font-bold">
                 {view === 'detail' ? 'Item Detail' : 'Godown Items'}
               </h2>
             </div>
@@ -185,10 +198,10 @@ export default function RunningBalanceDashboard() {
         </div>
         {isGrid && (
           <Button
-            variant='outline'
+            variant="outline"
             onClick={() => navigate({ to: '/reports/stock_summary' })}
           >
-            <IconEye className='mr-2 h-4 w-4' />
+            <IconEye className="mr-2 h-4 w-4" />
             Stock Summary Reports
           </Button>
         )}
@@ -198,19 +211,22 @@ export default function RunningBalanceDashboard() {
 
       {/* Tabs (only show on grid views) */}
       {isGrid && (
-        <Tabs value={tab} onValueChange={handleTabChange} className='space-y-4'>
+        <Tabs value={tab} onValueChange={handleTabChange} className="space-y-4">
           <TabsList>
-            <TabsTrigger value='item-wise' className='flex items-center gap-2'>
-              <IconPackage className='h-4 w-4' />
+            <TabsTrigger value="item-wise" className="flex items-center gap-2">
+              <IconPackage className="h-4 w-4" />
               Item Wise
             </TabsTrigger>
-            <TabsTrigger value='godown-wise' className='flex items-center gap-2'>
-              <IconBuildingWarehouse className='h-4 w-4' />
+            <TabsTrigger
+              value="godown-wise"
+              className="flex items-center gap-2"
+            >
+              <IconBuildingWarehouse className="h-4 w-4" />
               Godown Wise
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value='item-wise'>
+          <TabsContent value="item-wise">
             <ItemGrid
               items={items}
               onSelectItem={handleSelectItem}
@@ -218,7 +234,7 @@ export default function RunningBalanceDashboard() {
             />
           </TabsContent>
 
-          <TabsContent value='godown-wise'>
+          <TabsContent value="godown-wise">
             <GodownGrid
               godowns={godowns}
               onSelectGodown={handleSelectGodown}
@@ -232,8 +248,8 @@ export default function RunningBalanceDashboard() {
       {view === 'godown-items' && (
         <>
           {godownItemsLoading ? (
-            <div className='flex items-center justify-center py-12'>
-              <IconLoader2 className='h-8 w-8 animate-spin text-muted-foreground' />
+            <div className="flex items-center justify-center py-12">
+              <IconLoader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             </div>
           ) : godownItems ? (
             <GodownItems
@@ -254,14 +270,16 @@ export default function RunningBalanceDashboard() {
       {view === 'detail' && (
         <>
           {detailLoading ? (
-            <div className='flex items-center justify-center py-12'>
-              <IconLoader2 className='h-8 w-8 animate-spin text-muted-foreground' />
+            <div className="flex items-center justify-center py-12">
+              <IconLoader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             </div>
           ) : detailError ? (
-            <div className='text-center py-12 space-y-4'>
-              <IconX className='h-12 w-12 text-destructive mx-auto' />
-              <p className='text-lg font-medium text-destructive'>Failed to load detail</p>
-              <Button variant='outline' onClick={handleBackToGrid}>
+            <div className="text-center py-12 space-y-4">
+              <IconX className="h-12 w-12 text-destructive mx-auto" />
+              <p className="text-lg font-medium text-destructive">
+                Failed to load detail
+              </p>
+              <Button variant="outline" onClick={handleBackToGrid}>
                 Back
               </Button>
             </div>

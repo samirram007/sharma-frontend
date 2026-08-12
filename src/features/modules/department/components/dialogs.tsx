@@ -2,7 +2,6 @@ import { useDepartment } from '../contexts/department-context'
 import { ActionDialog } from './action-dialog'
 import { DeleteDialog } from './delete-dialog'
 
-
 export function Dialogs() {
   const { open, setOpen, currentRow, setCurrentRow, keyName } = useDepartment()
   return (

@@ -79,7 +79,8 @@ export function DataTableToolbar<TData>({
         variant="link"
         className="h-8 px-2 lg:px-3"
         onClick={async () => {
-          const { default: exportTableToPdf } = await import('@/utils/export-table-pdf')
+          const { default: exportTableToPdf } =
+            await import('@/utils/export-table-pdf')
           exportTableToPdf({
             title: 'Receipt Book',
             columnData: filteredColumn as any,
@@ -94,7 +95,8 @@ export function DataTableToolbar<TData>({
         variant="link"
         className="h-8 px-2 lg:px-3"
         onClick={async () => {
-          const { default: exportTableToExcel } = await import('@/utils/export-table-excel')
+          const { default: exportTableToExcel } =
+            await import('@/utils/export-table-excel')
           exportTableToExcel({
             title: 'Receipt Book',
             columnData: filteredColumn as any,

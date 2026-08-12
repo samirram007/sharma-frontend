@@ -2,8 +2,6 @@ import useDialogState from '@/core/hooks/use-dialog-state'
 import React, { useState } from 'react'
 import type { AccountGroup } from '../data/schema'
 
-
-
 type AccountGroupDialogType = 'invite' | 'add' | 'edit' | 'delete'
 
 interface AccountGroupContextType {
@@ -13,7 +11,9 @@ interface AccountGroupContextType {
   setCurrentRow: React.Dispatch<React.SetStateAction<AccountGroup | null>>
 }
 
-const AccountGroupContext = React.createContext<AccountGroupContextType | null>(null)
+const AccountGroupContext = React.createContext<AccountGroupContextType | null>(
+  null,
+)
 
 interface Props {
   children: React.ReactNode
@@ -35,7 +35,9 @@ export const useAccountGroup = () => {
   const accountGroupContext = React.useContext(AccountGroupContext)
 
   if (!accountGroupContext) {
-    throw new Error('useAccountGroup has to be used within <AccountGroupContext>')
+    throw new Error(
+      'useAccountGroup has to be used within <AccountGroupContext>',
+    )
   }
 
   return accountGroupContext

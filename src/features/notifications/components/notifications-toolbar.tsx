@@ -42,17 +42,17 @@ export function NotificationsToolbar({
   }
 
   return (
-    <div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
-      <div className='flex items-center gap-2'>
+    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex items-center gap-2">
         <Tabs value={readTabValue} onValueChange={handleTabChange}>
-          <TabsList className='h-9'>
-            <TabsTrigger value='all' className='text-xs px-3'>
+          <TabsList className="h-9">
+            <TabsTrigger value="all" className="text-xs px-3">
               All
             </TabsTrigger>
-            <TabsTrigger value='unread' className='text-xs px-3'>
+            <TabsTrigger value="unread" className="text-xs px-3">
               Unread
             </TabsTrigger>
-            <TabsTrigger value='read' className='text-xs px-3'>
+            <TabsTrigger value="read" className="text-xs px-3">
               Read
             </TabsTrigger>
           </TabsList>
@@ -62,12 +62,16 @@ export function NotificationsToolbar({
           value={filters.type}
           onValueChange={(value) => onFilterChange({ type: value })}
         >
-          <SelectTrigger className='h-9 w-[130px] text-xs'>
-            <SelectValue placeholder='Type' />
+          <SelectTrigger className="h-9 w-[130px] text-xs">
+            <SelectValue placeholder="Type" />
           </SelectTrigger>
           <SelectContent>
             {NOTIFICATION_TYPES.map((type) => (
-              <SelectItem key={type.value} value={type.value} className='text-xs'>
+              <SelectItem
+                key={type.value}
+                value={type.value}
+                className="text-xs"
+              >
                 {type.label}
               </SelectItem>
             ))}
@@ -75,15 +79,15 @@ export function NotificationsToolbar({
         </Select>
       </div>
 
-      <div className='flex items-center gap-2'>
+      <div className="flex items-center gap-2">
         <Button
-          variant='outline'
-          size='sm'
-          className='h-9 text-xs'
+          variant="outline"
+          size="sm"
+          className="h-9 text-xs"
           onClick={onMarkAllAsRead}
           disabled={isMarkingAll}
         >
-          <IconCheck size={14} className='mr-1.5' />
+          <IconCheck size={14} className="mr-1.5" />
           Mark all read
         </Button>
       </div>

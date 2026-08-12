@@ -9,10 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import {
-  Form
-} from '@/components/ui/form'
-
+import { Form } from '@/components/ui/form'
 
 import { zodResolver } from '@hookform/resolvers/zod'
 
@@ -28,7 +25,6 @@ import GodownDropdown from './dropdown/godown-dropdown'
 import AddressForm from './sub-component/address-form'
 import StorageUnitTypeSheet from './dropdown/storage_unit_type-sheet'
 
-
 interface Props {
   currentRow?: Godown
   open: boolean
@@ -42,36 +38,33 @@ export function ActionDialog({ currentRow, open, onOpenChange }: Props) {
     resolver: zodResolver(formSchema) as Resolver<GodownForm>,
     defaultValues: isEdit
       ? {
-        ...currentRow, isEdit,
-      }
+          ...currentRow,
+          isEdit,
+        }
       : {
-        name: '',
-        code: '',
-        description: '',
-        parentId: 1,
-        address: undefined,
-        status: 'active',
-        ourStockWithThirdParty: false,
-        thirdPartyStockWithUs: false,
-        storageUnitType: 'GODOWN',
-        isEdit,
-      },
+          name: '',
+          code: '',
+          description: '',
+          parentId: 1,
+          address: undefined,
+          status: 'active',
+          ourStockWithThirdParty: false,
+          thirdPartyStockWithUs: false,
+          storageUnitType: 'GODOWN',
+          isEdit,
+        },
   })
 
   const gapClass = 'grid grid-cols-[120px_1fr] gap-4'
 
-  const moduleName = "Godown"
+  const moduleName = 'Godown'
   const onSubmit = (values: GodownForm) => {
     console.log(values)
     form.reset()
     showSubmittedData(values)
-    saveGodown(
-      currentRow ? { ...values, id: currentRow.id } : values
-    )
+    saveGodown(currentRow ? { ...values, id: currentRow.id } : values)
     onOpenChange(false)
   }
-
-
 
   return (
     <Dialog
@@ -81,52 +74,77 @@ export function ActionDialog({ currentRow, open, onOpenChange }: Props) {
         onOpenChange(state)
       }}
     >
-      <DialogContent className='sm:max-w-lg md:max-w-8/12 lg:max-w-6/12 '>
-        <DialogHeader className='text-left'>
-          <DialogTitle>{isEdit ? 'Edit ' : 'Add New '} {moduleName}</DialogTitle>
+      <DialogContent className="sm:max-w-lg md:max-w-8/12 lg:max-w-6/12 ">
+        <DialogHeader className="text-left">
+          <DialogTitle>
+            {isEdit ? 'Edit ' : 'Add New '} {moduleName}
+          </DialogTitle>
           <DialogDescription>
-            {isEdit ? `Update the ${lowerCase(moduleName)} here. `
+            {isEdit
+              ? `Update the ${lowerCase(moduleName)} here. `
               : `Create new ${lowerCase(moduleName)} here. `}
             Click save when you&apos;re done.
           </DialogDescription>
         </DialogHeader>
-        <div className='-mr-4 h-full w-full overflow-y-auto py-1 pr-4'>
+        <div className="-mr-4 h-full w-full overflow-y-auto py-1 pr-4">
           <Form {...form}>
             <form
-              id='user-form'
+              id="user-form"
               onSubmit={form.handleSubmit(onSubmit)}
-              className='space-y-4 p-0.5'
+              className="space-y-4 p-0.5"
             >
-              <div className='grid grid-cols-2 gap-4'>
-                <div className='space-y-4'>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-4">
                   <h6 className=" font-semibold text-md  ">GENERAL</h6>
-                  <FormInputField type='text' gapClass={gapClass} form={form} name='name' label='Name' />
-                  <FormInputField type='text' gapClass={gapClass} form={form} name='code' label='Code' />
+                  <FormInputField
+                    type="text"
+                    gapClass={gapClass}
+                    form={form}
+                    name="name"
+                    label="Name"
+                  />
+                  <FormInputField
+                    type="text"
+                    gapClass={gapClass}
+                    form={form}
+                    name="code"
+                    label="Code"
+                  />
                   <GodownDropdown form={form} gapClass={gapClass} />
                   <StorageUnitTypeSheet form={form} gapClass={gapClass} />
 
-                  <FormInputField type='textarea' gapClass={gapClass} form={form} name='description' label='Description (optional)' />
-              <FormInputField type='checkbox' form={form} name='status' label='Status' options={[
-                { label: 'Active', value: 'active' },
-                { label: 'Inactive', value: 'inactive' },
-              ]} />
+                  <FormInputField
+                    type="textarea"
+                    gapClass={gapClass}
+                    form={form}
+                    name="description"
+                    label="Description (optional)"
+                  />
+                  <FormInputField
+                    type="checkbox"
+                    form={form}
+                    name="status"
+                    label="Status"
+                    options={[
+                      { label: 'Active', value: 'active' },
+                      { label: 'Inactive', value: 'inactive' },
+                    ]}
+                  />
                 </div>
-                <div className='space-y-4'>
+                <div className="space-y-4">
                   <AddressForm form={form} />
-
                 </div>
               </div>
-
             </form>
           </Form>
         </div>
         <DialogFooter>
-          <Button type='submit' form='user-form' disabled={isPending}>
+          <Button type="submit" form="user-form" disabled={isPending}>
             {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {isPending ? "Saving..." : "Save changes"}
+            {isPending ? 'Saving...' : 'Save changes'}
           </Button>
         </DialogFooter>
       </DialogContent>
-    </Dialog >
+    </Dialog>
   )
 }

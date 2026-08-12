@@ -18,7 +18,8 @@ const PREFS_KEY = ['user', 'notification-preferences'] as const
 const TYPE_LABELS: Record<string, { label: string; description: string }> = {
   warning: {
     label: 'Warnings',
-    description: 'Missing or incomplete data warnings (e.g., freight validation)',
+    description:
+      'Missing or incomplete data warnings (e.g., freight validation)',
   },
   error: {
     label: 'Errors',
@@ -34,7 +35,10 @@ const TYPE_LABELS: Record<string, { label: string; description: string }> = {
   },
 }
 
-export function getTypeLabel(type: string): { label: string; description: string } {
+export function getTypeLabel(type: string): {
+  label: string
+  description: string
+} {
   return TYPE_LABELS[type] ?? { label: type, description: '' }
 }
 
@@ -45,7 +49,9 @@ export function useNotificationPreferences() {
   return useQuery<NotificationPreference[]>({
     queryKey: PREFS_KEY,
     queryFn: async () => {
-      const response: PrefsResponse = await getData('/user/notification-preferences')
+      const response: PrefsResponse = await getData(
+        '/user/notification-preferences',
+      )
       return response.data ?? []
     },
     staleTime: 60_000,

@@ -14,23 +14,22 @@ const FontContext = createContext<FontContextType | undefined>(undefined)
 export const FontProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [savedFont, setSavedFont] = useLocalStorage<string>('font', fonts[0], {
+  const [font, setFont] = useLocalStorage<Font>('font', fonts[0], {
     raw: true,
+    // Validate the stored value against the configured font list so an
+    // outdated localStorage value falls back to the first configured font
+    // instead of escaping the provider.
+    deserialize: (stored, fallback) =>
+      fonts.includes(stored as Font) ? (stored as Font) : fallback,
   })
-  // Validate the stored value against the configured font list so an outdated
-  // localStorage value can never escape the provider.
-  const font: Font = fonts.includes(savedFont as Font)
-    ? (savedFont as Font)
-    : fonts[0]
-  const setFont = (nextFont: Font) => setSavedFont(nextFont)
 
   useEffect(() => {
-    const applyFont = (font: string) => {
+    const applyFont = (fontName: string) => {
       const root = document.documentElement
       root.classList.forEach((cls) => {
         if (cls.startsWith('font-')) root.classList.remove(cls)
       })
-      root.classList.add(`font-${font}`)
+      root.classList.add(`font-${fontName}`)
     }
 
     applyFont(font)

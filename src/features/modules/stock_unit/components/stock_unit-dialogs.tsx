@@ -1,5 +1,3 @@
-
-
 import { useStockUnit } from '../contexts/stock_unit-context'
 import { StockUnitActionDialog } from './stock_unit-action-dialog'
 import { StockUnitDeleteDialog } from './stock_unit-delete-dialog'
@@ -9,12 +7,10 @@ export function StockUnitDialogs() {
   return (
     <>
       <StockUnitActionDialog
-        key='stock_unit-add'
+        key="stock_unit-add"
         open={open === 'add'}
         onOpenChange={() => setOpen('add')}
       />
-
-
 
       {currentRow && (
         <>

@@ -16,7 +16,10 @@ export const Route = createFileRoute(
 )({
   component: () => {
     const [page, setPage] = useState(1)
-    const [perPage, setPerPage] = useLocalStorage<number>('receipt_note_report_per_page', 10)
+    const [perPage, setPerPage] = useLocalStorage<number>(
+      'receipt_note_report_per_page',
+      10,
+    )
     const [debouncedSearch, setDebouncedSearch] = useState('')
     const [sortBy, setSortBy] = useState('')
     const [sortOrder, setSortOrder] = useState('')
@@ -29,13 +32,24 @@ export const Route = createFileRoute(
       ...(sortBy ? { sort_by: sortBy, sort_order: sortOrder } : {}),
     }
 
-    const { data: reportData, isLoading, error, refetch } = useQuery(receiptNoteReportQueryOptions(params))
+    const {
+      data: reportData,
+      isLoading,
+      error,
+      refetch,
+    } = useQuery(receiptNoteReportQueryOptions(params))
 
-    const handlePageChange = useCallback((newPage: number) => setPage(newPage), [])
-    const handlePageSizeChange = useCallback((newSize: number) => {
-      setPerPage(newSize)
-      setPage(1)
-    }, [setPerPage])
+    const handlePageChange = useCallback(
+      (newPage: number) => setPage(newPage),
+      [],
+    )
+    const handlePageSizeChange = useCallback(
+      (newSize: number) => {
+        setPerPage(newSize)
+        setPage(1)
+      },
+      [setPerPage],
+    )
 
     const handleSearchChange = useCallback((value: string) => {
       if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current)
@@ -45,11 +59,14 @@ export const Route = createFileRoute(
       }, 400)
     }, [])
 
-    const handleSortChange = useCallback((newSortBy: string, newSortOrder: string) => {
-      setSortBy(newSortBy)
-      setSortOrder(newSortOrder)
-      setPage(1)
-    }, [])
+    const handleSortChange = useCallback(
+      (newSortBy: string, newSortOrder: string) => {
+        setSortBy(newSortBy)
+        setSortOrder(newSortOrder)
+        setPage(1)
+      },
+      [],
+    )
 
     // Convert to TanStack SortingState for the table (reverse map backend field to column id)
     const sortFieldReverseMap: Record<string, string> = {
@@ -58,7 +75,12 @@ export const Route = createFileRoute(
       amount: 'amount',
     }
     const sorting: SortingState = sortBy
-      ? [{ id: sortFieldReverseMap[sortBy] ?? sortBy, desc: sortOrder === 'desc' }]
+      ? [
+          {
+            id: sortFieldReverseMap[sortBy] ?? sortBy,
+            desc: sortOrder === 'desc',
+          },
+        ]
       : []
 
     // Show query error inline (even when stale data exists, so a failed
@@ -68,7 +90,9 @@ export const Route = createFileRoute(
         <div className="flex flex-col items-center justify-center h-64 gap-4">
           <div className="flex items-center gap-2 text-destructive">
             <AlertTriangle className="h-5 w-5" />
-            <span className="text-lg font-semibold">Error loading receipt note report</span>
+            <span className="text-lg font-semibold">
+              Error loading receipt note report
+            </span>
           </div>
           <p className="text-sm text-muted-foreground max-w-lg text-center">
             {error instanceof AxiosError
@@ -77,11 +101,14 @@ export const Route = createFileRoute(
           </p>
           {error instanceof AxiosError && error.response?.data?.errors && (
             <ul className="text-xs text-muted-foreground max-w-md space-y-1">
-              {Object.entries(error.response.data.errors).map(([field, msgs]) => (
-                <li key={field} className="text-left">
-                  <span className="font-medium">{field}:</span> {(msgs as string[]).join(', ')}
-                </li>
-              ))}
+              {Object.entries(error.response.data.errors).map(
+                ([field, msgs]) => (
+                  <li key={field} className="text-left">
+                    <span className="font-medium">{field}:</span>{' '}
+                    {(msgs as string[]).join(', ')}
+                  </li>
+                ),
+              )}
             </ul>
           )}
           <Button variant="outline" onClick={() => refetch()} className="gap-2">
@@ -93,7 +120,11 @@ export const Route = createFileRoute(
     }
 
     if (isLoading && !reportData) {
-      return <div className="flex items-center justify-center h-64"><Loader className="animate-spin h-8 w-8" /></div>
+      return (
+        <div className="flex items-center justify-center h-64">
+          <Loader className="animate-spin h-8 w-8" />
+        </div>
+      )
     }
 
     return (
@@ -109,15 +140,22 @@ export const Route = createFileRoute(
     )
   },
   errorComponent: ({ error }) => {
-    const message = error instanceof Error ? error.message : String(error ?? 'Unknown error')
+    const message =
+      error instanceof Error ? error.message : String(error ?? 'Unknown error')
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-4">
         <div className="flex items-center gap-2 text-destructive">
           <AlertTriangle className="h-5 w-5" />
           <span className="text-lg font-semibold">Unexpected render error</span>
         </div>
-        <p className="text-sm text-muted-foreground max-w-lg text-center font-mono">{message}</p>
-        <Button variant="outline" onClick={() => window.location.reload()} className="gap-2">
+        <p className="text-sm text-muted-foreground max-w-lg text-center font-mono">
+          {message}
+        </p>
+        <Button
+          variant="outline"
+          onClick={() => window.location.reload()}
+          className="gap-2"
+        >
           <RefreshCw className="h-4 w-4" />
           Reload page
         </Button>

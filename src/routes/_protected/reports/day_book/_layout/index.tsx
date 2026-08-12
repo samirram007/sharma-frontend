@@ -1,20 +1,21 @@
-import DayBook from '@/features/modules/voucher/day_book';
-import { dayBookQueryOptions } from '@/features/modules/voucher/day_book/data/queryOptions';
-import type { DayBookParams } from '@/features/modules/voucher/day_book/data/api';
+import DayBook from '@/features/modules/voucher/day_book'
+import { dayBookQueryOptions } from '@/features/modules/voucher/day_book/data/queryOptions'
+import type { DayBookParams } from '@/features/modules/voucher/day_book/data/api'
 
-import { useQuery } from '@tanstack/react-query';
-import { createFileRoute } from '@tanstack/react-router';
-import { Loader } from 'lucide-react';
-import { useState, useCallback, useRef } from 'react';
-import { useLocalStorage } from '@/hooks/use-local-storage';
-import type { SortingState } from '@tanstack/react-table';
+import { useQuery } from '@tanstack/react-query'
+import { createFileRoute } from '@tanstack/react-router'
+import { Loader } from 'lucide-react'
+import { useState, useCallback, useRef } from 'react'
+import { useLocalStorage } from '@/hooks/use-local-storage'
+import type { SortingState } from '@tanstack/react-table'
 
-export const Route = createFileRoute(
-  '/_protected/reports/day_book/_layout/',
-)({
+export const Route = createFileRoute('/_protected/reports/day_book/_layout/')({
   component: () => {
     const [page, setPage] = useState(1)
-    const [perPage, setPerPage] = useLocalStorage<number>('daybook_per_page', 10)
+    const [perPage, setPerPage] = useLocalStorage<number>(
+      'daybook_per_page',
+      10,
+    )
     const [debouncedSearch, setDebouncedSearch] = useState('')
     const [voucherTypeIds, setVoucherTypeIds] = useState<string[]>([])
     const [billingPreferences, setBillingPreferences] = useState<string[]>([])
@@ -27,8 +28,12 @@ export const Route = createFileRoute(
       page,
       per_page: perPage,
       ...(debouncedSearch ? { search: debouncedSearch } : {}),
-      ...(voucherTypeIds.length > 0 ? { voucher_type_id: voucherTypeIds.join(',') } : {}),
-      ...(billingPreferences.length > 0 ? { billing_preference: billingPreferences.join(',') } : {}),
+      ...(voucherTypeIds.length > 0
+        ? { voucher_type_id: voucherTypeIds.join(',') }
+        : {}),
+      ...(billingPreferences.length > 0
+        ? { billing_preference: billingPreferences.join(',') }
+        : {}),
       ...(statuses.length > 0 ? { status: statuses.join(',') } : {}),
       ...(sortBy ? { sort_by: sortBy, sort_order: sortOrder } : {}),
     }
@@ -39,10 +44,13 @@ export const Route = createFileRoute(
       setPage(newPage)
     }, [])
 
-    const handlePageSizeChange = useCallback((newSize: number) => {
-      setPerPage(newSize)
-      setPage(1)
-    }, [setPerPage])
+    const handlePageSizeChange = useCallback(
+      (newSize: number) => {
+        setPerPage(newSize)
+        setPage(1)
+      },
+      [setPerPage],
+    )
 
     const handleSearchChange = useCallback((value: string) => {
       if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current)
@@ -67,18 +75,26 @@ export const Route = createFileRoute(
       setPage(1)
     }, [])
 
-    const handleSortChange = useCallback((newSortBy: string, newSortOrder: string) => {
-      setSortBy(newSortBy)
-      setSortOrder(newSortOrder)
-      setPage(1)
-    }, [])
+    const handleSortChange = useCallback(
+      (newSortBy: string, newSortOrder: string) => {
+        setSortBy(newSortBy)
+        setSortOrder(newSortOrder)
+        setPage(1)
+      },
+      [],
+    )
 
     // Convert to TanStack SortingState for the table (reverse map backend field → column id)
     const sortFieldReverseMap: Record<string, string> = {
       billing_preference: 'billingPreference',
     }
     const sorting: SortingState = sortBy
-      ? [{ id: sortFieldReverseMap[sortBy] ?? sortBy, desc: sortOrder === 'desc' }]
+      ? [
+          {
+            id: sortFieldReverseMap[sortBy] ?? sortBy,
+            desc: sortOrder === 'desc',
+          },
+        ]
       : []
 
     if (isLoading && !daybook) {

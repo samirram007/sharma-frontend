@@ -6,9 +6,7 @@ import {
   markAsReadService,
   validateFreightService,
 } from './api'
-import type {
-  AppNotification,
-} from './schema'
+import type { AppNotification } from './schema'
 
 // Query keys
 const NOTIFICATIONS_KEY = ['app-notifications', 'my'] as const

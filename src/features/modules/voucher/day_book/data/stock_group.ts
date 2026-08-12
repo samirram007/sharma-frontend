@@ -1,5 +1,3 @@
-
-
 // export const account_groups = Array.from({ length: 20 }, () => {
 //   const name = faker.person.fullName()
 //   const code = faker.string.alphanumeric({ length: 5 })
@@ -14,7 +12,7 @@
 //     ]),
 //     accounting_effect: faker.helpers.arrayElement(['debit', 'credit', null])
 
-import { fetchDayBookService } from "./api"
+import { fetchDayBookService } from './api'
 
 //   }
 // })

@@ -1,14 +1,6 @@
 'use client'
 
-import type { StockSummarySchema } from "../../stock_summary/data/schema"
-
-
-
-
-
-
-
-
+import type { StockSummarySchema } from '../../stock_summary/data/schema'
 
 interface Props {
   currentRow?: StockSummarySchema
@@ -17,20 +9,7 @@ interface Props {
 }
 
 export function ActionDialog({ currentRow }: Props) {
-
-
   const isEdit = !!currentRow
 
-
-
-
-
-
-  return (
-    <>
-      {isEdit && (
-        <div>Edit</div>
-      )}
-    </>
-  )
+  return <>{isEdit && <div>Edit</div>}</>
 }

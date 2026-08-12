@@ -5,10 +5,10 @@ import type { MyRouterContext } from '@/core/contexts/MyRouterContext'
 
 /**
  * Shared storage key for the bearer token used across auth modules.
- * Both AuthContext and the axios interceptor read/write from this key.
- * Keep in sync if changed — circular deps prevent a direct import.
+ * Re-exported from the consolidated token-storage driver — the constant and
+ * the driver selection logic now live together in `./token-storage`.
  */
-export const AUTH_TOKEN_KEY = 'auth_token'
+export { AUTH_TOKEN_KEY } from './token-storage'
 
 /**
  * Creates a reusable TanStack Router `beforeLoad` guard that checks if the

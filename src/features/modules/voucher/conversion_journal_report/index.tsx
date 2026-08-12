@@ -25,6 +25,7 @@ import {
   Loader,
   Search,
   BarChart3,
+  AlertTriangle,
   Download,
   FileSpreadsheet,
   FileText,
@@ -55,7 +56,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import type { SortingState } from '@tanstack/react-table'
-import { toNum, formatFixed } from '@/utils/format-num'
+import {
+  toNum,
+  formatFixed,
+  formatQty,
+  formatQtyFixed,
+} from '@/utils/format-num'
 import ReportingPeriod from '@/features/global/components/reporting-period'
 
 interface ConversionJournalReportProps {
@@ -184,15 +190,27 @@ export default function ConversionJournalReport({
 }: ConversionJournalReportProps) {
   const [activeTab, setActiveTab] = useState('list')
 
-  const { data: stockGrouped, isLoading: stockLoading } = useQuery({
+  const {
+    data: stockGrouped,
+    isLoading: stockLoading,
+    error: stockError,
+  } = useQuery({
     ...groupedByStockItemQueryOptions(stockJournalType),
     enabled: activeTab === 'by-stock-item',
   })
-  const { data: godownGrouped, isLoading: godownLoading } = useQuery({
+  const {
+    data: godownGrouped,
+    isLoading: godownLoading,
+    error: godownError,
+  } = useQuery({
     ...groupedByGodownQueryOptions(stockJournalType),
     enabled: activeTab === 'by-godown',
   })
-  const { data: dateGrouped, isLoading: dateLoading } = useQuery({
+  const {
+    data: dateGrouped,
+    isLoading: dateLoading,
+    error: dateError,
+  } = useQuery({
     ...groupedByDateQueryOptions(stockJournalType),
     enabled: activeTab === 'by-date',
   })
@@ -214,7 +232,6 @@ export default function ConversionJournalReport({
           year: 'numeric',
         })
   }
-  const formatQty = (val: unknown) => toNum(val).toFixed(2)
 
   // Export data for the List View (summary per voucher)
   const listExportColumns = useMemo(
@@ -390,7 +407,12 @@ export default function ConversionJournalReport({
         <input
           placeholder="Search conversion journals..."
           defaultValue=""
-          onChange={(e) => onSearchChange?.(e.target.value)}
+          onChange={(e) => {
+            // Search filters the List view — switch to it so the filter is
+            // always visibly applied (grouped views are pre-aggregated).
+            if (activeTab !== 'list') setActiveTab('list')
+            onSearchChange?.(e.target.value)
+          }}
           className="h-7 flex-1 min-w-[120px] bg-transparent text-sm outline-none placeholder:text-muted-foreground/60"
         />
         <div className="h-5 w-px bg-border mx-1" />
@@ -522,8 +544,7 @@ export default function ConversionJournalReport({
                         title: 'Conversion Journal Report — Item Details',
                         columnData: detailExportColumns as any,
                         data: detailExportData,
-                        fileName:
-                          'conversion-journal-report-item-details.pdf',
+                        fileName: 'conversion-journal-report-item-details.pdf',
                       })
                     }}
                   >
@@ -538,8 +559,7 @@ export default function ConversionJournalReport({
                         title: 'Conversion Journal Report — Item Details',
                         columnData: detailExportColumns as any,
                         data: detailExportData,
-                        fileName:
-                          'conversion-journal-report-item-details.xlsx',
+                        fileName: 'conversion-journal-report-item-details.xlsx',
                       })
                     }}
                   >
@@ -576,8 +596,7 @@ export default function ConversionJournalReport({
         >
           <GridTable
             data={(() => {
-              const parsed =
-                conversionJournalReportListSchema.safeParse(data)
+              const parsed = conversionJournalReportListSchema.safeParse(data)
               if (!parsed.success) {
                 console.error(
                   '[ConversionJournalReport] Zod validation error:',
@@ -600,6 +619,16 @@ export default function ConversionJournalReport({
           {stockLoading ? (
             <div className="flex items-center justify-center h-32">
               <Loader className="animate-spin h-6 w-6" />
+            </div>
+          ) : stockError ? (
+            <div className="flex items-center gap-2 rounded-md border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+              <AlertTriangle className="h-4 w-4 shrink-0" />
+              <span>
+                Failed to load stock item summary:{' '}
+                {stockError instanceof Error
+                  ? stockError.message
+                  : 'Unknown error'}
+              </span>
             </div>
           ) : (
             <div className="space-y-3">
@@ -625,8 +654,8 @@ export default function ConversionJournalReport({
                   formatRow={(r: any) => ({
                     stock_item_name: r.stock_item_name,
                     voucher_count: r.voucher_count,
-                    total_out_quantity: formatQty(r.total_out_quantity),
-                    total_in_quantity: formatQty(r.total_in_quantity),
+                    total_out_quantity: formatQtyFixed(r.total_out_quantity),
+                    total_in_quantity: formatQtyFixed(r.total_in_quantity),
                     total_out_amount: formatAmt(r.total_out_amount),
                     total_in_amount: formatAmt(r.total_in_amount),
                   })}
@@ -654,8 +683,8 @@ export default function ConversionJournalReport({
                     return {
                       stock_item_name: 'TOTAL',
                       voucher_count: sVch,
-                      total_out_quantity: formatQty(sOutQty),
-                      total_in_quantity: formatQty(sInQty),
+                      total_out_quantity: formatQtyFixed(sOutQty),
+                      total_in_quantity: formatQtyFixed(sInQty),
                       total_out_amount: formatAmt(sOutAmt),
                       total_in_amount: formatAmt(sInAmt),
                     }
@@ -846,6 +875,16 @@ export default function ConversionJournalReport({
             <div className="flex items-center justify-center h-32">
               <Loader className="animate-spin h-6 w-6" />
             </div>
+          ) : godownError ? (
+            <div className="flex items-center gap-2 rounded-md border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+              <AlertTriangle className="h-4 w-4 shrink-0" />
+              <span>
+                Failed to load godown summary:{' '}
+                {godownError instanceof Error
+                  ? godownError.message
+                  : 'Unknown error'}
+              </span>
+            </div>
           ) : (
             <div className="space-y-3">
               <div className="flex items-center justify-between">
@@ -868,8 +907,8 @@ export default function ConversionJournalReport({
                   formatRow={(r: any) => ({
                     godown_name: r.godown_name,
                     voucher_count: r.voucher_count,
-                    total_out_quantity: formatQty(r.total_out_quantity),
-                    total_in_quantity: formatQty(r.total_in_quantity),
+                    total_out_quantity: formatQtyFixed(r.total_out_quantity),
+                    total_in_quantity: formatQtyFixed(r.total_in_quantity),
                   })}
                   computeTotals={(data: any[]) => {
                     const sOutQty = data.reduce(
@@ -887,8 +926,8 @@ export default function ConversionJournalReport({
                     return {
                       godown_name: 'TOTAL',
                       voucher_count: sVch,
-                      total_out_quantity: formatQty(sOutQty),
-                      total_in_quantity: formatQty(sInQty),
+                      total_out_quantity: formatQtyFixed(sOutQty),
+                      total_in_quantity: formatQtyFixed(sInQty),
                     }
                   }}
                   onExportPdf={exportGroupedPdf}
@@ -1045,6 +1084,16 @@ export default function ConversionJournalReport({
             <div className="flex items-center justify-center h-32">
               <Loader className="animate-spin h-6 w-6" />
             </div>
+          ) : dateError ? (
+            <div className="flex items-center gap-2 rounded-md border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+              <AlertTriangle className="h-4 w-4 shrink-0" />
+              <span>
+                Failed to load date summary:{' '}
+                {dateError instanceof Error
+                  ? dateError.message
+                  : 'Unknown error'}
+              </span>
+            </div>
           ) : (
             <div className="space-y-3">
               <div className="flex items-center justify-between">
@@ -1071,8 +1120,8 @@ export default function ConversionJournalReport({
                       ? formatDate(r.voucher_date)
                       : '',
                     voucher_count: r.voucher_count,
-                    total_out_quantity: formatQty(r.total_out_quantity),
-                    total_in_quantity: formatQty(r.total_in_quantity),
+                    total_out_quantity: formatQtyFixed(r.total_out_quantity),
+                    total_in_quantity: formatQtyFixed(r.total_in_quantity),
                     total_out_amount: formatAmt(r.total_out_amount),
                     total_in_amount: formatAmt(r.total_in_amount),
                   })}
@@ -1100,8 +1149,8 @@ export default function ConversionJournalReport({
                     return {
                       voucher_date: 'TOTAL',
                       voucher_count: sVch,
-                      total_out_quantity: formatQty(sOutQty),
-                      total_in_quantity: formatQty(sInQty),
+                      total_out_quantity: formatQtyFixed(sOutQty),
+                      total_in_quantity: formatQtyFixed(sInQty),
                       total_out_amount: formatAmt(sOutAmt),
                       total_in_amount: formatAmt(sInAmt),
                     }

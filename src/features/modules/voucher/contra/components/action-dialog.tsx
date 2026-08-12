@@ -9,9 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import {
-  Form
-} from '@/components/ui/form'
+import { Form } from '@/components/ui/form'
 
 import { showSubmittedData } from '@/utils/show-submitted-data'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -24,8 +22,6 @@ import { lowerCase } from '@/utils/removeEmptyStrings'
 import { storeContraService, updateContraService } from '../data/api'
 import { formSchema, type Contra, type ContraForm } from '../data/schema'
 
-
-
 interface Props {
   currentRow?: Contra
   open: boolean
@@ -37,14 +33,13 @@ export function ActionDialog({ currentRow, open, onOpenChange }: Props) {
   const queryClient = useQueryClient()
   const mutateContra = useMutation({
     mutationFn: async (data: ContraForm) => {
-  // Here you would typically make an API call to save the Contra
+      // Here you would typically make an API call to save the Contra
       // For example:
-      console.log('Saving Contra:', data);
+      console.log('Saving Contra:', data)
       if (isEdit && currentRow) {
         return await updateContraService({ ...data, id: currentRow.id })
-      }
-      else if (!isEdit) {
-        return await storeContraService(data);
+      } else if (!isEdit) {
+        return await storeContraService(data)
       }
     },
     onSuccess: (data) => {
@@ -57,25 +52,24 @@ export function ActionDialog({ currentRow, open, onOpenChange }: Props) {
     resolver: zodResolver(formSchema),
     defaultValues: isEdit
       ? {
-        ...currentRow, isEdit,
-      }
+          ...currentRow,
+          isEdit,
+        }
       : {
-        name: '',
-        code: '',  
-        isEdit,
-      },
+          name: '',
+          code: '',
+          isEdit,
+        },
   })
   //  const contraStatusOptions: ActiveInactiveStatus[] = ['active', 'inactive'];
 
-  const moduleName = "Contra"
+  const moduleName = 'Contra'
   const onSubmit = (values: ContraForm) => {
     form.reset()
     showSubmittedData(values)
     mutateContra.mutate(values)
     onOpenChange(false)
   }
-
-
 
   return (
     <Dialog
@@ -85,36 +79,46 @@ export function ActionDialog({ currentRow, open, onOpenChange }: Props) {
         onOpenChange(state)
       }}
     >
-      <DialogContent className='sm:max-w-lg'>
-        <DialogHeader className='text-left'>
-          <DialogTitle>{isEdit ? 'Edit ' : 'Add New '} {moduleName}</DialogTitle>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader className="text-left">
+          <DialogTitle>
+            {isEdit ? 'Edit ' : 'Add New '} {moduleName}
+          </DialogTitle>
           <DialogDescription>
-            {isEdit ? `Update the ${lowerCase(moduleName)} here. `
+            {isEdit
+              ? `Update the ${lowerCase(moduleName)} here. `
               : `Create new ${lowerCase(moduleName)} here. `}
             Click save when you&apos;re done.
           </DialogDescription>
         </DialogHeader>
-        <div className='-mr-4 h-[26.25rem] w-full overflow-y-auto py-1 pr-4'>
+        <div className="-mr-4 h-[26.25rem] w-full overflow-y-auto py-1 pr-4">
           <Form {...form}>
             <form
-              id='user-form'
+              id="user-form"
               onSubmit={form.handleSubmit(onSubmit)}
-              className='space-y-4 p-0.5'
+              className="space-y-4 p-0.5"
             >
-              <FormInputField type='text' form={form} name='name' label='Name' />
-              <FormInputField type='text' form={form} name='code' label='Code' />
-
-
-
+              <FormInputField
+                type="text"
+                form={form}
+                name="name"
+                label="Name"
+              />
+              <FormInputField
+                type="text"
+                form={form}
+                name="code"
+                label="Code"
+              />
             </form>
           </Form>
         </div>
         <DialogFooter>
-          <Button type='submit' form='user-form'>
+          <Button type="submit" form="user-form">
             Save changes
           </Button>
         </DialogFooter>
       </DialogContent>
-    </Dialog >
+    </Dialog>
   )
 }

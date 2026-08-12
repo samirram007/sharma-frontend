@@ -1,4 +1,8 @@
-import { queryOptions, useMutation, useQueryClient } from '@tanstack/react-query'
+import {
+  queryOptions,
+  useMutation,
+  useQueryClient,
+} from '@tanstack/react-query'
 import {
   fetchOpeningStockByIdService,
   fetchOpeningStockService,
@@ -10,10 +14,7 @@ import {
   OPENING_STOCK_VOUCHER_TYPE_CODE,
   OpeningStockVoucherListSchema,
 } from './schema'
-import type {
-  OpeningStockVoucherForm,
-  OpeningStockVoucherType,
-} from './schema'
+import type { OpeningStockVoucherForm, OpeningStockVoucherType } from './schema'
 
 const BASE_KEY = 'opening-stock-vouchers'
 const OPENING_STOCK_TYPE_KEY = [BASE_KEY, 'voucher-type'] as const
@@ -41,7 +42,9 @@ export const openingStockVoucherTypeQueryOptions = () => {
   })
 }
 
-export const OpeningStockVoucherQueryOptions = (openingStockTypeId?: number) => {
+export const OpeningStockVoucherQueryOptions = (
+  openingStockTypeId?: number,
+) => {
   return queryOptions({
     queryKey: [BASE_KEY, 'list', openingStockTypeId],
     queryFn: async () => {
@@ -51,7 +54,7 @@ export const OpeningStockVoucherQueryOptions = (openingStockTypeId?: number) => 
       const parsed = OpeningStockVoucherListSchema.parse(response?.data ?? [])
       if (!openingStockTypeId) return []
       return parsed.filter(
-        (voucher) => voucher.voucherTypeId === openingStockTypeId
+        (voucher) => voucher.voucherTypeId === openingStockTypeId,
       )
     },
     staleTime: 1000 * 60,
@@ -62,7 +65,8 @@ export const OpeningStockVoucherQueryOptions = (openingStockTypeId?: number) => 
 export const OpeningStockQueryOptions = (id?: number) => {
   return queryOptions({
     queryKey: id ? [BASE_KEY, id] : [BASE_KEY],
-    queryFn: () => (id ? fetchOpeningStockByIdService(id) : fetchOpeningStockService()),
+    queryFn: () =>
+      id ? fetchOpeningStockByIdService(id) : fetchOpeningStockService(),
     staleTime: 1000 * 60 * 5,
     retry: 1,
   })
@@ -70,7 +74,9 @@ export const OpeningStockQueryOptions = (id?: number) => {
 
 // Same contract as the Conversion Journal pipeline: the mutation accepts the
 // full form values (with an optional id for updates).
-type OpeningStockVoucherMutationPayload = OpeningStockVoucherForm & { id?: number }
+type OpeningStockVoucherMutationPayload = OpeningStockVoucherForm & {
+  id?: number
+}
 
 export function useOpeningStockVoucherMutation() {
   const queryClient = useQueryClient()
@@ -94,9 +100,13 @@ export function useOpeningStockVoucherMutation() {
       const payload = { ...data, voucherTypeId }
 
       if (data.id) {
-        return await updateOpeningStockService(payload as unknown as Record<string, unknown>)
+        return await updateOpeningStockService(
+          payload as unknown as Record<string, unknown>,
+        )
       }
-      return await storeOpeningStockService(payload as unknown as Record<string, unknown>)
+      return await storeOpeningStockService(
+        payload as unknown as Record<string, unknown>,
+      )
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [BASE_KEY] })

@@ -1,5 +1,8 @@
 import { useContext } from 'react'
-import { AuthContext, type AuthContextType } from '@/features/auth/contexts/AuthContext'
+import {
+  AuthContext,
+  type AuthContextType,
+} from '@/features/auth/contexts/AuthContext'
 
 const fallback: AuthContextType = {
   user: null,

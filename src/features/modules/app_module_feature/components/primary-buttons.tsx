@@ -3,11 +3,10 @@ import { Button } from '@/components/ui/button'
 import { IconPlus } from '@tabler/icons-react'
 import { useAppModuleFeature } from '../contexts/app_module_feature-context'
 
-
 export function PrimaryButtons() {
   const { setOpen } = useAppModuleFeature()
   return (
-    <div className='flex gap-2'>
+    <div className="flex gap-2">
       {/* <Button
         variant='outline'
         className='space-x-1'
@@ -15,7 +14,11 @@ export function PrimaryButtons() {
       >
         <span>Invite User</span> <IconMailPlus size={18} />
       </Button> */}
-      <Button variant='default' className='space-x-1' onClick={() => setOpen('add')}>
+      <Button
+        variant="default"
+        className="space-x-1"
+        onClick={() => setOpen('add')}
+      >
         <span>Add Feature</span> <IconPlus size={18} />
       </Button>
     </div>

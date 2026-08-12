@@ -29,9 +29,9 @@ const TYPE_STYLES: Record<string, { label: string; classes: string }> = {
   },
 }
 
-export function columns(
-  opts: { onMarkRead: (id: number) => void },
-): Array<ColumnDef<NotificationItem>> {
+export function columns(opts: {
+  onMarkRead: (id: number) => void
+}): Array<ColumnDef<NotificationItem>> {
   return [
     {
       accessorKey: 'type',
@@ -41,7 +41,7 @@ export function columns(
         const style = TYPE_STYLES[type] ?? TYPE_STYLES.info
         return (
           <Badge
-            variant='outline'
+            variant="outline"
             className={cn('text-xs font-medium', style.classes)}
           >
             {style.label}
@@ -57,7 +57,7 @@ export function columns(
       cell: ({ row }) => {
         const { title, message, isRead } = row.original
         return (
-          <div className='flex flex-col gap-0.5'>
+          <div className="flex flex-col gap-0.5">
             <span
               className={cn(
                 'text-sm leading-tight',
@@ -69,7 +69,7 @@ export function columns(
               {title}
             </span>
             {message && (
-              <span className='text-xs text-slate-500 dark:text-slate-500 line-clamp-1'>
+              <span className="text-xs text-slate-500 dark:text-slate-500 line-clamp-1">
                 {message}
               </span>
             )}
@@ -84,7 +84,7 @@ export function columns(
       cell: ({ row }) => {
         const date = row.original.createdAt
         return (
-          <span className='text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap'>
+          <span className="text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">
             {formatDistanceToNow(new Date(date), { addSuffix: true })}
           </span>
         )
@@ -93,23 +93,23 @@ export function columns(
     },
     {
       id: 'actions',
-      header: () => <span className='sr-only'>Actions</span>,
+      header: () => <span className="sr-only">Actions</span>,
       cell: ({ row }) => {
         if (row.original.isRead) return null
         return (
           <Button
-            variant='ghost'
-            size='icon'
-            className='h-7 w-7 rounded-full'
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7 rounded-full"
             onClick={(e) => {
               e.stopPropagation()
               opts.onMarkRead(row.original.id)
             }}
-            title='Mark as read'
+            title="Mark as read"
           >
             <IconCheck
               size={14}
-              className='text-slate-400 hover:text-emerald-500'
+              className="text-slate-400 hover:text-emerald-500"
             />
           </Button>
         )

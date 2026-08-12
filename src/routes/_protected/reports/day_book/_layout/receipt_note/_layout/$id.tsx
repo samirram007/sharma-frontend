@@ -9,8 +9,7 @@ export const Route = createFileRoute(
 function RouteComponent() {
   return (
     <div>
-      Hello
-      "/_protected/reports/day_book/_layout/receipt_note/_layout/$id"!
+      Hello "/_protected/reports/day_book/_layout/receipt_note/_layout/$id"!
     </div>
   )
 }

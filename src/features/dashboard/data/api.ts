@@ -63,7 +63,9 @@ function num(value: unknown): number {
 }
 
 export async function fetchDashboardSummary(): Promise<DashboardSummary> {
-  const envelope = (await getData(`${API_PATH}/summary`)) as { data?: Partial<DashboardSummary> }
+  const envelope = (await getData(`${API_PATH}/summary`)) as {
+    data?: Partial<DashboardSummary>
+  }
   const s = envelope?.data ?? {}
 
   return {
@@ -83,7 +85,9 @@ export async function fetchDashboardSummary(): Promise<DashboardSummary> {
 }
 
 export async function fetchZoneWiseDashboard(): Promise<ZoneWiseDatum[]> {
-  const envelope = (await getData(`${API_PATH}/zone_wise`)) as { data?: unknown[] }
+  const envelope = (await getData(`${API_PATH}/zone_wise`)) as {
+    data?: unknown[]
+  }
   return (envelope?.data ?? []).map((item) => {
     const row = (item ?? {}) as Record<string, unknown>
 
@@ -101,7 +105,9 @@ export async function fetchZoneWiseDashboard(): Promise<ZoneWiseDatum[]> {
 }
 
 export async function fetchGodownWiseDashboard(): Promise<GodownWiseDatum[]> {
-  const envelope = (await getData(`${API_PATH}/godown_wise`)) as { data?: unknown[] }
+  const envelope = (await getData(`${API_PATH}/godown_wise`)) as {
+    data?: unknown[]
+  }
   return (envelope?.data ?? []).map((item) => {
     const row = (item ?? {}) as Record<string, unknown>
 
@@ -118,8 +124,12 @@ export async function fetchGodownWiseDashboard(): Promise<GodownWiseDatum[]> {
   })
 }
 
-export async function fetchTransporterWiseDashboard(): Promise<TransporterWiseDatum[]> {
-  const envelope = (await getData(`${API_PATH}/transporter_wise`)) as { data?: unknown[] }
+export async function fetchTransporterWiseDashboard(): Promise<
+  TransporterWiseDatum[]
+> {
+  const envelope = (await getData(`${API_PATH}/transporter_wise`)) as {
+    data?: unknown[]
+  }
   return (envelope?.data ?? []).map((item) => {
     const row = (item ?? {}) as Record<string, unknown>
 
@@ -134,12 +144,18 @@ export async function fetchTransporterWiseDashboard(): Promise<TransporterWiseDa
 }
 
 export async function fetchUserWiseDashboard(): Promise<UserWiseDatum[]> {
-  const envelope = (await getData(`${API_PATH}/user_wise`)) as { data?: unknown[] }
+  const envelope = (await getData(`${API_PATH}/user_wise`)) as {
+    data?: unknown[]
+  }
   return (envelope?.data ?? []).map((item) => {
     const row = (item ?? {}) as Record<string, unknown>
 
     return {
-      userId: row.user_id ? Number(row.user_id) : row.userId ? Number(row.userId) : null,
+      userId: row.user_id
+        ? Number(row.user_id)
+        : row.userId
+          ? Number(row.userId)
+          : null,
       userName: String(row.user_name ?? row.userName ?? 'Unknown user'),
       totalVouchers: num(row.total_vouchers ?? row.totalVouchers),
       delivery_notes: num(row.delivery_notes),

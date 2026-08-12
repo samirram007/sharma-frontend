@@ -1,5 +1,8 @@
 import { queryOptions } from '@tanstack/react-query'
-import { fetchOpeningEntryGroupedByLedgerService, fetchOpeningEntryReportService } from './api'
+import {
+  fetchOpeningEntryGroupedByLedgerService,
+  fetchOpeningEntryReportService,
+} from './api'
 
 const BASE_KEY = 'openingEntryReport'
 

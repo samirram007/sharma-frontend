@@ -70,7 +70,11 @@ interface DndTreeViewProps {
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
 /** Flatten the tree into container groups for DnD state management. */
-function buildContainers(nodes: MenuTreeNode[], depth = 0, parentId: number | null = null): ContainerGroup[] {
+function buildContainers(
+  nodes: MenuTreeNode[],
+  depth = 0,
+  parentId: number | null = null,
+): ContainerGroup[] {
   const groups: ContainerGroup[] = []
   groups.push({
     containerId: parentId === null ? 'root' : `parent-${parentId}`,
@@ -99,7 +103,9 @@ function rebuildTree(containers: ContainerGroup[]): MenuTreeNode[] {
       const childContainer = containerMap.get(childContainerId)
       return {
         ...item,
-        children: childContainer ? buildChildren(childContainerId) : (item.children ?? []),
+        children: childContainer
+          ? buildChildren(childContainerId)
+          : (item.children ?? []),
       } as MenuTreeNode
     })
   }
@@ -120,14 +126,25 @@ function findPath(id: number, nodes: MenuTreeNode[]): number[] {
 }
 
 /** Check if `targetId` is a descendant of `ancestorId`. */
-function isDescendantOf(ancestorId: number, targetId: number, nodes: MenuTreeNode[]): boolean {
+function isDescendantOf(
+  ancestorId: number,
+  targetId: number,
+  nodes: MenuTreeNode[],
+): boolean {
   const path = findPath(targetId, nodes)
   return path.includes(ancestorId)
 }
 
 // ── Main Component ──────────────────────────────────────────────────────────
 
-function DndTreeView({ data, initialExpanded = false, onEdit, onDelete, onAddChild, onDuplicate }: DndTreeViewProps) {
+function DndTreeView({
+  data,
+  initialExpanded = false,
+  onEdit,
+  onDelete,
+  onAddChild,
+  onDuplicate,
+}: DndTreeViewProps) {
   const [activeId, setActiveId] = useState<number | null>(null)
   const queryClient = useQueryClient()
   const { mutate: quickUpdate } = useMenuQuickUpdateMutation()
@@ -135,7 +152,9 @@ function DndTreeView({ data, initialExpanded = false, onEdit, onDelete, onAddChi
   const { mutate: batchDelete } = useMenuBatchDeleteMutation()
 
   // Container state — mutated during drag-over for live cross-level reorder
-  const [containers, setContainers] = useState<ContainerGroup[]>(() => buildContainers(data))
+  const [containers, setContainers] = useState<ContainerGroup[]>(() =>
+    buildContainers(data),
+  )
 
   // Sync with external data changes (API refetch)
   useEffect(() => {
@@ -177,10 +196,15 @@ function DndTreeView({ data, initialExpanded = false, onEdit, onDelete, onAddChi
         const next = new Set(prev)
         if (shiftKey && lastClickedRef.current !== null) {
           // Range selection: find indices and toggle all in range
-          const lastIdx = flatNodes.findIndex((n) => n.id === lastClickedRef.current)
+          const lastIdx = flatNodes.findIndex(
+            (n) => n.id === lastClickedRef.current,
+          )
           const currentIdx = flatNodes.findIndex((n) => n.id === id)
           if (lastIdx !== -1 && currentIdx !== -1) {
-            const [start, end] = lastIdx < currentIdx ? [lastIdx, currentIdx] : [currentIdx, lastIdx]
+            const [start, end] =
+              lastIdx < currentIdx
+                ? [lastIdx, currentIdx]
+                : [currentIdx, lastIdx]
             for (let i = start; i <= end; i++) {
               const nid = flatNodes[i].id
               if (next.has(nid)) next.delete(nid)
@@ -356,16 +380,23 @@ function DndTreeView({ data, initialExpanded = false, onEdit, onDelete, onAddChi
       if (activeContainer.containerId === overContainer.containerId) return
 
       // Prevent dropping into own descendants
-      if (isDescendantOf(activeIdNum, overContainer.parentId ?? -1, data)) return
+      if (isDescendantOf(activeIdNum, overContainer.parentId ?? -1, data))
+        return
 
       // Move item between containers in state
       setContainers((prev) => {
         const next = prev.map((c) => ({ ...c, items: [...c.items] }))
 
-        const activeCont = next.find((c) => c.containerId === activeContainer.containerId)!
-        const overCont = next.find((c) => c.containerId === overContainer.containerId)!
+        const activeCont = next.find(
+          (c) => c.containerId === activeContainer.containerId,
+        )!
+        const overCont = next.find(
+          (c) => c.containerId === overContainer.containerId,
+        )!
 
-        const activeIdx = activeCont.items.findIndex((n) => n.id === activeIdNum)
+        const activeIdx = activeCont.items.findIndex(
+          (n) => n.id === activeIdNum,
+        )
         if (activeIdx === -1) return prev
 
         const [moved] = activeCont.items.splice(activeIdx, 1)
@@ -392,7 +423,11 @@ function DndTreeView({ data, initialExpanded = false, onEdit, onDelete, onAddChi
       if (!over || active.id === over.id) return
 
       // Build the full reorder payload from current container state
-      const payload: { id: number; sort_order: number; parent_id: number | null }[] = []
+      const payload: {
+        id: number
+        sort_order: number
+        parent_id: number | null
+      }[] = []
 
       for (const container of containers) {
         for (let i = 0; i < container.items.length; i++) {
@@ -417,9 +452,11 @@ function DndTreeView({ data, initialExpanded = false, onEdit, onDelete, onAddChi
 
   if (!data || data.length === 0) {
     return (
-      <div className='flex flex-col items-center justify-center py-12 text-muted-foreground'>
-        <p className='text-sm font-medium'>No menu entries yet</p>
-        <p className='text-xs'>Create a root-level menu entry to get started.</p>
+      <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+        <p className="text-sm font-medium">No menu entries yet</p>
+        <p className="text-xs">
+          Create a root-level menu entry to get started.
+        </p>
       </div>
     )
   }
@@ -427,17 +464,19 @@ function DndTreeView({ data, initialExpanded = false, onEdit, onDelete, onAddChi
   return (
     <div>
       {/* Selection toolbar — always visible when there are items */}
-      <div className='mb-1.5 flex items-center gap-2 text-[10px] text-muted-foreground'>
+      <div className="mb-1.5 flex items-center gap-2 text-[10px] text-muted-foreground">
         <button
-          className='hover:text-foreground transition-colors'
+          className="hover:text-foreground transition-colors"
           onClick={selectedCount > 0 ? deselectAll : selectAll}
         >
           {selectedCount > 0 ? 'Deselect All' : 'Select All'}
         </button>
         {selectedCount > 0 && (
           <>
-            <span className='text-muted-foreground/30'>·</span>
-            <span className='font-medium text-foreground/70'>{selectedCount} / {allIds.length} selected</span>
+            <span className="text-muted-foreground/30">·</span>
+            <span className="font-medium text-foreground/70">
+              {selectedCount} / {allIds.length} selected
+            </span>
           </>
         )}
       </div>
@@ -466,15 +505,18 @@ function DndTreeView({ data, initialExpanded = false, onEdit, onDelete, onAddChi
 
         <DragOverlay>
           {activeItem ? (
-            <div className='flex items-center gap-2 rounded-md border bg-card px-2.5 py-1.5 shadow-lg'>
-              <div className='flex h-6 w-6 items-center justify-center rounded border bg-background'>
+            <div className="flex items-center gap-2 rounded-md border bg-card px-2.5 py-1.5 shadow-lg">
+              <div className="flex h-6 w-6 items-center justify-center rounded border bg-background">
                 {(() => {
                   const Icon = resolveIcon(activeItem.icon ?? undefined)
-                  return <Icon className='h-3 w-3 text-muted-foreground' />
+                  return <Icon className="h-3 w-3 text-muted-foreground" />
                 })()}
               </div>
-              <span className='text-xs font-medium'>{activeItem.menuName}</span>
-              <Badge variant='outline' className='text-[9px] px-1 py-0 leading-none'>
+              <span className="text-xs font-medium">{activeItem.menuName}</span>
+              <Badge
+                variant="outline"
+                className="text-[9px] px-1 py-0 leading-none"
+              >
                 {activeNodeDepth > 0 ? `Level ${activeNodeDepth}` : 'Root'}
               </Badge>
             </div>
@@ -484,48 +526,48 @@ function DndTreeView({ data, initialExpanded = false, onEdit, onDelete, onAddChi
 
       {/* ── Batch actions toolbar ───────────────────────────────────── */}
       {selectedCount > 0 && (
-        <div className='mt-2 flex items-center gap-2 rounded-md border bg-muted/50 px-3 py-2 text-xs animate-in fade-in slide-in-from-bottom-2 duration-200'>
-          <span className='font-medium text-foreground/80'>
+        <div className="mt-2 flex items-center gap-2 rounded-md border bg-muted/50 px-3 py-2 text-xs animate-in fade-in slide-in-from-bottom-2 duration-200">
+          <span className="font-medium text-foreground/80">
             {selectedCount} selected
           </span>
-          <span className='text-muted-foreground/30'>|</span>
+          <span className="text-muted-foreground/30">|</span>
           <Button
-            variant='ghost'
-            size='sm'
-            className='h-6 px-2 text-[10px] text-muted-foreground'
+            variant="ghost"
+            size="sm"
+            className="h-6 px-2 text-[10px] text-muted-foreground"
             onClick={deselectAll}
           >
             Deselect
           </Button>
-          <span className='text-muted-foreground/30'>|</span>
+          <span className="text-muted-foreground/30">|</span>
           <Button
-            variant='ghost'
-            size='sm'
-            className='h-6 px-2 text-[10px] text-muted-foreground'
+            variant="ghost"
+            size="sm"
+            className="h-6 px-2 text-[10px] text-muted-foreground"
             onClick={handleBatchToggleVisibility}
-            title='Toggle visibility for selected items'
+            title="Toggle visibility for selected items"
           >
-            <IconEye className='mr-1 h-3 w-3' />
+            <IconEye className="mr-1 h-3 w-3" />
             Toggle Visibility
           </Button>
           <Button
-            variant='ghost'
-            size='sm'
-            className='h-6 px-2 text-[10px] text-muted-foreground'
+            variant="ghost"
+            size="sm"
+            className="h-6 px-2 text-[10px] text-muted-foreground"
             onClick={handleBatchToggleStatus}
-            title='Toggle status for selected items'
+            title="Toggle status for selected items"
           >
             Toggle Status
           </Button>
-          <span className='text-muted-foreground/30'>|</span>
+          <span className="text-muted-foreground/30">|</span>
           <Button
-            variant='ghost'
-            size='sm'
-            className='h-6 px-2 text-[10px] text-destructive hover:text-destructive'
+            variant="ghost"
+            size="sm"
+            className="h-6 px-2 text-[10px] text-destructive hover:text-destructive"
             onClick={handleBatchDelete}
-            title='Delete selected items'
+            title="Delete selected items"
           >
-            <IconTrash className='mr-1 h-3 w-3' />
+            <IconTrash className="mr-1 h-3 w-3" />
             Delete
           </Button>
         </div>
@@ -580,7 +622,7 @@ function TreeLevel({
       items={items.map((n) => n.id)}
       strategy={verticalListSortingStrategy}
     >
-      <div className='space-y-0.5'>
+      <div className="space-y-0.5">
         {items.map((node) => (
           <TreeNode
             key={node.id}
@@ -731,48 +773,48 @@ function TreeNode({
     >
       {/* Drop indicator — before (line above) */}
       {isDropBefore && (
-        <div className='pointer-events-none absolute -top-[2px] left-0 right-0 z-10 flex items-center'>
-          <div className='h-[2px] flex-1 rounded-full bg-primary shadow-[0_0_4px_rgba(59,130,246,0.5)]' />
-          <div className='h-2 w-2 rounded-full bg-primary' />
+        <div className="pointer-events-none absolute -top-[2px] left-0 right-0 z-10 flex items-center">
+          <div className="h-[2px] flex-1 rounded-full bg-primary shadow-[0_0_4px_rgba(59,130,246,0.5)]" />
+          <div className="h-2 w-2 rounded-full bg-primary" />
         </div>
       )}
 
       {/* Drop indicator — after (line below) */}
       {isDropAfter && (
-        <div className='pointer-events-none absolute -bottom-[2px] left-0 right-0 z-10 flex items-center'>
-          <div className='h-[2px] flex-1 rounded-full bg-primary shadow-[0_0_4px_rgba(59,130,246,0.5)]' />
-          <div className='h-2 w-2 rounded-full bg-primary' />
+        <div className="pointer-events-none absolute -bottom-[2px] left-0 right-0 z-10 flex items-center">
+          <div className="h-[2px] flex-1 rounded-full bg-primary shadow-[0_0_4px_rgba(59,130,246,0.5)]" />
+          <div className="h-2 w-2 rounded-full bg-primary" />
         </div>
       )}
       {/* Checkbox */}
-      <div className='flex w-4 shrink-0 items-center justify-center'>
+      <div className="flex w-4 shrink-0 items-center justify-center">
         <Checkbox
           checked={isSelected}
           onClick={handleCheckboxClick}
-          className='h-3.5 w-3.5'
+          className="h-3.5 w-3.5"
           aria-label={`Select ${node.menuName}`}
         />
       </div>
 
       {/* Drag handle */}
       <button
-        className='flex h-5 w-4 shrink-0 cursor-grab items-center justify-center rounded text-muted-foreground/30 hover:text-muted-foreground hover:bg-muted active:cursor-grabbing'
+        className="flex h-5 w-4 shrink-0 cursor-grab items-center justify-center rounded text-muted-foreground/30 hover:text-muted-foreground hover:bg-muted active:cursor-grabbing"
         {...attributes}
         {...listeners}
-        title='Drag to reorder (cross-level supported)'
+        title="Drag to reorder (cross-level supported)"
         tabIndex={-1}
       >
-        <IconGripVertical className='h-3 w-3' />
+        <IconGripVertical className="h-3 w-3" />
       </button>
 
       {/* Expand/collapse or spacer */}
-      <div className='flex w-4 shrink-0 items-center justify-center'>
+      <div className="flex w-4 shrink-0 items-center justify-center">
         {hasChildren ? (
           <CollapsibleTrigger asChild>
             <Button
-              variant='ghost'
-              size='icon'
-              className='h-4 w-4 p-0 text-muted-foreground hover:text-foreground'
+              variant="ghost"
+              size="icon"
+              className="h-4 w-4 p-0 text-muted-foreground hover:text-foreground"
             >
               <IconChevronDown
                 className={cn(
@@ -783,21 +825,21 @@ function TreeNode({
             </Button>
           </CollapsibleTrigger>
         ) : (
-          <span className='h-4 w-4' />
+          <span className="h-4 w-4" />
         )}
       </div>
 
       {/* Icon */}
-      <div className='flex h-5 w-5 shrink-0 items-center justify-center rounded border bg-background'>
+      <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded border bg-background">
         {Icon ? (
-          <Icon className='h-2.5 w-2.5 text-muted-foreground' />
+          <Icon className="h-2.5 w-2.5 text-muted-foreground" />
         ) : (
-          <span className='h-2.5 w-2.5 rounded bg-muted-foreground/20' />
+          <span className="h-2.5 w-2.5 rounded bg-muted-foreground/20" />
         )}
       </div>
 
       {/* Name — inline editable */}
-      <div className='flex min-w-0 flex-1 items-center gap-1'>
+      <div className="flex min-w-0 flex-1 items-center gap-1">
         {editingField === 'name' ? (
           <InlineNameEditor
             node={node}
@@ -812,18 +854,21 @@ function TreeNode({
               node.isGroup && 'font-semibold text-foreground',
             )}
             onClick={() => setEditingField('name')}
-            title='Click to rename'
+            title="Click to rename"
           >
             {node.menuName}
           </span>
         )}
         {node.isGroup && (
-          <Badge variant='secondary' className='shrink-0 text-[9px] px-1 py-0 leading-none'>
+          <Badge
+            variant="secondary"
+            className="shrink-0 text-[9px] px-1 py-0 leading-none"
+          >
             G
           </Badge>
         )}
         {node.route && (
-          <code className='hidden shrink-0 truncate rounded bg-muted/60 px-1 py-0.5 text-[9px] font-mono text-muted-foreground/70 sm:inline-block max-w-24'>
+          <code className="hidden shrink-0 truncate rounded bg-muted/60 px-1 py-0.5 text-[9px] font-mono text-muted-foreground/70 sm:inline-block max-w-24">
             {node.route}
           </code>
         )}
@@ -831,8 +876,8 @@ function TreeNode({
 
       {node.feature && (
         <Badge
-          variant='outline'
-          className='hidden shrink-0 text-[9px] font-mono px-1 py-0 leading-none md:inline-flex'
+          variant="outline"
+          className="hidden shrink-0 text-[9px] font-mono px-1 py-0 leading-none md:inline-flex"
         >
           {node.feature.code}
         </Badge>
@@ -854,7 +899,7 @@ function TreeNode({
       </button>
 
       {/* Sort order */}
-      <span className='hidden shrink-0 text-[10px] text-muted-foreground/50 lg:inline-block'>
+      <span className="hidden shrink-0 text-[10px] text-muted-foreground/50 lg:inline-block">
         #{node.sortOrder}
       </span>
 
@@ -864,56 +909,58 @@ function TreeNode({
           'flex h-5 w-5 shrink-0 items-center justify-center rounded transition-colors',
           'hover:text-muted-foreground hover:bg-muted',
           updatingVisibility && 'animate-pulse',
-          node.isVisible ? 'opacity-0 group-hover/tree:opacity-100' : 'opacity-60',
+          node.isVisible
+            ? 'opacity-0 group-hover/tree:opacity-100'
+            : 'opacity-60',
         )}
         title={node.isVisible ? 'Click to hide' : 'Click to show'}
         onClick={handleToggleVisibility}
         disabled={updatingVisibility}
       >
         {node.isVisible ? (
-          <IconEye className='h-3 w-3' />
+          <IconEye className="h-3 w-3" />
         ) : (
-          <IconEyeOff className='h-3 w-3' />
+          <IconEyeOff className="h-3 w-3" />
         )}
       </button>
 
       {/* Actions */}
-      <div className='flex shrink-0 items-center gap-0 opacity-0 transition-opacity group-hover/tree:opacity-100'>
+      <div className="flex shrink-0 items-center gap-0 opacity-0 transition-opacity group-hover/tree:opacity-100">
         <Button
-          variant='ghost'
-          size='icon'
-          className='h-5 w-5 text-muted-foreground hover:text-foreground'
+          variant="ghost"
+          size="icon"
+          className="h-5 w-5 text-muted-foreground hover:text-foreground"
           onClick={() => onAddChild(node)}
-          title='Add child'
+          title="Add child"
         >
-          <IconPlus className='h-3 w-3' />
+          <IconPlus className="h-3 w-3" />
         </Button>
         <Button
-          variant='ghost'
-          size='icon'
-          className='h-5 w-5 text-muted-foreground hover:text-foreground'
+          variant="ghost"
+          size="icon"
+          className="h-5 w-5 text-muted-foreground hover:text-foreground"
           onClick={() => onDuplicate(node.id)}
-          title='Duplicate (clone with children)'
+          title="Duplicate (clone with children)"
         >
-          <IconCopy className='h-3 w-3' />
+          <IconCopy className="h-3 w-3" />
         </Button>
         <Button
-          variant='ghost'
-          size='icon'
-          className='h-5 w-5 text-muted-foreground hover:text-foreground'
+          variant="ghost"
+          size="icon"
+          className="h-5 w-5 text-muted-foreground hover:text-foreground"
           onClick={() => onEdit(node)}
-          title='Edit all fields'
+          title="Edit all fields"
         >
-          <IconEdit className='h-3 w-3' />
+          <IconEdit className="h-3 w-3" />
         </Button>
         <Button
-          variant='ghost'
-          size='icon'
-          className='h-5 w-5 text-destructive/70 hover:text-destructive'
+          variant="ghost"
+          size="icon"
+          className="h-5 w-5 text-destructive/70 hover:text-destructive"
           onClick={() => onDelete(node)}
-          title='Delete'
+          title="Delete"
         >
-          <IconTrash className='h-3 w-3' />
+          <IconTrash className="h-3 w-3" />
         </Button>
       </div>
 
@@ -924,10 +971,14 @@ function TreeNode({
   return (
     <div ref={setNodeRef} style={style} data-dnd-id={String(node.id)}>
       {hasChildren ? (
-        <Collapsible open={isOpen} onOpenChange={setIsOpen} className='group/tree'>
+        <Collapsible
+          open={isOpen}
+          onOpenChange={setIsOpen}
+          className="group/tree"
+        >
           {rowNode()}
           <CollapsibleContent>
-            <div className='relative ml-2 border-l border-border/40 pl-1'>
+            <div className="relative ml-2 border-l border-border/40 pl-1">
               <TreeLevel
                 items={node.children}
                 depth={depth + 1}
@@ -945,9 +996,7 @@ function TreeNode({
           </CollapsibleContent>
         </Collapsible>
       ) : (
-        <div className='group/tree'>
-          {rowNode()}
-        </div>
+        <div className="group/tree">{rowNode()}</div>
       )}
     </div>
   )
@@ -970,17 +1019,19 @@ export function SelectionToolbar({
   const allSelected = selectedIds.size === totalCount
 
   return (
-    <div className='flex items-center gap-2 text-[10px] text-muted-foreground'>
+    <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
       <button
-        className='hover:text-foreground transition-colors'
+        className="hover:text-foreground transition-colors"
         onClick={allSelected ? onDeselectAll : onSelectAll}
       >
         {allSelected ? 'Deselect All' : 'Select All'}
       </button>
       {selectedIds.size > 0 && (
         <>
-          <span className='text-muted-foreground/30'>·</span>
-          <span className='font-medium text-foreground/70'>{selectedIds.size} selected</span>
+          <span className="text-muted-foreground/30">·</span>
+          <span className="font-medium text-foreground/70">
+            {selectedIds.size} selected
+          </span>
         </>
       )}
     </div>
@@ -1034,7 +1085,7 @@ function InlineNameEditor({
         }
       }}
       onKeyDown={handleKeyDown}
-      className='h-6 min-w-0 flex-1 rounded border px-1.5 py-0 text-xs shadow-none focus-visible:ring-1'
+      className="h-6 min-w-0 flex-1 rounded border px-1.5 py-0 text-xs shadow-none focus-visible:ring-1"
     />
   )
 }

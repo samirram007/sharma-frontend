@@ -2,7 +2,6 @@ import { useEmployee } from '../contexts/employee-context'
 import { ActionDialog } from './action-dialog'
 import { DeleteDialog } from './delete-dialog'
 
-
 export function Dialogs() {
   const { open, setOpen, currentRow, setCurrentRow, keyName } = useEmployee()
   return (

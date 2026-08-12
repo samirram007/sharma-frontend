@@ -38,17 +38,25 @@ import {
   IconRoute2,
   IconServerOff,
   IconSettings,
-  IconTool, 
+  IconTool,
   IconTruck,
   IconTruckDelivery,
   IconUserOff,
   IconArchive,
-  IconDoorEnter
+  IconDoorEnter,
 } from '@tabler/icons-react'
-import { AudioWaveform, Building2, Command, GalleryVerticalEnd, HandCoinsIcon, LandmarkIcon, NotebookTabsIcon, Users, WarehouseIcon } from 'lucide-react'
+import {
+  AudioWaveform,
+  Building2,
+  Command,
+  GalleryVerticalEnd,
+  HandCoinsIcon,
+  LandmarkIcon,
+  NotebookTabsIcon,
+  Users,
+  WarehouseIcon,
+} from 'lucide-react'
 import { type SidebarData } from '../types'
-
-
 
 const APP_NAME = import.meta.env.VITE_APP_NAME || 'AIPT Admin'
 const APP_SUBTITLE = import.meta.env.VITE_APP_SUBTITLE || 'Admin Dashboard'
@@ -87,7 +95,6 @@ export const sidebarData: SidebarData = {
   ],
 
   navGroups: [
-
     {
       title: 'General',
       visible: true,
@@ -262,7 +269,7 @@ export const sidebarData: SidebarData = {
               icon: IconMapPin,
               requiredFeature: 'STATE_MENU_VIEW',
             },
-          ]
+          ],
         },
         {
           title: 'Accounts',
@@ -287,7 +294,7 @@ export const sidebarData: SidebarData = {
               icon: IconReceipt,
               requiredFeature: 'VOUCHER_TYPE_MENU_VIEW',
             },
-          ]
+          ],
         },
         {
           title: 'Party',
@@ -312,7 +319,7 @@ export const sidebarData: SidebarData = {
               icon: IconRoute,
               requiredFeature: 'TRANSPORTER_MENU_VIEW',
             },
-          ]
+          ],
         },
         {
           title: 'Inventory',
@@ -349,7 +356,7 @@ export const sidebarData: SidebarData = {
               icon: IconBuildingWarehouse,
               requiredFeature: 'GODOWN_MENU_VIEW',
             },
-          ]
+          ],
         },
         {
           title: 'Payroll',
@@ -374,7 +381,7 @@ export const sidebarData: SidebarData = {
               icon: IconUserCheck,
               requiredFeature: 'DESIGNATION_MENU_VIEW',
             },
-          ]
+          ],
         },
         {
           title: 'Statutory',
@@ -406,7 +413,7 @@ export const sidebarData: SidebarData = {
               url: '/masters/inventory/godown',
               icon: IconBuildingWarehouse,
             },
-          ]
+          ],
         },
         {
           title: 'Miscellaneous',
@@ -432,7 +439,7 @@ export const sidebarData: SidebarData = {
               url: '/masters/miscellaneous/delivery_vehicles',
               icon: IconTruck,
             },
-          ]
+          ],
         },
       ],
     },
@@ -490,7 +497,7 @@ export const sidebarData: SidebarData = {
           icon: IconLockAccess,
           requiredFeature: 'MENU_MANAGER_VIEW',
         },
-      ]
+      ],
     },
 
     {
@@ -503,8 +510,18 @@ export const sidebarData: SidebarData = {
           icon: IconChartBar,
           requiredFeature: 'BALANCE_SHEET_MENU_VIEW',
           items: [
-            { title: 'Balance Sheet', url: '/reports/balance_sheet', icon: IconScale, requiredFeature: 'BALANCE_SHEET_MENU_VIEW' },
-            { title: 'Profit & Loss', url: '/reports/profit_and_loss', icon: IconTrendingUp, requiredFeature: 'PROFIT_LOSS_MENU_VIEW' },
+            {
+              title: 'Balance Sheet',
+              url: '/reports/balance_sheet',
+              icon: IconScale,
+              requiredFeature: 'BALANCE_SHEET_MENU_VIEW',
+            },
+            {
+              title: 'Profit & Loss',
+              url: '/reports/profit_and_loss',
+              icon: IconTrendingUp,
+              requiredFeature: 'PROFIT_LOSS_MENU_VIEW',
+            },
           ],
         },
         {
@@ -512,10 +529,30 @@ export const sidebarData: SidebarData = {
           icon: IconBook,
           requiredFeature: 'DAYBOOK_MENU_VIEW',
           items: [
-            { title: 'Day Book', url: '/reports/day_book', icon: IconNotebook, requiredFeature: 'DAYBOOK_MENU_VIEW' },
-            { title: 'Day Book (Self)', url: '/reports/day_book/self', icon: IconUserCheck, requiredFeature: 'DAYBOOK_SELF_MENU_VIEW' },
-            { title: 'Receipt Book', url: '/reports/receipt_book', icon: IconReceipt, requiredFeature: 'RECEIPTBOOK_MENU_VIEW' },
-            { title: 'Distributor Book', url: '/reports/distributor_book', icon: IconTruckDelivery, requiredFeature: 'DISTRIBUTORBOOK_MENU_VIEW' },
+            {
+              title: 'Day Book',
+              url: '/reports/day_book',
+              icon: IconNotebook,
+              requiredFeature: 'DAYBOOK_MENU_VIEW',
+            },
+            {
+              title: 'Day Book (Self)',
+              url: '/reports/day_book/self',
+              icon: IconUserCheck,
+              requiredFeature: 'DAYBOOK_SELF_MENU_VIEW',
+            },
+            {
+              title: 'Receipt Book',
+              url: '/reports/receipt_book',
+              icon: IconReceipt,
+              requiredFeature: 'RECEIPTBOOK_MENU_VIEW',
+            },
+            {
+              title: 'Distributor Book',
+              url: '/reports/distributor_book',
+              icon: IconTruckDelivery,
+              requiredFeature: 'DISTRIBUTORBOOK_MENU_VIEW',
+            },
           ],
         },
         {
@@ -523,12 +560,42 @@ export const sidebarData: SidebarData = {
           icon: IconPackages,
           requiredFeature: 'STOCKSUMMARY_MENU_VIEW',
           items: [
-            { title: 'Stock In Hand (Item Summary)', url: '/reports/stock_summary/stock-in-hand', icon: IconReport, requiredFeature: 'STOCKSUMMARY_MENU_VIEW' },
-            { title: 'Stock In Hand (Godown Wise)', url: '/reports/stock_summary/stock-in-hand-godown-wise', icon: IconBuildingWarehouse, requiredFeature: 'STOCKSUMMARY_MENU_VIEW' },
-            { title: 'Stock In Hand (Zone Wise)', url: '/reports/stock_summary/stock-in-hand-zone-wise', icon: IconMap, requiredFeature: 'STOCKSUMMARY_MENU_VIEW' },
-            { title: 'Stock In Hand (Item Wise)', url: '/reports/stock_summary/stock-in-hand-item-wise', icon: IconListDetails, requiredFeature: 'STOCKSUMMARY_MENU_VIEW' },
-            { title: 'Stock In Hand (Voucher Wise)', url: '/reports/stock_summary/stock-in-hand-voucher-wise', icon: IconFileInvoice, requiredFeature: 'STOCKSUMMARY_MENU_VIEW' },
-            { title: 'Opening Entry', url: '/reports/opening_entry', icon: IconDoorEnter, requiredFeature: 'OPENING_ENTRY_REPORT_MENU_VIEW' },
+            {
+              title: 'Stock In Hand (Item Summary)',
+              url: '/reports/stock_summary/stock-in-hand',
+              icon: IconReport,
+              requiredFeature: 'STOCKSUMMARY_MENU_VIEW',
+            },
+            {
+              title: 'Stock In Hand (Godown Wise)',
+              url: '/reports/stock_summary/stock-in-hand-godown-wise',
+              icon: IconBuildingWarehouse,
+              requiredFeature: 'STOCKSUMMARY_MENU_VIEW',
+            },
+            {
+              title: 'Stock In Hand (Zone Wise)',
+              url: '/reports/stock_summary/stock-in-hand-zone-wise',
+              icon: IconMap,
+              requiredFeature: 'STOCKSUMMARY_MENU_VIEW',
+            },
+            {
+              title: 'Stock In Hand (Item Wise)',
+              url: '/reports/stock_summary/stock-in-hand-item-wise',
+              icon: IconListDetails,
+              requiredFeature: 'STOCKSUMMARY_MENU_VIEW',
+            },
+            {
+              title: 'Stock In Hand (Voucher Wise)',
+              url: '/reports/stock_summary/stock-in-hand-voucher-wise',
+              icon: IconFileInvoice,
+              requiredFeature: 'STOCKSUMMARY_MENU_VIEW',
+            },
+            {
+              title: 'Opening Entry',
+              url: '/reports/opening_entry',
+              icon: IconDoorEnter,
+              requiredFeature: 'OPENING_ENTRY_REPORT_MENU_VIEW',
+            },
           ],
         },
         {
@@ -536,16 +603,51 @@ export const sidebarData: SidebarData = {
           icon: IconTruck,
           requiredFeature: 'FREIGHT_MENU_VIEW',
           items: [
-            { title: 'Delivery Note (Zone Wise)', url: '/reports/freight/delivery-note-zone-wise', icon: IconMapPin, requiredFeature: 'FREIGHT_REPORT_MENU_VIEW' },
-            { title: 'Delivery Note (Godown Wise)', url: '/reports/freight/delivery-note-godown-wise', icon: IconBuildingWarehouse, requiredFeature: 'FREIGHT_REPORT_MENU_VIEW' },
-            { title: 'Freight (Zone Wise)', url: '/reports/freight/freight-zone-wise', icon: IconRoute, requiredFeature: 'FREIGHT_REPORT_MENU_VIEW' },
-            { title: 'Freight (Transporter Wise)', url: '/reports/freight/freight-transporter-wise', icon: IconTruck, requiredFeature: 'FREIGHT_REPORT_MENU_VIEW' },
-            { title: 'Freight (Transporter Item Wise)', url: '/reports/freight/freight-transporter-item-wise', icon: IconTruck, requiredFeature: 'FREIGHT_REPORT_MENU_VIEW' },
-            { title: 'Freight (Voucher Wise)', url: '/reports/freight/freight-voucher-wise', icon: IconFileText, requiredFeature: 'FREIGHT_REPORT_MENU_VIEW' },
-            { title: 'Freight (Godown Wise)', url: '/reports/freight/freight-godown-wise', icon: IconBuildingWarehouse, requiredFeature: 'FREIGHT_REPORT_MENU_VIEW' },
+            {
+              title: 'Delivery Note (Zone Wise)',
+              url: '/reports/freight/delivery-note-zone-wise',
+              icon: IconMapPin,
+              requiredFeature: 'FREIGHT_REPORT_MENU_VIEW',
+            },
+            {
+              title: 'Delivery Note (Godown Wise)',
+              url: '/reports/freight/delivery-note-godown-wise',
+              icon: IconBuildingWarehouse,
+              requiredFeature: 'FREIGHT_REPORT_MENU_VIEW',
+            },
+            {
+              title: 'Freight (Zone Wise)',
+              url: '/reports/freight/freight-zone-wise',
+              icon: IconRoute,
+              requiredFeature: 'FREIGHT_REPORT_MENU_VIEW',
+            },
+            {
+              title: 'Freight (Transporter Wise)',
+              url: '/reports/freight/freight-transporter-wise',
+              icon: IconTruck,
+              requiredFeature: 'FREIGHT_REPORT_MENU_VIEW',
+            },
+            {
+              title: 'Freight (Transporter Item Wise)',
+              url: '/reports/freight/freight-transporter-item-wise',
+              icon: IconTruck,
+              requiredFeature: 'FREIGHT_REPORT_MENU_VIEW',
+            },
+            {
+              title: 'Freight (Voucher Wise)',
+              url: '/reports/freight/freight-voucher-wise',
+              icon: IconFileText,
+              requiredFeature: 'FREIGHT_REPORT_MENU_VIEW',
+            },
+            {
+              title: 'Freight (Godown Wise)',
+              url: '/reports/freight/freight-godown-wise',
+              icon: IconBuildingWarehouse,
+              requiredFeature: 'FREIGHT_REPORT_MENU_VIEW',
+            },
           ],
         },
-      ]
+      ],
     },
     {
       title: 'Year-End Process',

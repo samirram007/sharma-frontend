@@ -1,19 +1,17 @@
-
 import { useVoucherClassification } from '../contexts/voucher-classification-context'
 import { VoucherClassificationsActionDialog } from './voucher_classifications-action-dialog'
 import { VoucherClassificationsDeleteDialog } from './voucher_classifications-delete-dialog'
 
 export function VoucherClassificationsDialogs() {
-  const { open, setOpen, currentRow, setCurrentRow } = useVoucherClassification()
+  const { open, setOpen, currentRow, setCurrentRow } =
+    useVoucherClassification()
   return (
     <>
       <VoucherClassificationsActionDialog
-        key='account_ledger-add'
+        key="account_ledger-add"
         open={open === 'add'}
         onOpenChange={() => setOpen('add')}
       />
-
-
 
       {currentRow && (
         <>

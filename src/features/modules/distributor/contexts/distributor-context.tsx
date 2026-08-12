@@ -2,8 +2,6 @@ import useDialogState from '@/core/hooks/use-dialog-state'
 import React, { useState } from 'react'
 import type { Distributor } from '../data/schema'
 
-
-
 type DistributorDialogType = 'invite' | 'add' | 'edit' | 'delete'
 
 interface DistributorContextType {
@@ -14,7 +12,9 @@ interface DistributorContextType {
   keyName: string
 }
 
-const DistributorContext = React.createContext<DistributorContextType | null>(null)
+const DistributorContext = React.createContext<DistributorContextType | null>(
+  null,
+)
 
 interface Props {
   children: React.ReactNode
@@ -24,9 +24,16 @@ export default function DistributorProvider({ children }: Props) {
   const [open, setOpen] = useDialogState<DistributorDialogType>(null)
   const [currentRow, setCurrentRow] = useState<Distributor | null>(null)
 
-
   return (
-    <DistributorContext value={{ open, setOpen, currentRow, setCurrentRow, keyName: "distributor" }}>
+    <DistributorContext
+      value={{
+        open,
+        setOpen,
+        currentRow,
+        setCurrentRow,
+        keyName: 'distributor',
+      }}
+    >
       {children}
     </DistributorContext>
   )

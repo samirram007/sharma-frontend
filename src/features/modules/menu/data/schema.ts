@@ -16,10 +16,13 @@ export const MenuSchema = z.object({
   isTopMenu: z.boolean().default(false),
   description: z.string().nullable().optional(),
   feature: appModuleFeatureSchema.nullable().optional(),
-  parent: z.object({
-    id: z.number().int(),
-    menuName: z.string(),
-  }).nullable().optional(),
+  parent: z
+    .object({
+      id: z.number().int(),
+      menuName: z.string(),
+    })
+    .nullable()
+    .optional(),
 })
 
 export type Menu = z.infer<typeof MenuSchema>
@@ -31,7 +34,7 @@ export type MenuList = z.infer<typeof MenuListSchema>
 export const MenuTreeNodeSchema: z.ZodType<MenuTreeNode> = z.lazy(() =>
   MenuSchema.extend({
     children: z.array(MenuTreeNodeSchema).default([]),
-  })
+  }),
 )
 export type MenuTreeNode = Menu & {
   children: MenuTreeNode[]
@@ -41,7 +44,10 @@ export const MenuTreeSchema = z.array(MenuTreeNodeSchema)
 export type MenuTree = z.infer<typeof MenuTreeSchema>
 
 export const formSchema = z.object({
-  appModuleFeatureId: z.coerce.number().int().positive({ message: 'Feature is required.' }),
+  appModuleFeatureId: z.coerce
+    .number()
+    .int()
+    .positive({ message: 'Feature is required.' }),
   menuName: z.string().min(1, { message: 'Menu name is required.' }),
   route: z.string().nullable().optional(),
   icon: z.string().nullable().optional(),

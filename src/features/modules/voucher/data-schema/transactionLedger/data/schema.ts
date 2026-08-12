@@ -1,7 +1,4 @@
-import { z } from 'zod';
-
-
-
+import { z } from 'zod'
 
 export const transactionableStockItemSchema = z.object({
   id: z.number().int().positive().nullish(),
@@ -12,11 +9,16 @@ export const transactionableStockItemSchema = z.object({
   rate: z.coerce.number().nullish(),
 })
 
-export type PurchasableStockItemForm = z.infer<typeof transactionableStockItemSchema>
+export type PurchasableStockItemForm = z.infer<
+  typeof transactionableStockItemSchema
+>
 
-
-
-export type PurchasableStockItem = z.infer<typeof transactionableStockItemSchema>
-export const transactionableStockItemListSchema = z.array(transactionableStockItemSchema)
-export type PurchasableStockItemList = z.infer<typeof transactionableStockItemListSchema>
-
+export type PurchasableStockItem = z.infer<
+  typeof transactionableStockItemSchema
+>
+export const transactionableStockItemListSchema = z.array(
+  transactionableStockItemSchema,
+)
+export type PurchasableStockItemList = z.infer<
+  typeof transactionableStockItemListSchema
+>

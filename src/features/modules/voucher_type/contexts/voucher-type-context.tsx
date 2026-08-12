@@ -2,8 +2,6 @@ import useDialogState from '@/core/hooks/use-dialog-state'
 import React, { useState } from 'react'
 import type { VoucherType } from '../data/schema'
 
-
-
 type VoucherTypeDialogType = 'invite' | 'add' | 'edit' | 'delete'
 
 interface VoucherTypeContextType {
@@ -13,7 +11,9 @@ interface VoucherTypeContextType {
   setCurrentRow: React.Dispatch<React.SetStateAction<VoucherType | null>>
 }
 
-const VoucherTypeContext = React.createContext<VoucherTypeContextType | null>(null)
+const VoucherTypeContext = React.createContext<VoucherTypeContextType | null>(
+  null,
+)
 
 interface Props {
   children: React.ReactNode

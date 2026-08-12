@@ -1,22 +1,23 @@
-
-import { z } from 'zod';
-import { deliveryNoteSchema } from '../../delivery_note/data/schema';
-import { voucherSchema } from '../../data-schema/voucher-schema';
-import { companySchema } from '@/features/modules/company/data/schema';
-import { accountLedgerSchema } from '@/features/modules/account_ledger/data/schema';
-import { voucherTypeSchema } from '@/features/modules/voucher_type/data/schema';
+import { z } from 'zod'
+import { deliveryNoteSchema } from '../../delivery_note/data/schema'
+import { voucherSchema } from '../../data-schema/voucher-schema'
+import { companySchema } from '@/features/modules/company/data/schema'
+import { accountLedgerSchema } from '@/features/modules/account_ledger/data/schema'
+import { voucherTypeSchema } from '@/features/modules/voucher_type/data/schema'
 
 export const freightSchema = deliveryNoteSchema.extend({
   // Add any additional fields specific to Freight if necessary
-  voucherReferences: z.array(z.object({
-    id: z.number().int().positive().nullish(),
-    voucherId: z.number().int().positive().nullish(),
-    refVoucherId: z.number().int().positive().nullish(),
-    voucher: z.lazy(() => voucherSchema.nullish()),
-    referenceVoucher: z.lazy(() => voucherSchema.nullish()),
-  })),
+  voucherReferences: z.array(
+    z.object({
+      id: z.number().int().positive().nullish(),
+      voucherId: z.number().int().positive().nullish(),
+      refVoucherId: z.number().int().positive().nullish(),
+      voucher: z.lazy(() => voucherSchema.nullish()),
+      referenceVoucher: z.lazy(() => voucherSchema.nullish()),
+    }),
+  ),
   company: companySchema.nullish(),
-});
+})
 
 export type FreightSchema = z.infer<typeof freightSchema>
 
@@ -30,7 +31,7 @@ export const ledgerSchema = z.object({
   name: z.string(),
   code: z.string(),
   currentBalance: z.number().optional(),
-});
+})
 
 const voucherEntrySchema = z.object({
   id: z.number().int().positive().nullish(),
@@ -38,7 +39,7 @@ const voucherEntrySchema = z.object({
   debit: z.string(),
   credit: z.string(),
   accountLedger: accountLedgerSchema,
-});
+})
 
 export const voucherReferenceSchema = z.lazy(() =>
   z.object({
@@ -48,8 +49,8 @@ export const voucherReferenceSchema = z.lazy(() =>
     voucher: voucherSchema.nullish(),
     referenceVoucher: voucherSchema.nullish(),
     type: z.string().nullable(),
-  })
-);
+  }),
+)
 
 export const freightVoucherBaseSchema = z.object({
   id: z.number().int().positive().nullish(),
@@ -57,7 +58,7 @@ export const freightVoucherBaseSchema = z.object({
   voucherDate: z.string(),
   referenceNo: z.string().nullable(),
   referenceDate: z.string().nullable(),
-  module: z.literal("freight"),
+  module: z.literal('freight'),
   remarks: z.string().nullable(),
   status: z.string(),
   amount: z.number(),
@@ -66,19 +67,18 @@ export const freightVoucherBaseSchema = z.object({
   partyLedger: accountLedgerSchema.nullish(),
   voucherEntries: z.array(voucherEntrySchema),
   voucherType: voucherTypeSchema.nullish(),
-});
+})
 
 export const freightVoucherSchema = z.lazy(() =>
   freightVoucherBaseSchema.extend({
     voucherReferences: z.array(voucherReferenceSchema).optional(),
-  })
-);
+  }),
+)
 
-export const freightVoucherListSchema = z.array(freightVoucherSchema);
+export const freightVoucherListSchema = z.array(freightVoucherSchema)
 
-export type FreightVoucherSchema = z.infer<typeof freightVoucherSchema>;
-export type FreightVoucherListSchema = z.infer<typeof freightVoucherListSchema>;
-
+export type FreightVoucherSchema = z.infer<typeof freightVoucherSchema>
+export type FreightVoucherListSchema = z.infer<typeof freightVoucherListSchema>
 
 // Dipika Ending
 

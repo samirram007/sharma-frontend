@@ -68,10 +68,10 @@
 
 import { SelectDropdown } from '@/components/select-dropdown'
 import {
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from '@/components/ui/form'
 import { capitalizeAllWords } from '@/utils/removeEmptyStrings'
 import { useSuspenseQuery } from '@tanstack/react-query'
@@ -85,52 +85,52 @@ import { stateQueryOptions } from '@/features/modules/state/data/queryOptions'
 import { Suspense } from 'react'
 
 type Props = {
-    form: UseFormReturn<CompanyForm>
-    gapClass?: string
-    rtl?: boolean
+  form: UseFormReturn<CompanyForm>
+  gapClass?: string
+  rtl?: boolean
 }
 
 const StateDropdown = (props: Props) => {
-    const { form, gapClass, rtl } = props
+  const { form, gapClass, rtl } = props
 
-    const { data: stateList } = useSuspenseQuery(stateQueryOptions())
+  const { data: stateList } = useSuspenseQuery(stateQueryOptions())
 
-    // const stateId = form.watch('stateId') as string | number | undefined;; // Watch form value for reactivity
-    const handleValueChange = (value: string) => {
-        form.setValue('address.stateId', Number(value))
-    }
+  // const stateId = form.watch('stateId') as string | number | undefined;; // Watch form value for reactivity
+  const handleValueChange = (value: string) => {
+    form.setValue('address.stateId', Number(value))
+  }
 
-    return (
-        <Suspense fallback={<div>Loading...</div>}>
-        <FormField
-            control={form.control}
-            name="address.stateId"
-            render={({ field }) => (
-                <FormItem
-                    className={cn(
-                        'grid grid-cols-[100px_1fr] items-center space-y-0 gap-x-4 gap-y-1',
-                        gapClass,
-                    )}
-                >
-                    <FormLabel className={rtl ? 'order-last' : ''}>State</FormLabel>
-                    <SelectDropdown
-                        defaultValue={field.value ? field.value.toString() : ''}
-                        onValueChange={(value) => handleValueChange(value)}
-                        placeholder="Select a state"
-                        useSheet
-                        sheetTitle='Select State'
-                        className="w-full  "
-                        items={stateList?.data.map((state: State) => ({
-                            label: capitalizeAllWords(state.name),
-                            value: String(state.id),
-                        }))}
-                    />
-                    <FormMessage className="col-start-2" />
-                </FormItem>
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <FormField
+        control={form.control}
+        name="address.stateId"
+        render={({ field }) => (
+          <FormItem
+            className={cn(
+              'grid grid-cols-[100px_1fr] items-center space-y-0 gap-x-4 gap-y-1',
+              gapClass,
             )}
-        />
-        </Suspense>
-    )
+          >
+            <FormLabel className={rtl ? 'order-last' : ''}>State</FormLabel>
+            <SelectDropdown
+              defaultValue={field.value ? field.value.toString() : ''}
+              onValueChange={(value) => handleValueChange(value)}
+              placeholder="Select a state"
+              useSheet
+              sheetTitle="Select State"
+              className="w-full  "
+              items={stateList?.data.map((state: State) => ({
+                label: capitalizeAllWords(state.name),
+                value: String(state.id),
+              }))}
+            />
+            <FormMessage className="col-start-2" />
+          </FormItem>
+        )}
+      />
+    </Suspense>
+  )
 }
 
 export default StateDropdown

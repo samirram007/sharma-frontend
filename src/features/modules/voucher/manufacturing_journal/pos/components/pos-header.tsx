@@ -153,11 +153,12 @@ const DateBox = (props: DateBoxProps) => {
       if (!isNaN(parsed.getTime())) {
         const formatted = parsed.toLocaleDateString('en-GB').replace(/\//g, '-')
         setDisplayValue(formatted)
-      }        } else {
-            setDisplayValue('')
-        }
-        parseDate()
-    }, [form.watch(name)])
+      }
+    } else {
+      setDisplayValue('')
+    }
+    parseDate()
+  }, [form.watch(name)])
 
   return (
     <>

@@ -28,23 +28,22 @@ export const columns: ColumnDef<AppModule>[] = [
           (table.getIsSomePageRowsSelected() && 'indeterminate')
         }
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label='Select all'
-        className='translate-y-[2px]'
+        aria-label="Select all"
+        className="translate-y-[2px]"
       />
     ),
     meta: {
       className: cn(
         'sticky md:table-cell left-0 z-10 rounded-tl',
-        'bg-background transition-colors duration-200 group-hover/row:bg-muted group-data-[state=selected]/row:bg-muted'
+        'bg-background transition-colors duration-200 group-hover/row:bg-muted group-data-[state=selected]/row:bg-muted',
       ),
     },
     cell: ({ row }) => (
-
       <Checkbox
         checked={row.getIsSelected()}
         onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label='Select row'
-        className='translate-y-[2px]'
+        aria-label="Select row"
+        className="translate-y-[2px]"
       />
     ),
     enableSorting: false,
@@ -54,26 +53,25 @@ export const columns: ColumnDef<AppModule>[] = [
   {
     accessorKey: 'icon',
     header: 'Icon',
-    cell: ({ row }) => <Icon name={row.getValue('icon')} />
+    cell: ({ row }) => <Icon name={row.getValue('icon')} />,
   },
   {
     accessorKey: 'name',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Name' />
+      <DataTableColumnHeader column={column} title="Name" />
     ),
     cell: ({ row }) => {
-
       return (
-        <LongText className='max-w-36 flex items-center gap-2'>
+        <LongText className="max-w-36 flex items-center gap-2">
           {row.getValue('name')}
         </LongText>
-      );
+      )
     },
     meta: {
       className: cn(
         'drop-shadow-[0_1px_2px_rgb(0_0_0_/_0.1)] dark:drop-shadow-[0_1px_2px_rgb(255_255_255_/_0.1)] lg:drop-shadow-none',
         'bg-background transition-colors duration-200 group-hover/row:bg-muted group-data-[state=selected]/row:bg-muted',
-        'sticky left-0 md:table-cell'
+        'sticky left-0 md:table-cell',
       ),
     },
     enableHiding: false,
@@ -82,17 +80,17 @@ export const columns: ColumnDef<AppModule>[] = [
   {
     accessorKey: 'code',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Code' />
+      <DataTableColumnHeader column={column} title="Code" />
     ),
     cell: ({ row }) => (
-      <div className='w-fit text-nowrap'>{row.getValue('code')}</div>
+      <div className="w-fit text-nowrap">{row.getValue('code')}</div>
     ),
   },
 
   {
     accessorKey: 'description',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Description' />
+      <DataTableColumnHeader column={column} title="Description" />
     ),
     cell: ({ row }) => <div>{row.getValue('description')}</div>,
     enableSorting: false,
@@ -100,39 +98,37 @@ export const columns: ColumnDef<AppModule>[] = [
   {
     accessorKey: 'features',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Features' />
+      <DataTableColumnHeader column={column} title="Features" />
     ),
     cell: ({ row }) => {
-      const features = row.getValue('features') as AppModuleFeature[] | undefined
+      const features = row.getValue('features') as
+        AppModuleFeature[] | undefined
       return (
-        <div className='flex flex-wrap gap-2'>
+        <div className="flex flex-wrap gap-2">
           <AppModuleFeatureAddButton currentRow={row.original} />
-          {features?.map((feature: AppModuleFeature) => (
-            feature &&
-
-            <AppModuleFeatureButton key={feature.id} currentRow={feature} />
-
-
-          ))}
+          {features?.map(
+            (feature: AppModuleFeature) =>
+              feature && (
+                <AppModuleFeatureButton key={feature.id} currentRow={feature} />
+              ),
+          )}
         </div>
       )
     },
     enableSorting: false,
     enableHiding: false,
-
-
   },
   {
     accessorKey: 'status',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Status' />
+      <DataTableColumnHeader column={column} title="Status" />
     ),
     cell: ({ row }) => {
       const { status } = row.original
       const badgeColor = ActiveInactiveStatusTypes.get(status)
       return (
-        <div className='flex space-x-2'>
-          <Badge variant='outline' className={cn('capitalize', badgeColor)}>
+        <div className="flex space-x-2">
+          <Badge variant="outline" className={cn('capitalize', badgeColor)}>
             {row.getValue('status')}
           </Badge>
         </div>
@@ -151,14 +147,21 @@ export const columns: ColumnDef<AppModule>[] = [
   },
 ]
 
-
-const AppModuleFeatureAddButton = ({ currentRow }: { currentRow: AppModule }) => {
+const AppModuleFeatureAddButton = ({
+  currentRow,
+}: {
+  currentRow: AppModule
+}) => {
   const [open, setOpen] = React.useState(false)
   const keyName = 'app-module-feature'
   return (
     <>
-      <Badge variant='outline' className='cursor-pointer' onClick={() => setOpen(true)}>
-        <IconPlus className='mr-2 h-4 w-4' />
+      <Badge
+        variant="outline"
+        className="cursor-pointer"
+        onClick={() => setOpen(true)}
+      >
+        <IconPlus className="mr-2 h-4 w-4" />
       </Badge>
       <ModuleFeatureActionDialog
         key={`${keyName}-add-${currentRow?.id}`}
@@ -168,15 +171,23 @@ const AppModuleFeatureAddButton = ({ currentRow }: { currentRow: AppModule }) =>
           setOpen(!open)
         }}
       />
-    </>)
-
+    </>
+  )
 }
-const AppModuleFeatureButton = ({ currentRow }: { currentRow: AppModuleFeature }) => {
+const AppModuleFeatureButton = ({
+  currentRow,
+}: {
+  currentRow: AppModuleFeature
+}) => {
   const [open, setOpen] = React.useState(false)
   const keyName = 'app-module-feature'
   return (
     <>
-      <Badge variant='outline' className='cursor-pointer' onClick={() => setOpen(true)}>
+      <Badge
+        variant="outline"
+        className="cursor-pointer"
+        onClick={() => setOpen(true)}
+      >
         {currentRow.name}
       </Badge>
       <ModuleFeatureActionDialog
@@ -185,10 +196,8 @@ const AppModuleFeatureButton = ({ currentRow }: { currentRow: AppModuleFeature }
         open={open}
         onOpenChange={() => {
           setOpen(!open)
-
         }}
-
       />
-    </>)
-
+    </>
+  )
 }

@@ -24,17 +24,10 @@ import { IconMailPlus, IconSend } from '@tabler/icons-react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
-
 const formSchema = z.object({
-  name: z
-    .string()
-    .min(1, { message: 'Name is required.' }),
-  code: z
-    .string()
-    .min(1, { message: 'Role is required.' }),
-  status: z
-    .string()
-    .min(1, { message: 'Status is required.' }),
+  name: z.string().min(1, { message: 'Name is required.' }),
+  code: z.string().min(1, { message: 'Role is required.' }),
+  status: z.string().min(1, { message: 'Status is required.' }),
   description: z.string().optional(),
   accounting_effect: z
     .string()
@@ -67,9 +60,9 @@ export function VoucherCategorysInviteDialog({ open, onOpenChange }: Props) {
         onOpenChange(state)
       }}
     >
-      <DialogContent className='sm:max-w-md'>
-        <DialogHeader className='text-left'>
-          <DialogTitle className='flex items-center gap-2'>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader className="text-left">
+          <DialogTitle className="flex items-center gap-2">
             <IconMailPlus /> Invite User
           </DialogTitle>
           <DialogDescription>
@@ -79,22 +72,18 @@ export function VoucherCategorysInviteDialog({ open, onOpenChange }: Props) {
         </DialogHeader>
         <Form {...form}>
           <form
-            id='user-invite-form'
+            id="user-invite-form"
             onSubmit={form.handleSubmit(onSubmit)}
-            className='space-y-4'
+            className="space-y-4"
           >
             <FormField
               control={form.control}
-              name='name'
+              name="name"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Name</FormLabel>
                   <FormControl>
-                    <Input
-                      type='text'
-                      placeholder='eg: John Doe'
-                      {...field}
-                    />
+                    <Input type="text" placeholder="eg: John Doe" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -102,16 +91,12 @@ export function VoucherCategorysInviteDialog({ open, onOpenChange }: Props) {
             />
             <FormField
               control={form.control}
-              name='code'
+              name="code"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Name</FormLabel>
                   <FormControl>
-                    <Input
-                      type='text'
-                      placeholder='eg: jd'
-                      {...field}
-                    />
+                    <Input type="text" placeholder="eg: jd" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -119,14 +104,14 @@ export function VoucherCategorysInviteDialog({ open, onOpenChange }: Props) {
             />
             <FormField
               control={form.control}
-              name='description'
+              name="description"
               render={({ field }) => (
-                <FormItem className=''>
+                <FormItem className="">
                   <FormLabel>Description (optional)</FormLabel>
                   <FormControl>
                     <Textarea
-                      className='resize-none'
-                      placeholder='Add a personal note to your invitation (optional)'
+                      className="resize-none"
+                      placeholder="Add a personal note to your invitation (optional)"
                       {...field}
                     />
                   </FormControl>
@@ -136,11 +121,11 @@ export function VoucherCategorysInviteDialog({ open, onOpenChange }: Props) {
             />
           </form>
         </Form>
-        <DialogFooter className='gap-y-2'>
+        <DialogFooter className="gap-y-2">
           <DialogClose asChild>
-            <Button variant='outline'>Cancel</Button>
+            <Button variant="outline">Cancel</Button>
           </DialogClose>
-          <Button type='submit' form='user-invite-form'>
+          <Button type="submit" form="user-invite-form">
             Invite <IconSend />
           </Button>
         </DialogFooter>

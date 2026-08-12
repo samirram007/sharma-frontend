@@ -4,6 +4,9 @@ export const Route = createFileRoute(
   '/_protected/masters/organization/_layout/fiscal_year/_layout/open',
 )({
   beforeLoad: () => {
-    throw redirect({ to: '/masters/organization/fiscal_year/$id/open', params: { id: 'new' } })
+    throw redirect({
+      to: '/masters/organization/fiscal_year/$id/open',
+      params: { id: 'new' },
+    })
   },
 })

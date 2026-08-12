@@ -7,9 +7,9 @@ import { date_format } from '@/utils/removeEmptyStrings'
 export const columns: Array<ColumnDef<VoucherSchema>> = [
   {
     id: 'slNo',
-    header: () => <div className='text-center'>Sl. No.</div>,
+    header: () => <div className="text-center">Sl. No.</div>,
     cell: ({ row }) => (
-      <div className='text-center text-slate-600 dark:text-slate-400'>
+      <div className="text-center text-slate-600 dark:text-slate-400">
         {row.index + 1}
       </div>
     ),
@@ -21,10 +21,10 @@ export const columns: Array<ColumnDef<VoucherSchema>> = [
   {
     accessorKey: 'voucherDate',
     header: () => <div>Date</div>,
-    cell: ({ row }) => { 
+    cell: ({ row }) => {
       const date = row.getValue('voucherDate') as Date | string | undefined
       return (
-        <div className='text-muted-foreground'>
+        <div className="text-muted-foreground">
           {date ? date_format(date) : '-'}
         </div>
       )
@@ -37,7 +37,7 @@ export const columns: Array<ColumnDef<VoucherSchema>> = [
     accessorKey: 'voucherNo',
     header: () => <div>Dl. No.</div>,
     cell: ({ row }) => (
-      <div className='font-medium'>{row.getValue('voucherNo')}</div>
+      <div className="font-medium">{row.getValue('voucherNo')}</div>
     ),
     size: 100,
     meta: { className: cn('w-[100px]') },
@@ -49,9 +49,7 @@ export const columns: Array<ColumnDef<VoucherSchema>> = [
     cell: ({ row }) => {
       const party = row.original.party
       return (
-        <div className='font-medium text-foreground'>
-          {party?.name ?? '-'}
-        </div>
+        <div className="font-medium text-foreground">{party?.name ?? '-'}</div>
       )
     },
     minSize: 140,
@@ -65,9 +63,7 @@ export const columns: Array<ColumnDef<VoucherSchema>> = [
     cell: ({ row }) => {
       const d = row.original.voucherDispatchDetail
       return (
-        <div className='text-muted-foreground'>
-          {d?.billOfLadingNo ?? '-'}
-        </div>
+        <div className="text-muted-foreground">{d?.billOfLadingNo ?? '-'}</div>
       )
     },
     minSize: 100,
@@ -80,11 +76,7 @@ export const columns: Array<ColumnDef<VoucherSchema>> = [
     header: () => <div>Source</div>,
     cell: ({ row }) => {
       const d = row.original.voucherDispatchDetail
-      return (
-        <div className='text-muted-foreground'>
-          {d?.source ?? '-'}
-        </div>
-      )
+      return <div className="text-muted-foreground">{d?.source ?? '-'}</div>
     },
     minSize: 120,
     size: 130,
@@ -99,11 +91,7 @@ export const columns: Array<ColumnDef<VoucherSchema>> = [
       const dest = [d?.destination, d?.destinationSecondary]
         .filter(Boolean)
         .join(', ')
-      return (
-        <div className='text-xs text-muted-foreground'>
-          {dest || '-'}
-        </div>
-      )
+      return <div className="text-xs text-muted-foreground">{dest || '-'}</div>
     },
     minSize: 120,
     size: 140,
@@ -115,11 +103,7 @@ export const columns: Array<ColumnDef<VoucherSchema>> = [
     header: () => <div>Carrier Name</div>,
     cell: ({ row }) => {
       const d = row.original.voucherDispatchDetail
-      return (
-        <div className='text-foreground/80'>
-          {d?.carrierName ?? '-'}
-        </div>
-      )
+      return <div className="text-foreground/80">{d?.carrierName ?? '-'}</div>
     },
     minSize: 130,
     size: 145,
@@ -132,7 +116,7 @@ export const columns: Array<ColumnDef<VoucherSchema>> = [
     cell: ({ row }) => {
       const d = row.original.voucherDispatchDetail
       return (
-        <div className='text-xs text-muted-foreground'>
+        <div className="text-xs text-muted-foreground">
           {d?.motorVehicleNo ?? '-'}
         </div>
       )
@@ -144,13 +128,15 @@ export const columns: Array<ColumnDef<VoucherSchema>> = [
   },
   {
     id: 'weight',
-    header: () => <div className='text-right pr-4'>Weight (Mt)</div>,
+    header: () => <div className="text-right pr-4">Weight (Mt)</div>,
     cell: ({ row }) => {
       const d = row.original.voucherDispatchDetail
-      
-      const weight = d?.weight ? Number(d.weight).toFixed(d.weightUnit?.noOfDecimalPlaces ?? 2) : '-'
+
+      const weight = d?.weight
+        ? Number(d.weight).toFixed(d.weightUnit?.noOfDecimalPlaces ?? 2)
+        : '-'
       return (
-        <div className='px-4 text-right text-foreground/80 font-medium'>
+        <div className="px-4 text-right text-foreground/80 font-medium">
           {weight}
         </div>
       )
@@ -161,12 +147,12 @@ export const columns: Array<ColumnDef<VoucherSchema>> = [
   },
   {
     id: 'rate',
-    header: () => <div className='text-right pr-4'>Rate (Per Mt)</div>,
+    header: () => <div className="text-right pr-4">Rate (Per Mt)</div>,
     cell: ({ row }) => {
       const d = row.original.voucherDispatchDetail
       const rate = d?.rate ? Number(d.rate).toFixed(2) : '-'
       return (
-        <div className='pr-4 text-right text-foreground/80 font-medium'>
+        <div className="pr-4 text-right text-foreground/80 font-medium">
           {rate}
         </div>
       )
@@ -177,12 +163,12 @@ export const columns: Array<ColumnDef<VoucherSchema>> = [
   },
   {
     id: 'totalFare',
-    header: () => <div className='text-right pr-4'>Total Fare</div>,
+    header: () => <div className="text-right pr-4">Total Fare</div>,
     cell: ({ row }) => {
       const d = row.original.voucherDispatchDetail
       const fare = d?.totalFare ? Number(d.totalFare).toFixed(2) : '-'
       return (
-        <div className='text-right pr-4 font-semibold text-foreground'>
+        <div className="text-right pr-4 font-semibold text-foreground">
           {fare}
         </div>
       )
@@ -193,7 +179,7 @@ export const columns: Array<ColumnDef<VoucherSchema>> = [
   },
   {
     id: 'actions',
-    header: () => <div className='flex justify-center'>Bill</div>,
+    header: () => <div className="flex justify-center">Bill</div>,
     cell: BillCell,
     minSize: 280,
     size: 320,

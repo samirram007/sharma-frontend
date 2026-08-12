@@ -56,7 +56,9 @@ export const runningBalanceTransactionSchema = z.object({
     .optional(),
 })
 
-export type RunningBalanceTransaction = z.infer<typeof runningBalanceTransactionSchema>
+export type RunningBalanceTransaction = z.infer<
+  typeof runningBalanceTransactionSchema
+>
 
 // Detail response for a single item
 export const runningBalanceDetailSchema = z.object({
@@ -102,7 +104,9 @@ export const godownRunningBalanceItemSchema = z.object({
   closingQuantity: z.number(),
 })
 
-export type GodownRunningBalanceItem = z.infer<typeof godownRunningBalanceItemSchema>
+export type GodownRunningBalanceItem = z.infer<
+  typeof godownRunningBalanceItemSchema
+>
 
 export const godownRunningBalanceResponseSchema = z.object({
   godown: z.object({
@@ -113,4 +117,6 @@ export const godownRunningBalanceResponseSchema = z.object({
   items: z.array(godownRunningBalanceItemSchema),
 })
 
-export type GodownRunningBalanceResponse = z.infer<typeof godownRunningBalanceResponseSchema>
+export type GodownRunningBalanceResponse = z.infer<
+  typeof godownRunningBalanceResponseSchema
+>

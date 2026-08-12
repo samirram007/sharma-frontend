@@ -1,15 +1,15 @@
 import { createFileRoute, Outlet } from '@tanstack/react-router'
 
 export const Route = createFileRoute(
-    '/_protected/reports/day_book/_layout/receipt_note/_layout',
+  '/_protected/reports/day_book/_layout/receipt_note/_layout',
 )({
-    component: RouteComponent,
+  component: RouteComponent,
 })
 
 function RouteComponent() {
-    return (
-        <>
-            <Outlet />
-        </>
-    )
+  return (
+    <>
+      <Outlet />
+    </>
+  )
 }

@@ -2,8 +2,6 @@ import useDialogState from '@/core/hooks/use-dialog-state'
 import React, { useState } from 'react'
 import type { StorageUnit } from '../data/schema'
 
-
-
 type StorageUnitDialogType = 'invite' | 'add' | 'edit' | 'delete'
 
 interface StorageUnitContextType {
@@ -14,7 +12,9 @@ interface StorageUnitContextType {
   keyName: string
 }
 
-const StorageUnitContext = React.createContext<StorageUnitContextType | null>(null)
+const StorageUnitContext = React.createContext<StorageUnitContextType | null>(
+  null,
+)
 
 interface Props {
   children: React.ReactNode
@@ -24,9 +24,16 @@ export default function StorageUnitProvider({ children }: Props) {
   const [open, setOpen] = useDialogState<StorageUnitDialogType>(null)
   const [currentRow, setCurrentRow] = useState<StorageUnit | null>(null)
 
-
   return (
-    <StorageUnitContext.Provider value={{ open, setOpen, currentRow, setCurrentRow, keyName: "storageUnit" }}>
+    <StorageUnitContext.Provider
+      value={{
+        open,
+        setOpen,
+        currentRow,
+        setCurrentRow,
+        keyName: 'storageUnit',
+      }}
+    >
       {children}
     </StorageUnitContext.Provider>
   )

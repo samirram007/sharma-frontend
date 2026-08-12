@@ -22,7 +22,7 @@ export default async function globalSetup(): Promise<void> {
         `Laravel backend not reachable at ${BACKEND_API_URL} (${detail}).`,
         'Start it first (e.g. `cd sharma-api && composer run dev`) with the',
         'demo users seeded, then run the e2e suite. Override with E2E_API_URL.',
-      ].join(' ')
+      ].join(' '),
     )
   }
 }

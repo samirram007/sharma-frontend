@@ -9,42 +9,38 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Loader } from 'lucide-react'
 import z from 'zod'
 
-
 const paramsSchema = z.object({
-    id: z.union([
-        z.literal("new"),
-        z.coerce.number().refine((n) => !Number.isNaN(n), {
-            message: "Invalid number",
-        }),
-    ]),
+  id: z.union([
+    z.literal('new'),
+    z.coerce.number().refine((n) => !Number.isNaN(n), {
+      message: 'Invalid number',
+    }),
+  ]),
 })
 export const Route = createFileRoute(
-    '/_protected/administration/_layout/role/_layout/$id/_module',
+  '/_protected/administration/_layout/role/_layout/$id/_module',
 )({
-    params: {
-        parse: (params) => paramsSchema.parse(params),
-        stringify: ({ id }) => ({ id: `${id}` }),
-    },
-    loader: async ({ context, params: { id } }) => {
-
-        if (id === "new") return null
-        await context.queryClient.ensureQueryData(roleQueryOptions(id))
-        await context.queryClient.ensureQueryData(appModuleQueryOptions())
-        return null
-    },
-    component: () => {
-        const { id } = Route.useParams()
-        if (id === "new") return <NotFoundError />
-        const { data: modules } = useSuspenseQuery(appModuleQueryOptions())
-        const { data: role } = useSuspenseQuery(roleQueryOptions(id))
-        return (
-            <RolePermissionProvider>
-                <RolePermissionLayout modules={modules?.data} role={role?.data} />
-            </RolePermissionProvider>
-        )
-    },
-    errorComponent: () => <GeneralError minimal />,
-    pendingComponent: () => <Loader className="animate-spin" />,
+  params: {
+    parse: (params) => paramsSchema.parse(params),
+    stringify: ({ id }) => ({ id: `${id}` }),
+  },
+  loader: async ({ context, params: { id } }) => {
+    if (id === 'new') return null
+    await context.queryClient.ensureQueryData(roleQueryOptions(id))
+    await context.queryClient.ensureQueryData(appModuleQueryOptions())
+    return null
+  },
+  component: () => {
+    const { id } = Route.useParams()
+    if (id === 'new') return <NotFoundError />
+    const { data: modules } = useSuspenseQuery(appModuleQueryOptions())
+    const { data: role } = useSuspenseQuery(roleQueryOptions(id))
+    return (
+      <RolePermissionProvider>
+        <RolePermissionLayout modules={modules?.data} role={role?.data} />
+      </RolePermissionProvider>
+    )
+  },
+  errorComponent: () => <GeneralError minimal />,
+  pendingComponent: () => <Loader className="animate-spin" />,
 })
-
-

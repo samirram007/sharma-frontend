@@ -82,7 +82,12 @@ export function HandleItemClick({
     <DropdownMenuItem onClick={handleAssignRole}>
       {isPending ? <Loader className="animate-spin h-4 w-4" /> : ''}
       {!isPending && (
-        <CheckCircle className={cn("h-4 w-4 text-green-600", isAssigned ? "opacity-100" : "opacity-0")} />
+        <CheckCircle
+          className={cn(
+            'h-4 w-4 text-green-600',
+            isAssigned ? 'opacity-100' : 'opacity-0',
+          )}
+        />
       )}
       {roleName}
     </DropdownMenuItem>

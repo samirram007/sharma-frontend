@@ -67,15 +67,12 @@ export function ActionDialog({ currentRow, open, onOpenChange }: Props) {
   })
 
   const onSubmit = (values: MenuForm) => {
-    saveMenuEntry(
-      currentRow ? { ...values, id: currentRow.id } : values,
-      {
-        onSuccess: () => {
-          form.reset()
-          onOpenChange(false)
-        },
-      }
-    )
+    saveMenuEntry(currentRow ? { ...values, id: currentRow.id } : values, {
+      onSuccess: () => {
+        form.reset()
+        onOpenChange(false)
+      },
+    })
   }
 
   return (
@@ -86,51 +83,90 @@ export function ActionDialog({ currentRow, open, onOpenChange }: Props) {
         onOpenChange(state)
       }}
     >
-      <DialogContent className='sm:max-w-lg'>
-        <DialogHeader className='text-left border-b-2 pb-2'>
-          <DialogTitle>{isEdit ? 'Edit Menu Entry' : 'Add New Menu Entry'}</DialogTitle>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader className="text-left border-b-2 pb-2">
+          <DialogTitle>
+            {isEdit ? 'Edit Menu Entry' : 'Add New Menu Entry'}
+          </DialogTitle>
           <DialogDescription>
-            {isEdit ? 'Update the menu entry here.' : 'Create a new menu entry here.'}
+            {isEdit
+              ? 'Update the menu entry here.'
+              : 'Create a new menu entry here.'}
             Click save when you&apos;re done.
           </DialogDescription>
         </DialogHeader>
-        <div className='-mr-4 h-auto w-full overflow-y-auto py-1 pr-4'>
+        <div className="-mr-4 h-auto w-full overflow-y-auto py-1 pr-4">
           <Form {...form}>
             <form
-              id='menu-entry-form'
+              id="menu-entry-form"
               onSubmit={form.handleSubmit(onSubmit)}
-              className='space-y-4 p-0.5'
+              className="space-y-4 p-0.5"
             >
               <FeatureDropdown form={form} />
-              <FormInputField type='text' form={form} name='menuName' label='Menu Name' />
+              <FormInputField
+                type="text"
+                form={form}
+                name="menuName"
+                label="Menu Name"
+              />
               <ParentMenuDropdown form={form} />
-              <FormInputField type='text' form={form} name='route' label='Route (path)' />
-              <IconPicker form={form} name='icon' label='Icon' />
-              <div className='grid grid-cols-2 gap-4'>
-                <FormInputField type='number' form={form} name='sortOrder' label='Sort Order' />
+              <FormInputField
+                type="text"
+                form={form}
+                name="route"
+                label="Route (path)"
+              />
+              <IconPicker form={form} name="icon" label="Icon" />
+              <div className="grid grid-cols-2 gap-4">
                 <FormInputField
-                  type='select'
+                  type="number"
                   form={form}
-                  name='status'
-                  label='Status'
+                  name="sortOrder"
+                  label="Sort Order"
+                />
+                <FormInputField
+                  type="select"
+                  form={form}
+                  name="status"
+                  label="Status"
                   options={[
                     { label: 'Active', value: 'active' },
                     { label: 'Inactive', value: 'inactive' },
                   ]}
                 />
               </div>
-              <div className='grid grid-cols-3 gap-4'>
-                <FormInputField type='checkbox' form={form} name='isVisible' label='Visible' />
-                <FormInputField type='checkbox' form={form} name='isGroup' label='Is Group' />
-                <FormInputField type='checkbox' form={form} name='isTopMenu' label='Top Menu' />
+              <div className="grid grid-cols-3 gap-4">
+                <FormInputField
+                  type="checkbox"
+                  form={form}
+                  name="isVisible"
+                  label="Visible"
+                />
+                <FormInputField
+                  type="checkbox"
+                  form={form}
+                  name="isGroup"
+                  label="Is Group"
+                />
+                <FormInputField
+                  type="checkbox"
+                  form={form}
+                  name="isTopMenu"
+                  label="Top Menu"
+                />
               </div>
-              <FormInputField type='textarea' form={form} name='description' label='Description (optional)' />
+              <FormInputField
+                type="textarea"
+                form={form}
+                name="description"
+                label="Description (optional)"
+              />
             </form>
           </Form>
         </div>
         <DialogFooter>
-          <Button type='submit' form='menu-entry-form' disabled={isPending}>
-            {isPending && <Loader2 className='mr-2 h-4 w-4 animate-spin' />}
+          <Button type="submit" form="menu-entry-form" disabled={isPending}>
+            {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {isPending ? 'Saving...' : 'Save changes'}
           </Button>
         </DialogFooter>

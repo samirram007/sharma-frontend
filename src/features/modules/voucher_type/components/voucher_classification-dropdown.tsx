@@ -17,11 +17,12 @@ import type { UseFormReturn } from 'react-hook-form'
 import { fetchVoucherClassificationService } from '../../voucher_classification/data/api'
 
 interface VoucherClassificationDropdownProps {
-   
   form: UseFormReturn<any>
 }
 
-export default function VoucherClassificationDropdown({ form }: VoucherClassificationDropdownProps) {
+export default function VoucherClassificationDropdown({
+  form,
+}: VoucherClassificationDropdownProps) {
   const { data, isLoading } = useQuery({
     queryKey: ['voucherClassifications'],
     queryFn: () => fetchVoucherClassificationService(),
@@ -46,7 +47,9 @@ export default function VoucherClassificationDropdown({ form }: VoucherClassific
             </FormControl>
             <SelectContent>
               {isLoading ? (
-                <SelectItem value="loading" disabled>Loading...</SelectItem>
+                <SelectItem value="loading" disabled>
+                  Loading...
+                </SelectItem>
               ) : (
                 data?.data?.map((item: { id: number; name: string }) => (
                   <SelectItem key={item.id} value={item.id.toString()}>

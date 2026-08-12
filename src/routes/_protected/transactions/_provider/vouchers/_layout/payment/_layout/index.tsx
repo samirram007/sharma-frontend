@@ -1,6 +1,3 @@
-
-
-
 import PaymentVoucherComponent from '@/features/modules/voucher/payment/index'
 import { createFileRoute } from '@tanstack/react-router'
 
@@ -9,4 +6,3 @@ export const Route = createFileRoute(
 )({
   component: PaymentVoucherComponent,
 })
-

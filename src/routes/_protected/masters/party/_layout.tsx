@@ -1,4 +1,3 @@
-
 import ForbiddenError from '@/features/errors/403'
 import GeneralError from '@/features/errors/general-error'
 import Party from '@/features/masters/party'
@@ -9,7 +8,6 @@ export const Route = createFileRoute('/_protected/masters/party/_layout')({
   component: () => {
     return (
       <PartyProvider>
-
         <Party />
       </PartyProvider>
     )
@@ -17,4 +15,3 @@ export const Route = createFileRoute('/_protected/masters/party/_layout')({
   notFoundComponent: () => <ForbiddenError minimal />,
   errorComponent: () => <GeneralError minimal />,
 })
-

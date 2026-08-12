@@ -14,21 +14,21 @@ app.use(express.static(path.resolve(__dirname, 'dist'), { index: false }))
 
 // template HTML from Vite build
 const template = fs.readFileSync(
-    path.resolve(__dirname, 'dist/index.html'),
-    'utf-8'
+  path.resolve(__dirname, 'dist/index.html'),
+  'utf-8',
 )
 
 app.get('*', async (req: Request, res: Response) => {
-    try {
-        const appHtml = await render(req.url)
-        const html = template.replace(`<!--app-->`, appHtml)
-        res.status(200).set({ 'Content-Type': 'text/html' }).end(html)
-    } catch (err) {
-        console.error(err)
-        res.status(500).end('Internal Server Error')
-    }
+  try {
+    const appHtml = await render(req.url)
+    const html = template.replace(`<!--app-->`, appHtml)
+    res.status(200).set({ 'Content-Type': 'text/html' }).end(html)
+  } catch (err) {
+    console.error(err)
+    res.status(500).end('Internal Server Error')
+  }
 })
 
 app.listen(5172, () => {
-    console.log('SSR server running at http://localhost:5172')
+  console.log('SSR server running at http://localhost:5172')
 })

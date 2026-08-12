@@ -1,6 +1,5 @@
-import { ActiveInactiveStatusSchema } from '@/types/active-inactive-status';
-import { z } from 'zod';
-
+import { ActiveInactiveStatusSchema } from '@/types/active-inactive-status'
+import { z } from 'zod'
 
 export const uniqueQuantityCodeSchema: z.ZodType<any> = z.object({
   id: z.number().int().positive(),
@@ -15,8 +14,9 @@ export const uniqueQuantityCodeSchema: z.ZodType<any> = z.object({
 export type UniqueQuantityCode = z.infer<typeof uniqueQuantityCodeSchema>
 
 export const uniqueQuantityCodeListSchema = z.array(uniqueQuantityCodeSchema)
-export type UniqueQuantityCodeList = z.infer<typeof uniqueQuantityCodeListSchema>
-
+export type UniqueQuantityCodeList = z.infer<
+  typeof uniqueQuantityCodeListSchema
+>
 
 export const formSchema = z.object({
   name: z.string().min(1, { message: 'Name is required.' }),
@@ -27,4 +27,3 @@ export const formSchema = z.object({
   quantityType: z.string().min(1),
   isEdit: z.boolean(),
 })
-

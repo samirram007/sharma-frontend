@@ -1,12 +1,10 @@
-
-
 import { useStockSummary } from '../../stock_summary/contexts/stock_summary-context'
 import { ActionDialog } from './action-dialog'
 import { DeleteDialog } from './delete-dialog'
 
-
 export function Dialogs() {
-  const { open, setOpen, currentRow, setCurrentRow, keyName } = useStockSummary()
+  const { open, setOpen, currentRow, setCurrentRow, keyName } =
+    useStockSummary()
   return (
     <>
       <ActionDialog

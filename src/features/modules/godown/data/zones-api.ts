@@ -1,5 +1,5 @@
-import { getData } from "@/utils/dataClient"
+import { getData } from '@/utils/dataClient'
 
 export async function fetchZonesService() {
-    return await getData('/zones')
+  return await getData('/zones')
 }

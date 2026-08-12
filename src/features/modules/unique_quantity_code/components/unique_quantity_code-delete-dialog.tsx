@@ -10,14 +10,17 @@ import { IconAlertTriangle } from '@tabler/icons-react'
 import { useState } from 'react'
 import type { UniqueQuantityCode } from '../data/schema'
 
-
 interface Props {
   open: boolean
   onOpenChange: (open: boolean) => void
   currentRow: UniqueQuantityCode
 }
 
-export function UniqueQuantityCodeDeleteDialog({ open, onOpenChange, currentRow }: Props) {
+export function UniqueQuantityCodeDeleteDialog({
+  open,
+  onOpenChange,
+  currentRow,
+}: Props) {
   const [value, setValue] = useState('')
 
   const handleDelete = () => {
@@ -34,37 +37,37 @@ export function UniqueQuantityCodeDeleteDialog({ open, onOpenChange, currentRow 
       handleConfirm={handleDelete}
       disabled={value.trim() !== currentRow.id.toString()}
       title={
-        <span className='text-destructive'>
+        <span className="text-destructive">
           <IconAlertTriangle
-            className='stroke-destructive mr-1 inline-block'
+            className="stroke-destructive mr-1 inline-block"
             size={18}
           />{' '}
           Delete User
         </span>
       }
       desc={
-        <div className='space-y-4'>
-          <p className='mb-2'>
+        <div className="space-y-4">
+          <p className="mb-2">
             Are you sure you want to delete{' '}
-            <span className='font-bold'>{currentRow.name}</span>?
+            <span className="font-bold">{currentRow.name}</span>?
             <br />
             This action will permanently remove the user with the status of{' '}
-            <span className='font-bold'>
+            <span className="font-bold">
               {currentRow.status.toUpperCase()}
             </span>{' '}
             from the system. This cannot be undone.
           </p>
 
-          <Label className='my-2'>
+          <Label className="my-2">
             Username:
             <Input
               value={value}
               onChange={(e) => setValue(e.target.value)}
-              placeholder='Enter username to confirm deletion.'
+              placeholder="Enter username to confirm deletion."
             />
           </Label>
 
-          <Alert variant='destructive'>
+          <Alert variant="destructive">
             <AlertTitle>Warning!</AlertTitle>
             <AlertDescription>
               Please be carefull, this operation can not be rolled back.
@@ -72,7 +75,7 @@ export function UniqueQuantityCodeDeleteDialog({ open, onOpenChange, currentRow 
           </Alert>
         </div>
       }
-      confirmText='Delete'
+      confirmText="Delete"
       destructive
     />
   )

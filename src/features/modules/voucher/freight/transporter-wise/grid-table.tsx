@@ -1,11 +1,5 @@
-
 // import { DataTablePagination } from '@/features/global/components/data-table/data-table-pagination'
 import {
-  
-  
-  
-  
-  
   flexRender,
   getCoreRowModel,
   getFacetedRowModel,
@@ -13,11 +7,17 @@ import {
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
-  useReactTable
+  useReactTable,
 } from '@tanstack/react-table'
 import { useState } from 'react'
 import { DataTableToolbar } from './data-table-toolbar'
-import type {ColumnDef, ColumnFiltersState, RowData, SortingState, VisibilityState} from '@tanstack/react-table';
+import type {
+  ColumnDef,
+  ColumnFiltersState,
+  RowData,
+  SortingState,
+  VisibilityState,
+} from '@tanstack/react-table'
 import type { StockSummarySchema } from '../../stock_summary/data/schema'
 import type { FreightVoucherSchema } from '../data/schema'
 import { cn } from '@/lib/utils'
@@ -30,10 +30,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 
-
-
 declare module '@tanstack/react-table' {
-   
   interface ColumnMeta<TData extends RowData, TValue> {
     className: string
   }
@@ -47,7 +44,9 @@ interface DataTableProps {
 
 export function GridTable({ columns, data }: DataTableProps) {
   const [rowSelection, setRowSelection] = useState({})
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({ select: false })
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
+    select: false,
+  })
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [sorting, setSorting] = useState<SortingState>([])
 
@@ -82,37 +81,45 @@ export function GridTable({ columns, data }: DataTableProps) {
     getFacetedUniqueValues: getFacetedUniqueValues(),
   })
 
-  const totalAmount = table
-    .getFilteredRowModel()
-    .rows.reduce((sum, row) => {
-      return sum + Number(row.original.amount ?? 0)
-    }, 0)
-  const gridClass = 'grid grid-cols-[100px_200px_150px_1fr_150px_150px_150px_300px]'
-  const exportColumnsData = table.getVisibleLeafColumns().map((col) => ({
-    header:
-      typeof col.columnDef.header === 'string' ? col.columnDef.header : col.id,
-    accessor: col.id as keyof FreightVoucherSchema,
-  })).concat([{
-    header: 'paymentStatus',
-    accessor: 'paymentStatus' as keyof FreightVoucherSchema,
-  }, {
-    header: 'partyName',
-    accessor: 'partyName' as keyof FreightVoucherSchema,
-  },
-  {
-    header: 'voucherType',
-    accessor: 'voucherType' as keyof FreightVoucherSchema,
-  }
-  ])
+  const totalAmount = table.getFilteredRowModel().rows.reduce((sum, row) => {
+    return sum + Number(row.original.amount ?? 0)
+  }, 0)
+  const gridClass =
+    'grid grid-cols-[100px_200px_150px_1fr_150px_150px_150px_300px]'
+  const exportColumnsData = table
+    .getVisibleLeafColumns()
+    .map((col) => ({
+      header:
+        typeof col.columnDef.header === 'string'
+          ? col.columnDef.header
+          : col.id,
+      accessor: col.id as keyof FreightVoucherSchema,
+    }))
+    .concat([
+      {
+        header: 'paymentStatus',
+        accessor: 'paymentStatus' as keyof FreightVoucherSchema,
+      },
+      {
+        header: 'partyName',
+        accessor: 'partyName' as keyof FreightVoucherSchema,
+      },
+      {
+        header: 'voucherType',
+        accessor: 'voucherType' as keyof FreightVoucherSchema,
+      },
+    ])
   //   paymentStatus: row.paymentStatus ?? '',
   const keyName = 'Freight Voucher'
   return (
-    <div className='space-y-1'>
-      <DataTableToolbar table={table}
+    <div className="space-y-1">
+      <DataTableToolbar
+        table={table}
         placeHolder={`Filter ${keyName} `}
         filteredRows={data}
-        exportColumnsData={exportColumnsData} />
-      <div className='rounded-md border'>
+        exportColumnsData={exportColumnsData}
+      />
+      <div className="rounded-md border">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -127,9 +134,9 @@ export function GridTable({ columns, data }: DataTableProps) {
                       {header.isPlaceholder
                         ? null
                         : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
+                            header.column.columnDef.header,
+                            header.getContext(),
+                          )}
                     </TableHead>
                   )
                 })}
@@ -151,7 +158,7 @@ export function GridTable({ columns, data }: DataTableProps) {
                     >
                       {flexRender(
                         cell.column.columnDef.cell,
-                        cell.getContext()
+                        cell.getContext(),
                       )}
                     </TableCell>
                   ))}
@@ -161,7 +168,7 @@ export function GridTable({ columns, data }: DataTableProps) {
               <TableRow>
                 <TableCell
                   colSpan={table.getVisibleLeafColumns().length}
-                  className='h-24 text-center'
+                  className="h-24 text-center"
                 >
                   No results.
                 </TableCell>
@@ -170,15 +177,27 @@ export function GridTable({ columns, data }: DataTableProps) {
           </TableBody>
         </Table>
       </div>
-      <div className={cn('grid', gridClass, 'items-center px-2', ' bg-accent border-b-2 border-gray-200')}>
+      <div
+        className={cn(
+          'grid',
+          gridClass,
+          'items-center px-2',
+          ' bg-accent border-b-2 border-gray-200',
+        )}
+      >
         <div></div>
         <div>Count: {table.getRowModel().rows.length}</div>
         <div></div>
         <div></div>
         <div></div>
         <div></div>
-        <div className='text-right font-bold'>Total:</div>
-        <div className={cn("col-start-8 text-sm font-semibold text-right flex space-x-2 justify-end  ", 'pr-8 ')}>
+        <div className="text-right font-bold">Total:</div>
+        <div
+          className={cn(
+            'col-start-8 text-sm font-semibold text-right flex space-x-2 justify-end  ',
+            'pr-8 ',
+          )}
+        >
           {totalAmount.toFixed(2)}
         </div>
         <div> </div>

@@ -21,7 +21,6 @@ import { useNavigate } from '@tanstack/react-router'
 import React from 'react'
 import { sidebarData } from './data/sidebar-data'
 
-
 // import { ScrollArea } from './ui/scroll-area'
 
 export function GodownItemCommandMenu() {
@@ -34,14 +33,14 @@ export function GodownItemCommandMenu() {
       setOpen(false)
       command()
     },
-    [setOpen]
+    [setOpen],
   )
 
   return (
     <CommandDialog modal open={open} onOpenChange={setOpen}>
-      <CommandInput placeholder='Type a command or search...' />
+      <CommandInput placeholder="Type a command or search..." />
       <CommandList className=" max-h-full">
-        <ScrollArea className='h-72 pr-1'>
+        <ScrollArea className="h-72 pr-1">
           <CommandEmpty>No results found.</CommandEmpty>
           {sidebarData.navGroups.map((group) => (
             <CommandGroup key={group.title} heading={group.title}>
@@ -55,8 +54,8 @@ export function GodownItemCommandMenu() {
                         runCommand(() => navigate({ to: navItem.url }))
                       }}
                     >
-                      <div className='mr-2 flex h-4 w-4 items-center justify-center'>
-                        <IconArrowRightDashed className='size-2 text-muted-foreground/80' />
+                      <div className="mr-2 flex h-4 w-4 items-center justify-center">
+                        <IconArrowRightDashed className="size-2 text-muted-foreground/80" />
                       </div>
                       {navItem.title}
                     </CommandItem>
@@ -70,8 +69,8 @@ export function GodownItemCommandMenu() {
                       runCommand(() => navigate({ to: subItem.url }))
                     }}
                   >
-                    <div className='mr-2 flex h-4 w-4 items-center justify-center'>
-                      <IconArrowRightDashed className='size-2 text-muted-foreground/80' />
+                    <div className="mr-2 flex h-4 w-4 items-center justify-center">
+                      <IconArrowRightDashed className="size-2 text-muted-foreground/80" />
                     </div>
                     {subItem.title}
                   </CommandItem>
@@ -80,12 +79,12 @@ export function GodownItemCommandMenu() {
             </CommandGroup>
           ))}
           <CommandSeparator />
-          <CommandGroup heading='Theme'>
+          <CommandGroup heading="Theme">
             <CommandItem onSelect={() => runCommand(() => setTheme('light'))}>
               <IconSun /> <span>Light</span>
             </CommandItem>
             <CommandItem onSelect={() => runCommand(() => setTheme('dark'))}>
-              <IconMoon className='scale-90' />
+              <IconMoon className="scale-90" />
               <span>Dark</span>
             </CommandItem>
             <CommandItem onSelect={() => runCommand(() => setTheme('system'))}>

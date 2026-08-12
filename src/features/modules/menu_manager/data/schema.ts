@@ -8,12 +8,15 @@ export const menuFeatureSchema = z.object({
   description: z.string().nullable().optional(),
   action: z.string().nullable().optional(),
   appModuleId: z.number().int().optional(),
-  rolePermission: z.object({
-    id: z.number().int().optional(),
-    roleId: z.number().int(),
-    appModuleFeatureId: z.number().int(),
-    isAllowed: z.boolean(),
-  }).nullable().optional(),
+  rolePermission: z
+    .object({
+      id: z.number().int().optional(),
+      roleId: z.number().int(),
+      appModuleFeatureId: z.number().int(),
+      isAllowed: z.boolean(),
+    })
+    .nullable()
+    .optional(),
 })
 
 export type MenuFeature = z.infer<typeof menuFeatureSchema>

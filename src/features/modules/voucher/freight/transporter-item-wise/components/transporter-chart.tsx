@@ -26,12 +26,27 @@ interface TransporterChartProps {
 }
 
 const COLORS = [
-  '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6',
-  '#06b6d4', '#ec4899', '#84cc16', '#f97316', '#6366f1',
-  '#14b8a6', '#e11d48', '#a855f7', '#0ea5e9', '#22c55e',
+  '#3b82f6',
+  '#10b981',
+  '#f59e0b',
+  '#ef4444',
+  '#8b5cf6',
+  '#06b6d4',
+  '#ec4899',
+  '#84cc16',
+  '#f97316',
+  '#6366f1',
+  '#14b8a6',
+  '#e11d48',
+  '#a855f7',
+  '#0ea5e9',
+  '#22c55e',
 ]
 
-export default function TransporterChart({ data, chartTitle = 'Transporter Wise Total Amounts' }: TransporterChartProps) {
+export default function TransporterChart({
+  data,
+  chartTitle = 'Transporter Wise Total Amounts',
+}: TransporterChartProps) {
   const chartRef = useRef<HTMLDivElement>(null)
 
   const chartData: ChartDataPoint[] = data
@@ -78,42 +93,45 @@ export default function TransporterChart({ data, chartTitle = 'Transporter Wise 
 
   if (chartData.length === 0) {
     return (
-      <div className='text-center text-sm text-muted-foreground py-4'>
+      <div className="text-center text-sm text-muted-foreground py-4">
         No data available for chart.
       </div>
     )
   }
 
   return (
-    <div className='border rounded-lg p-4 bg-white dark:bg-slate-900 shadow-sm'>
-      <div className='flex items-center justify-between mb-3'>
-        <h3 className='text-sm font-semibold text-slate-700 dark:text-slate-300'>
+    <div className="border rounded-lg p-4 bg-white dark:bg-slate-900 shadow-sm">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300">
           {chartTitle}
         </h3>
         <Button
-          variant='outline'
-          size='sm'
-          className='h-7 text-xs gap-1'
+          variant="outline"
+          size="sm"
+          className="h-7 text-xs gap-1"
           onClick={handleDownload}
         >
-          <IconDownload className='h-3.5 w-3.5' />
+          <IconDownload className="h-3.5 w-3.5" />
           Download Chart
         </Button>
       </div>
       <div ref={chartRef}>
-        <ResponsiveContainer width='100%' height={Math.max(300, chartData.length * 50)}>
+        <ResponsiveContainer
+          width="100%"
+          height={Math.max(300, chartData.length * 50)}
+        >
           <BarChart
             data={chartData}
             margin={{ top: 10, right: 30, left: 20, bottom: 60 }}
           >
-            <CartesianGrid strokeDasharray='3 3' stroke='#e2e8f0' />
+            <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
             <XAxis
-              dataKey='name'
+              dataKey="name"
               tick={{ fontSize: 11, fill: '#64748b' }}
               tickLine={false}
               axisLine={{ stroke: '#cbd5e1' }}
               angle={-35}
-              textAnchor='end'
+              textAnchor="end"
               height={70}
             />
             <YAxis
@@ -134,20 +152,27 @@ export default function TransporterChart({ data, chartTitle = 'Transporter Wise 
                 name === 'amount' ? 'Total Amount' : 'Items',
               ]}
             />
-            <Bar dataKey='amount' radius={[4, 4, 0, 0]} maxBarSize={48} fill='#3b82f6'>
+            <Bar
+              dataKey="amount"
+              radius={[4, 4, 0, 0]}
+              maxBarSize={48}
+              fill="#3b82f6"
+            >
               {chartData.map((_, index) => (
                 <Cell
                   key={index}
                   fill={COLORS[index % COLORS.length]}
-                  className='transition-opacity hover:opacity-80'
+                  className="transition-opacity hover:opacity-80"
                 />
               ))}
               <LabelList
-                dataKey='amount'
-                position='top'
+                dataKey="amount"
+                position="top"
                 fontSize={10}
-                fill='#475569'
-                formatter={(value: any) => `₹${(Number(value) / 1000).toFixed(1)}k`}
+                fill="#475569"
+                formatter={(value: any) =>
+                  `₹${(Number(value) / 1000).toFixed(1)}k`
+                }
               />
             </Bar>
           </BarChart>

@@ -9,9 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import {
-  Form
-} from '@/components/ui/form'
+import { Form } from '@/components/ui/form'
 
 import type { State, StateForm } from '@/features/modules/state/data/schema'
 import { showSubmittedData } from '@/utils/show-submitted-data'
@@ -24,8 +22,6 @@ import { lowerCase } from '../../../../utils/removeEmptyStrings'
 import { storeStateService, updateStateService } from '../data/api'
 import { formSchema } from '../data/schema'
 import CountryDropdown from './country-dropdown'
-
-
 
 interface Props {
   currentRow?: State
@@ -40,12 +36,11 @@ export function ActionDialog({ currentRow, open, onOpenChange }: Props) {
     mutationFn: async (data: StateForm) => {
       // Here you would typically make an API call to save the State
       // For example:
-      console.log('Saving State:', data);
+      console.log('Saving State:', data)
       if (isEdit && currentRow) {
         return await updateStateService({ ...data, id: currentRow.id })
-      }
-      else if (!isEdit) {
-        return await storeStateService(data);
+      } else if (!isEdit) {
+        return await storeStateService(data)
       }
     },
     onSuccess: (data) => {
@@ -58,29 +53,27 @@ export function ActionDialog({ currentRow, open, onOpenChange }: Props) {
     resolver: zodResolver(formSchema),
     defaultValues: isEdit
       ? {
-        ...currentRow,
-        gstCode: currentRow?.gstCode ?? '',
-        isEdit,
-      }
+          ...currentRow,
+          gstCode: currentRow?.gstCode ?? '',
+          isEdit,
+        }
       : {
-        name: '',
-        code: '',
-        gstCode: '',
-        countryId: 76,
-        isEdit,
-      },
+          name: '',
+          code: '',
+          gstCode: '',
+          countryId: 76,
+          isEdit,
+        },
   })
   //  const stateStatusOptions: ActiveInactiveStatus[] = ['active', 'inactive'];
 
-  const moduleName = "State"
+  const moduleName = 'State'
   const onSubmit = (values: StateForm) => {
     form.reset()
     showSubmittedData(values)
     mutateState.mutate(values)
     onOpenChange(false)
   }
-
-
 
   return (
     <Dialog
@@ -90,38 +83,53 @@ export function ActionDialog({ currentRow, open, onOpenChange }: Props) {
         onOpenChange(state)
       }}
     >
-      <DialogContent className='sm:max-w-lg'>
-        <DialogHeader className='text-left'>
-          <DialogTitle>{isEdit ? 'Edit ' : 'Add New '} {moduleName}</DialogTitle>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader className="text-left">
+          <DialogTitle>
+            {isEdit ? 'Edit ' : 'Add New '} {moduleName}
+          </DialogTitle>
           <DialogDescription>
-            {isEdit ? `Update the ${lowerCase(moduleName)} here. `
+            {isEdit
+              ? `Update the ${lowerCase(moduleName)} here. `
               : `Create new ${lowerCase(moduleName)} here. `}
             Click save when you&apos;re done.
           </DialogDescription>
         </DialogHeader>
-        <div className='-mr-4 h-[26.25rem] w-full overflow-y-auto py-1 pr-4'>
+        <div className="-mr-4 h-[26.25rem] w-full overflow-y-auto py-1 pr-4">
           <Form {...form}>
             <form
-              id='user-form'
+              id="user-form"
               onSubmit={form.handleSubmit(onSubmit)}
-              className='space-y-4 p-0.5'
+              className="space-y-4 p-0.5"
             >
-              <FormInputField type='text' form={form} name='name' label='Name' />
-              <FormInputField type='text' form={form} name='code' label='Code' />
-              <FormInputField type='text' form={form} name='gstCode' label='Gst Code' />
+              <FormInputField
+                type="text"
+                form={form}
+                name="name"
+                label="Name"
+              />
+              <FormInputField
+                type="text"
+                form={form}
+                name="code"
+                label="Code"
+              />
+              <FormInputField
+                type="text"
+                form={form}
+                name="gstCode"
+                label="Gst Code"
+              />
               <CountryDropdown form={form} />
-
-
-
             </form>
           </Form>
         </div>
         <DialogFooter>
-          <Button type='submit' form='user-form'>
+          <Button type="submit" form="user-form">
             Save changes
           </Button>
         </DialogFooter>
       </DialogContent>
-    </Dialog >
+    </Dialog>
   )
 }

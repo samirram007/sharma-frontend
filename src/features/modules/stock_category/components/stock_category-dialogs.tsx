@@ -1,4 +1,3 @@
-
 import { useStockCategory } from '../contexts/stock_category-context'
 import { StockCategoryActionDialog } from './stock_category-action-dialog'
 import { StockCategoryDeleteDialog } from './stock_category-delete-dialog'
@@ -8,12 +7,10 @@ export function StockCategoryDialogs() {
   return (
     <>
       <StockCategoryActionDialog
-        key='stock_category-add'
+        key="stock_category-add"
         open={open === 'add'}
         onOpenChange={() => setOpen('add')}
       />
-
-
 
       {currentRow && (
         <>

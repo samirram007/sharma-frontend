@@ -2,8 +2,6 @@ import useDialogState from '@/core/hooks/use-dialog-state'
 import React, { useState } from 'react'
 import type { StockGroup } from '../data/schema'
 
-
-
 type StockGroupDialogType = 'invite' | 'add' | 'edit' | 'delete'
 
 interface StockGroupContextType {
@@ -14,7 +12,9 @@ interface StockGroupContextType {
   keyName: string
 }
 
-const StockGroupContext = React.createContext<StockGroupContextType | null>(null)
+const StockGroupContext = React.createContext<StockGroupContextType | null>(
+  null,
+)
 
 interface Props {
   children: React.ReactNode
@@ -25,7 +25,15 @@ export default function StockGroupProvider({ children }: Props) {
   const [currentRow, setCurrentRow] = useState<StockGroup | null>(null)
 
   return (
-    <StockGroupContext value={{ open, setOpen, currentRow, setCurrentRow, keyName: "stock_groups" }}>
+    <StockGroupContext
+      value={{
+        open,
+        setOpen,
+        currentRow,
+        setCurrentRow,
+        keyName: 'stock_groups',
+      }}
+    >
       {children}
     </StockGroupContext>
   )

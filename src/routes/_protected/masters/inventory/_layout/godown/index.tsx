@@ -1,8 +1,8 @@
-import Godown from '@/features/modules/godown';
-import { godownQueryOptions } from '@/features/modules/godown/data/queryOptions';
-import { useSuspenseQuery } from '@tanstack/react-query';
-import { createFileRoute } from '@tanstack/react-router';
-import { Loader } from 'lucide-react';
+import Godown from '@/features/modules/godown'
+import { godownQueryOptions } from '@/features/modules/godown/data/queryOptions'
+import { useSuspenseQuery } from '@tanstack/react-query'
+import { createFileRoute } from '@tanstack/react-router'
+import { Loader } from 'lucide-react'
 
 export const Route = createFileRoute(
   '/_protected/masters/inventory/_layout/godown/',
@@ -17,4 +17,3 @@ export const Route = createFileRoute(
   errorComponent: () => <div>Error loading godown data.</div>,
   pendingComponent: () => <Loader className="animate-spin" />,
 })
-

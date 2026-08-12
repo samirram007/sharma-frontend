@@ -7,14 +7,14 @@ export const RejectionOutVoucherSchema = voucherSchema
 export type RejectionOutVoucher = z.infer<typeof RejectionOutVoucherSchema>
 
 export const RejectionOutVoucherListSchema = z.array(RejectionOutVoucherSchema)
-export type RejectionOutVoucherList = z.infer<typeof RejectionOutVoucherListSchema>
+export type RejectionOutVoucherList = z.infer<
+  typeof RejectionOutVoucherListSchema
+>
 
-export const RejectionOutFormSchema = RejectionOutVoucherSchema
-    .extend({
-        isEdit: z.boolean().optional(),
-    })
-    .omit({
-        id: true,
-    })
+export const RejectionOutFormSchema = RejectionOutVoucherSchema.extend({
+  isEdit: z.boolean().optional(),
+}).omit({
+  id: true,
+})
 
 export type RejectionOutVoucherForm = z.infer<typeof RejectionOutFormSchema>

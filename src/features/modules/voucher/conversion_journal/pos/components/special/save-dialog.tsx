@@ -97,9 +97,7 @@ const SaveDialog = ({ mainForm, isSaving, setSaving }: SaveDialogProps) => {
         )
       }
       if (!hasOutEntry) {
-        newErrors.push(
-          'At least one OUT entry (input consumed) is required.',
-        )
+        newErrors.push('At least one OUT entry (input consumed) is required.')
       }
 
       // --- Duplicate stock item check ---

@@ -1,17 +1,21 @@
-import { stockSummaryQueryOptions } from '@/features/modules/voucher/stock_summary/data/queryOptions';
-import StockInHand from '@/features/modules/voucher/stock_summary/stock_in_hand/stock_in_hand';
+import { stockSummaryQueryOptions } from '@/features/modules/voucher/stock_summary/data/queryOptions'
+import StockInHand from '@/features/modules/voucher/stock_summary/stock_in_hand/stock_in_hand'
 
-import { useSuspenseQuery } from '@tanstack/react-query';
-import { createFileRoute } from '@tanstack/react-router';
-import { Loader } from 'lucide-react';
+import { useSuspenseQuery } from '@tanstack/react-query'
+import { createFileRoute } from '@tanstack/react-router'
+import { Loader } from 'lucide-react'
 
 export const Route = createFileRoute(
   '/_protected/reports/stock_summary/_layout/',
 )({
   loader: ({ context }) =>
-    context.queryClient.ensureQueryData(stockSummaryQueryOptions('stock_in_hand')),
+    context.queryClient.ensureQueryData(
+      stockSummaryQueryOptions('stock_in_hand'),
+    ),
   component: () => {
-    const { data: stocksummary } = useSuspenseQuery(stockSummaryQueryOptions('stock_in_hand'));
+    const { data: stocksummary } = useSuspenseQuery(
+      stockSummaryQueryOptions('stock_in_hand'),
+    )
 
     return <StockInHand data={stocksummary?.data} />
   },

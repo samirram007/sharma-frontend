@@ -244,11 +244,14 @@ function buildIconCatalog(): IconEntry[] {
 const iconCatalog = buildIconCatalog()
 
 // ── Group icons by source for the picker ────────────────────────────────────
-const groupedIcons = iconCatalog.reduce<Record<string, IconEntry[]>>((acc, icon) => {
-  if (!acc[icon.group]) acc[icon.group] = []
-  acc[icon.group].push(icon)
-  return acc
-}, {})
+const groupedIcons = iconCatalog.reduce<Record<string, IconEntry[]>>(
+  (acc, icon) => {
+    if (!acc[icon.group]) acc[icon.group] = []
+    acc[icon.group].push(icon)
+    return acc
+  },
+  {},
+)
 
 const groupOrder = ['Lucide', 'Tabler', 'FontAwesome']
 
@@ -263,7 +266,12 @@ interface IconPickerProps {
 
 // ── Component ───────────────────────────────────────────────────────────────
 
-export function IconPicker({ form, name, label = 'Icon', placeholder = 'Select icon…' }: IconPickerProps) {
+export function IconPicker({
+  form,
+  name,
+  label = 'Icon',
+  placeholder = 'Select icon…',
+}: IconPickerProps) {
   const [open, setOpen] = React.useState(false)
   const currentValue = form.watch(name)
   const selectedIcon = currentValue
@@ -277,46 +285,54 @@ export function IconPicker({ form, name, label = 'Icon', placeholder = 'Select i
       control={form.control}
       name={name}
       render={() => (
-        <FormItem className='grid grid-cols-[110px_1fr] gap-1 items-start'>
-          <FormLabel className='text-right pt-1'>{label}</FormLabel>
-          <div className='flex flex-col gap-1.5'>
+        <FormItem className="grid grid-cols-[110px_1fr] gap-1 items-start">
+          <FormLabel className="text-right pt-1">{label}</FormLabel>
+          <div className="flex flex-col gap-1.5">
             <Popover open={open} onOpenChange={setOpen} modal={false}>
               <PopoverTrigger asChild>
                 <FormControl>
                   <Button
-                    variant='outline'
-                    role='combobox'
+                    variant="outline"
+                    role="combobox"
                     aria-expanded={open}
-                    className='w-full justify-between h-9'
+                    className="w-full justify-between h-9"
                   >
-                    <div className='flex items-center gap-2 min-w-0'>
+                    <div className="flex items-center gap-2 min-w-0">
                       {SelectedIconComponent ? (
-                        <div className='flex h-5 w-5 shrink-0 items-center justify-center rounded border bg-background'>
-                          <SelectedIconComponent className='h-3 w-3 text-muted-foreground' />
+                        <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded border bg-background">
+                          <SelectedIconComponent className="h-3 w-3 text-muted-foreground" />
                         </div>
                       ) : (
-                        <div className='flex h-5 w-5 shrink-0 items-center justify-center rounded border bg-muted'>
-                          <Package className='h-2.5 w-2.5 text-muted-foreground/50' />
+                        <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded border bg-muted">
+                          <Package className="h-2.5 w-2.5 text-muted-foreground/50" />
                         </div>
                       )}
-                      <span className={cn('text-sm truncate', !currentValue && 'text-muted-foreground')}>
+                      <span
+                        className={cn(
+                          'text-sm truncate',
+                          !currentValue && 'text-muted-foreground',
+                        )}
+                      >
                         {currentValue ?? placeholder}
                       </span>
                     </div>
-                    <ChevronsUpDownIcon className='ml-2 h-4 w-4 shrink-0 opacity-50' />
+                    <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                   </Button>
                 </FormControl>
               </PopoverTrigger>
-              <PopoverContent className='popover-content-width-same-as-trigger p-0' align='start'>
-                <Command className='rounded-lg border shadow-md'>
-                  <CommandInput placeholder='Search icons…' />
-                  <CommandList className='max-h-72 overflow-y-auto'>
+              <PopoverContent
+                className="popover-content-width-same-as-trigger p-0"
+                align="start"
+              >
+                <Command className="rounded-lg border shadow-md">
+                  <CommandInput placeholder="Search icons…" />
+                  <CommandList className="max-h-72 overflow-y-auto">
                     <CommandEmpty>No icon found.</CommandEmpty>
                     {groupOrder
                       .filter((g) => groupedIcons[g]?.length > 0)
                       .map((group) => (
                         <CommandGroup key={group} heading={group}>
-                          <div className='grid grid-cols-5 gap-1 p-1'>
+                          <div className="grid grid-cols-5 gap-1 p-1">
                             {groupedIcons[group].map((icon) => {
                               const IconComponent = icon.component
                               const isSelected = currentValue === icon.name
@@ -325,10 +341,14 @@ export function IconPicker({ form, name, label = 'Icon', placeholder = 'Select i
                                   key={icon.name}
                                   value={icon.name}
                                   onSelect={() => {
-                                    form.setValue(name, isSelected ? '' : icon.name, { shouldDirty: true })
+                                    form.setValue(
+                                      name,
+                                      isSelected ? '' : icon.name,
+                                      { shouldDirty: true },
+                                    )
                                     setOpen(false)
                                   }}
-                                  className='flex flex-col items-center gap-1 p-1.5 cursor-pointer rounded-md hover:bg-muted/60'
+                                  className="flex flex-col items-center gap-1 p-1.5 cursor-pointer rounded-md hover:bg-muted/60"
                                 >
                                   <div
                                     className={cn(
@@ -338,7 +358,7 @@ export function IconPicker({ form, name, label = 'Icon', placeholder = 'Select i
                                         : 'border-border bg-background hover:bg-muted',
                                     )}
                                   >
-                                    <IconComponent className='h-4 w-4 text-muted-foreground' />
+                                    <IconComponent className="h-4 w-4 text-muted-foreground" />
                                   </div>
                                   <span
                                     className={cn(
@@ -349,7 +369,7 @@ export function IconPicker({ form, name, label = 'Icon', placeholder = 'Select i
                                     {icon.name}
                                   </span>
                                   {isSelected && (
-                                    <CheckIcon className='absolute top-0.5 right-0.5 h-3 w-3 text-primary' />
+                                    <CheckIcon className="absolute top-0.5 right-0.5 h-3 w-3 text-primary" />
                                   )}
                                 </CommandItem>
                               )
@@ -363,15 +383,17 @@ export function IconPicker({ form, name, label = 'Icon', placeholder = 'Select i
             </Popover>
             {/* Selected icon preview */}
             {currentValue && SelectedIconComponent && (
-              <div className='flex items-center gap-2 text-[10px] text-muted-foreground'>
+              <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
                 <span>Preview:</span>
-                <div className='flex h-6 w-6 items-center justify-center rounded border bg-background'>
-                  <SelectedIconComponent className='h-3.5 w-3.5 text-foreground/70' />
+                <div className="flex h-6 w-6 items-center justify-center rounded border bg-background">
+                  <SelectedIconComponent className="h-3.5 w-3.5 text-foreground/70" />
                 </div>
-                <code className='rounded bg-muted px-1 py-0.5 font-mono text-[9px]'>{currentValue}</code>
+                <code className="rounded bg-muted px-1 py-0.5 font-mono text-[9px]">
+                  {currentValue}
+                </code>
                 <button
-                  type='button'
-                  className='ml-auto text-[9px] text-muted-foreground/50 hover:text-destructive transition-colors'
+                  type="button"
+                  className="ml-auto text-[9px] text-muted-foreground/50 hover:text-destructive transition-colors"
                   onClick={() => form.setValue(name, '', { shouldDirty: true })}
                 >
                   Clear
@@ -379,7 +401,7 @@ export function IconPicker({ form, name, label = 'Icon', placeholder = 'Select i
               </div>
             )}
           </div>
-          <FormMessage className='col-start-3' />
+          <FormMessage className="col-start-3" />
         </FormItem>
       )}
     />

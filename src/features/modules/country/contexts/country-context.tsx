@@ -2,8 +2,6 @@ import useDialogState from '@/core/hooks/use-dialog-state'
 import React, { useState } from 'react'
 import type { Country } from '../data/schema'
 
-
-
 type CountryDialogType = 'invite' | 'add' | 'edit' | 'delete'
 
 interface CountryContextType {
@@ -24,9 +22,16 @@ export default function CountryProvider({ children }: Props) {
   const [open, setOpen] = useDialogState<CountryDialogType>(null)
   const [currentRow, setCurrentRow] = useState<Country | null>(null)
 
-
   return (
-    <CountryContext value={{ open, setOpen, currentRow, setCurrentRow, keyName: "account_nature" }}>
+    <CountryContext
+      value={{
+        open,
+        setOpen,
+        currentRow,
+        setCurrentRow,
+        keyName: 'account_nature',
+      }}
+    >
       {children}
     </CountryContext>
   )

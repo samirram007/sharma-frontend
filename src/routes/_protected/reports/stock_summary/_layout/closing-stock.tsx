@@ -16,9 +16,13 @@ export const Route = createFileRoute(
 )({
   validateSearch: (search) => closingStockSearchSchema.parse(search),
   loader: ({ context }) =>
-    context.queryClient.ensureQueryData(stockSummaryQueryOptions('closing_stock')),
+    context.queryClient.ensureQueryData(
+      stockSummaryQueryOptions('closing_stock'),
+    ),
   component: () => {
-    const { data: stocksummary } = useSuspenseQuery(stockSummaryQueryOptions('closing_stock'))
+    const { data: stocksummary } = useSuspenseQuery(
+      stockSummaryQueryOptions('closing_stock'),
+    )
     const search = Route.useSearch()
     const navigate = useNavigate()
 
@@ -38,5 +42,5 @@ export const Route = createFileRoute(
     )
   },
   errorComponent: () => <div>Error loading closing stock data.</div>,
-  pendingComponent: () => <Loader className='animate-spin' />,
+  pendingComponent: () => <Loader className="animate-spin" />,
 })

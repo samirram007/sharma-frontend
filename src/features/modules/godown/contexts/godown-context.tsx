@@ -2,8 +2,6 @@ import useDialogState from '@/core/hooks/use-dialog-state'
 import React, { useState } from 'react'
 import type { Godown } from '../data/schema'
 
-
-
 type GodownDialogType = 'invite' | 'add' | 'edit' | 'delete'
 
 interface GodownContextType {
@@ -24,9 +22,10 @@ export default function GodownProvider({ children }: Props) {
   const [open, setOpen] = useDialogState<GodownDialogType>(null)
   const [currentRow, setCurrentRow] = useState<Godown | null>(null)
 
-
   return (
-    <GodownContext value={{ open, setOpen, currentRow, setCurrentRow, keyName: "godown" }}>
+    <GodownContext
+      value={{ open, setOpen, currentRow, setCurrentRow, keyName: 'godown' }}
+    >
       {children}
     </GodownContext>
   )

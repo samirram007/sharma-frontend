@@ -2,8 +2,6 @@ import useDialogState from '@/core/hooks/use-dialog-state'
 import React, { useState } from 'react'
 import type { VoucherCategory } from '../data/schema'
 
-
-
 type VoucherCategoryDialogType = 'invite' | 'add' | 'edit' | 'delete'
 
 interface VoucherCategoryContextType {
@@ -13,7 +11,8 @@ interface VoucherCategoryContextType {
   setCurrentRow: React.Dispatch<React.SetStateAction<VoucherCategory | null>>
 }
 
-const VoucherCategoryContext = React.createContext<VoucherCategoryContextType | null>(null)
+const VoucherCategoryContext =
+  React.createContext<VoucherCategoryContextType | null>(null)
 
 interface Props {
   children: React.ReactNode
@@ -24,7 +23,9 @@ export default function VoucherCategoryProvider({ children }: Props) {
   const [currentRow, setCurrentRow] = useState<VoucherCategory | null>(null)
 
   return (
-    <VoucherCategoryContext value={{ open, setOpen, currentRow, setCurrentRow }}>
+    <VoucherCategoryContext
+      value={{ open, setOpen, currentRow, setCurrentRow }}
+    >
       {children}
     </VoucherCategoryContext>
   )
@@ -35,7 +36,9 @@ export const useVoucherCategory = () => {
   const voucherCategoryContext = React.useContext(VoucherCategoryContext)
 
   if (!voucherCategoryContext) {
-    throw new Error('useVoucherCategory has to be used within <VoucherCategoryContext>')
+    throw new Error(
+      'useVoucherCategory has to be used within <VoucherCategoryContext>',
+    )
   }
 
   return voucherCategoryContext

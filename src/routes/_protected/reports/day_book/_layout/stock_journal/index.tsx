@@ -8,8 +8,6 @@ export const Route = createFileRoute(
 
 function RouteComponent() {
   return (
-    <div>
-      Hello "/_protected/transactions/vouchers/_layout/stock_journal/"!
-    </div>
+    <div>Hello "/_protected/transactions/vouchers/_layout/stock_journal/"!</div>
   )
 }

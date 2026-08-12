@@ -8,12 +8,16 @@ export const receiptNoteReportSchema = voucherSchema.extend({
   voucherType: voucherTypeSchema,
   company: companySchema.nullish(),
   fiscalYear: fiscalYearSchema.nullish(),
-  referencedBy: z.array(z.object({
-    id: z.number().int().positive().nullish(),
-    voucherId: z.number().int().positive().nullish(),
-    refVoucherId: z.number().int().positive().nullish(),
-    type: z.string().nullable(),
-  })).nullish(),
+  referencedBy: z
+    .array(
+      z.object({
+        id: z.number().int().positive().nullish(),
+        voucherId: z.number().int().positive().nullish(),
+        refVoucherId: z.number().int().positive().nullish(),
+        type: z.string().nullable(),
+      }),
+    )
+    .nullish(),
   paymentStatus: z.string().nullish(),
 })
 

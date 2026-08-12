@@ -33,7 +33,9 @@ async function gotoAuthenticated(page: Page, path: string): Promise<void> {
   // The sidebar menu button is the earliest reliable signal that the app shell
   // (and therefore the restored auth context) is ready.
   await expect(
-    page.locator('a[data-sidebar="menu-button"]', { hasText: 'Dashboard' }).first()
+    page
+      .locator('a[data-sidebar="menu-button"]', { hasText: 'Dashboard' })
+      .first(),
   ).toBeVisible({ timeout: 30_000 })
   await page.goto(path)
 }
@@ -62,7 +64,11 @@ async function ensureFirstRow(page: Page): Promise<Locator> {
  * batch pickers). Optionally types a search query first. The "Finish" footer
  * item is always skipped.
  */
-async function pickFromCombo(page: Page, placeholder: string, query?: string): Promise<string> {
+async function pickFromCombo(
+  page: Page,
+  placeholder: string,
+  query?: string,
+): Promise<string> {
   const search = page.locator(`input[placeholder="${placeholder}"]`)
   await expect(search).toBeVisible({ timeout: 15_000 })
 
@@ -71,7 +77,10 @@ async function pickFromCombo(page: Page, placeholder: string, query?: string): P
     await page.waitForTimeout(500) // cmdk filters as you type
   }
 
-  const result = page.locator('[cmdk-item]').filter({ hasNotText: /Finish/ }).first()
+  const result = page
+    .locator('[cmdk-item]')
+    .filter({ hasNotText: /Finish/ })
+    .first()
   await expect(result).toBeVisible({ timeout: 15_000 })
   const label = (await result.textContent())?.trim() ?? ''
   await result.click()
@@ -79,78 +88,49 @@ async function pickFromCombo(page: Page, placeholder: string, query?: string): P
 }
 
 test.describe('Stock entry — opening stock', () => {
-  test('first row is created and both pickers open', async ({ page }) => {
-    const getPageErrors = trackPageErrors(page)
-
-    await gotoAuthenticated(page, '/transactions/vouchers/opening_stock/new')
-    const selectItem = await ensureFirstRow(page)
-
-    // Item sheet opens with its search input, and picking an item reveals the
-    // row's godown selector
-    await selectItem.click()
-    await expect(page.locator('input[placeholder="Search item..."]')).toBeVisible({ timeout: 15_000 })
-    await pickFromCombo(page, 'Search item...')
-
-    const selectGodown = buttonByText(page, 'Select godown')
-    await expect(selectGodown).toBeVisible({ timeout: 15_000 })
-    await selectGodown.click()
-    await expect(page.locator('input[placeholder="Search godown..."]')).toBeVisible({
-      timeout: 15_000,
-    })
-    await page.keyboard.press('Escape')
-
-    // The row now has an amount cell (read-only, auto-computed)
-    await expect(page.locator('#amount-0')).toBeVisible({ timeout: 15_000 })
-
-    await expectNoErrorState(page)
-    expect(getPageErrors()).toEqual([])
-  })
-
-  test('item → godown → batch → qty → rate → amount flow, Enter appends a row', async ({
+  // Only ONE opening stock voucher is allowed per fiscal year (enforced by the
+  // backend AND the frontend lock). With an OPNSK voucher already seeded for
+  // the admin's fiscal year, the /opening_stock index redirects to the
+  // existing voucher's edit screen instead of a blank create grid — so the
+  // grid is exercised through the EDIT flow (the same loading path the
+  // list-mode stockJournalEntries + fiscalYearId regressions broke).
+  test('existing voucher redirects and loads with its godown rows', async ({
     page,
   }) => {
     const getPageErrors = trackPageErrors(page)
 
-    await gotoAuthenticated(page, '/transactions/vouchers/opening_stock/new')
-    const selectItem = await ensureFirstRow(page)
+    await gotoAuthenticated(page, '/transactions/vouchers/opening_stock')
+    // The index route must redirect to the existing voucher's detail route
+    await page.waitForURL(/opening_stock\/\d+/, { timeout: 30_000 })
 
-    // 1. Pick a stock item
-    await selectItem.click()
-    const itemLabel = await pickFromCombo(page, 'Search item...', 'ultra')
-    expect(itemLabel.length).toBeGreaterThan(0)
-
-    // 2. Pick a godown
-    await buttonByText(page, 'Select godown').click()
-    await pickFromCombo(page, 'Search godown...', 'a')
-
-    // 3. Batch is a free-text field for IN rows (opening stock)
-    const batch = page.locator('input[name="batchNo"]').first()
-    await expect(batch).toBeVisible({ timeout: 15_000 })
-    await batch.fill('E2E-BATCH-1')
-
-    // 4. Quantity
-    const qty = page.locator('#qty-0')
-    await expect(qty).toBeVisible({ timeout: 15_000 })
-    await qty.fill('10')
-    await qty.press('Enter')
-
-    // 5. Rate
-    const rate = page.locator('#rate-0')
-    await expect(rate).toBeVisible({ timeout: 15_000 })
-    await rate.fill('50')
-    await rate.press('Enter')
-
-    // 6. Amount is auto-computed (10 × 50) and read-only
-    const amount = page.locator('#amount-0')
-    await expect(amount).toHaveValue(/500/, { timeout: 15_000 })
-
-    // 7. Enter on amount appends a new row
-    const rowsBefore = await page.locator('input[id^="amount-"]').count()
-    await amount.press('Enter')
-    await expect(page.locator('input[id^="amount-"]')).toHaveCount(rowsBefore + 1, {
-      timeout: 15_000,
+    // The loaded grid renders godown sub-rows — batch is a free-text field
+    // for IN rows (opening stock)
+    await expect(page.locator('input[name="batchNo"]').first()).toBeVisible({
+      timeout: 30_000,
     })
-    await expect(page.locator('#qty-1')).toBeVisible({ timeout: 15_000 })
+    const batchCount = await page.locator('input[name="batchNo"]').count()
+    expect(batchCount).toBeGreaterThan(0)
+
+    // The pinned summary bar shows the loaded stock journal entry count
+    const totalsText = await page
+      .locator('div', { hasText: /item\(s\)/ })
+      .first()
+      .textContent()
+    const itemCount = Number(totalsText?.match(/(\d+) item\(s\)/)?.[1] ?? 0)
+    expect(itemCount).toBeGreaterThan(0)
+
+    // The first item combobox still opens its picker sheet in edit mode
+    await page.locator('button[role="combobox"]').first().click()
+    await expect(
+      page.locator('input[placeholder="Search item..."]'),
+    ).toBeVisible({ timeout: 15_000 })
+    await page.keyboard.press('Escape')
+
+    // The loaded grid is editable (admin in edit mode) — the first godown
+    // row's free-text batch input accepts input and keeps it
+    const firstBatch = page.locator('input[name="batchNo"]').first()
+    await firstBatch.fill('E2E-EDIT-1')
+    await expect(firstBatch).toHaveValue('E2E-EDIT-1')
 
     await expectNoErrorState(page)
     expect(getPageErrors()).toEqual([])
@@ -161,7 +141,10 @@ test.describe('Stock entry — conversion journal', () => {
   test('batch can be set via the picker or free text', async ({ page }) => {
     const getPageErrors = trackPageErrors(page)
 
-    await gotoAuthenticated(page, '/transactions/vouchers/conversion_journal/new')
+    await gotoAuthenticated(
+      page,
+      '/transactions/vouchers/conversion_journal/new',
+    )
     const selectItem = await ensureFirstRow(page)
 
     await selectItem.click()
@@ -180,7 +163,9 @@ test.describe('Stock entry — conversion journal', () => {
       await batchPicker.click()
 
       // The batch search is autofocused
-      const batchSearch: Locator = page.locator('input[placeholder="Search batch..."]')
+      const batchSearch: Locator = page.locator(
+        'input[placeholder="Search batch..."]',
+      )
       await expect(batchSearch).toBeVisible({ timeout: 15_000 })
       await expect(batchSearch).toBeFocused()
 
@@ -188,7 +173,9 @@ test.describe('Stock entry — conversion journal', () => {
       await page.keyboard.press('ArrowDown')
       await page.keyboard.press('ArrowDown')
       const selected = page
-        .locator('[cmdk-item][data-selected="true"], [cmdk-item][aria-selected="true"]')
+        .locator(
+          '[cmdk-item][data-selected="true"], [cmdk-item][aria-selected="true"]',
+        )
         .first()
       await expect(selected).toBeVisible({ timeout: 15_000 })
 

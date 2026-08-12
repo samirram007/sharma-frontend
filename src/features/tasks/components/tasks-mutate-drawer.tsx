@@ -67,8 +67,8 @@ export function TasksMutateDrawer({ open, onOpenChange, currentRow }: Props) {
         form.reset()
       }}
     >
-      <SheetContent className='flex flex-col'>
-        <SheetHeader className='text-left'>
+      <SheetContent className="flex flex-col">
+        <SheetHeader className="text-left">
           <SheetTitle>{isUpdate ? 'Update' : 'Create'} Task</SheetTitle>
           <SheetDescription>
             {isUpdate
@@ -79,18 +79,18 @@ export function TasksMutateDrawer({ open, onOpenChange, currentRow }: Props) {
         </SheetHeader>
         <Form {...form}>
           <form
-            id='tasks-form'
+            id="tasks-form"
             onSubmit={form.handleSubmit(onSubmit)}
-            className='flex-1 space-y-5 px-4'
+            className="flex-1 space-y-5 px-4"
           >
             <FormField
               control={form.control}
-              name='title'
+              name="title"
               render={({ field }) => (
-                <FormItem className='space-y-1'>
+                <FormItem className="space-y-1">
                   <FormLabel>Title</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder='Enter a title' />
+                    <Input {...field} placeholder="Enter a title" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -98,14 +98,14 @@ export function TasksMutateDrawer({ open, onOpenChange, currentRow }: Props) {
             />
             <FormField
               control={form.control}
-              name='status'
+              name="status"
               render={({ field }) => (
-                <FormItem className='space-y-1'>
+                <FormItem className="space-y-1">
                   <FormLabel>Status</FormLabel>
                   <SelectDropdown
                     defaultValue={field.value}
                     onValueChange={field.onChange}
-                    placeholder='Select dropdown'
+                    placeholder="Select dropdown"
                     items={[
                       { label: 'In Progress', value: 'in progress' },
                       { label: 'Backlog', value: 'backlog' },
@@ -120,35 +120,35 @@ export function TasksMutateDrawer({ open, onOpenChange, currentRow }: Props) {
             />
             <FormField
               control={form.control}
-              name='label'
+              name="label"
               render={({ field }) => (
-                <FormItem className='relative space-y-3'>
+                <FormItem className="relative space-y-3">
                   <FormLabel>Label</FormLabel>
                   <FormControl>
                     <RadioGroup
                       onValueChange={field.onChange}
                       defaultValue={field.value}
-                      className='flex flex-col space-y-1'
+                      className="flex flex-col space-y-1"
                     >
-                      <FormItem className='flex items-center space-y-0 space-x-3'>
+                      <FormItem className="flex items-center space-y-0 space-x-3">
                         <FormControl>
-                          <RadioGroupItem value='documentation' />
+                          <RadioGroupItem value="documentation" />
                         </FormControl>
-                        <FormLabel className='font-normal'>
+                        <FormLabel className="font-normal">
                           Documentation
                         </FormLabel>
                       </FormItem>
-                      <FormItem className='flex items-center space-y-0 space-x-3'>
+                      <FormItem className="flex items-center space-y-0 space-x-3">
                         <FormControl>
-                          <RadioGroupItem value='feature' />
+                          <RadioGroupItem value="feature" />
                         </FormControl>
-                        <FormLabel className='font-normal'>Feature</FormLabel>
+                        <FormLabel className="font-normal">Feature</FormLabel>
                       </FormItem>
-                      <FormItem className='flex items-center space-y-0 space-x-3'>
+                      <FormItem className="flex items-center space-y-0 space-x-3">
                         <FormControl>
-                          <RadioGroupItem value='bug' />
+                          <RadioGroupItem value="bug" />
                         </FormControl>
-                        <FormLabel className='font-normal'>Bug</FormLabel>
+                        <FormLabel className="font-normal">Bug</FormLabel>
                       </FormItem>
                     </RadioGroup>
                   </FormControl>
@@ -158,33 +158,33 @@ export function TasksMutateDrawer({ open, onOpenChange, currentRow }: Props) {
             />
             <FormField
               control={form.control}
-              name='priority'
+              name="priority"
               render={({ field }) => (
-                <FormItem className='relative space-y-3'>
+                <FormItem className="relative space-y-3">
                   <FormLabel>Priority</FormLabel>
                   <FormControl>
                     <RadioGroup
                       onValueChange={field.onChange}
                       defaultValue={field.value}
-                      className='flex flex-col space-y-1'
+                      className="flex flex-col space-y-1"
                     >
-                      <FormItem className='flex items-center space-y-0 space-x-3'>
+                      <FormItem className="flex items-center space-y-0 space-x-3">
                         <FormControl>
-                          <RadioGroupItem value='high' />
+                          <RadioGroupItem value="high" />
                         </FormControl>
-                        <FormLabel className='font-normal'>High</FormLabel>
+                        <FormLabel className="font-normal">High</FormLabel>
                       </FormItem>
-                      <FormItem className='flex items-center space-y-0 space-x-3'>
+                      <FormItem className="flex items-center space-y-0 space-x-3">
                         <FormControl>
-                          <RadioGroupItem value='medium' />
+                          <RadioGroupItem value="medium" />
                         </FormControl>
-                        <FormLabel className='font-normal'>Medium</FormLabel>
+                        <FormLabel className="font-normal">Medium</FormLabel>
                       </FormItem>
-                      <FormItem className='flex items-center space-y-0 space-x-3'>
+                      <FormItem className="flex items-center space-y-0 space-x-3">
                         <FormControl>
-                          <RadioGroupItem value='low' />
+                          <RadioGroupItem value="low" />
                         </FormControl>
-                        <FormLabel className='font-normal'>Low</FormLabel>
+                        <FormLabel className="font-normal">Low</FormLabel>
                       </FormItem>
                     </RadioGroup>
                   </FormControl>
@@ -194,11 +194,11 @@ export function TasksMutateDrawer({ open, onOpenChange, currentRow }: Props) {
             />
           </form>
         </Form>
-        <SheetFooter className='gap-2'>
+        <SheetFooter className="gap-2">
           <SheetClose asChild>
-            <Button variant='outline'>Close</Button>
+            <Button variant="outline">Close</Button>
           </SheetClose>
-          <Button form='tasks-form' type='submit'>
+          <Button form="tasks-form" type="submit">
             Save changes
           </Button>
         </SheetFooter>

@@ -1,5 +1,6 @@
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
+import { formatQty } from '@/utils/format-num'
 import type { RunningBalanceItem } from '../data/schema'
 import { IconChartBar, IconPackage, IconSearch } from '@tabler/icons-react'
 import { useState, useMemo } from 'react'
@@ -11,7 +12,11 @@ interface ItemGridProps {
   selectedItemId: number | null
 }
 
-export default function ItemGrid({ items, onSelectItem, selectedItemId }: ItemGridProps) {
+export default function ItemGrid({
+  items,
+  onSelectItem,
+  selectedItemId,
+}: ItemGridProps) {
   const [search, setSearch] = useState('')
 
   const filtered = useMemo(() => {
@@ -28,51 +33,70 @@ export default function ItemGrid({ items, onSelectItem, selectedItemId }: ItemGr
   const itemsWithStock = items.filter((i) => i.closingQuantity > 0).length
 
   return (
-    <div className='space-y-3'>
+    <div className="space-y-3">
       {/* Summary */}
-      <div className='flex items-center justify-between text-sm text-muted-foreground'>
-        <div className='flex items-center gap-4'>
-          <span className='flex items-center gap-1'>
-            <IconPackage className='h-4 w-4' />
-            <strong className='text-foreground'>{items.length}</strong> items
+      <div className="flex items-center justify-between text-sm text-muted-foreground">
+        <div className="flex items-center gap-4">
+          <span className="flex items-center gap-1">
+            <IconPackage className="h-4 w-4" />
+            <strong className="text-foreground">{items.length}</strong> items
           </span>
           <span>
-            <strong className='text-foreground'>{itemsWithStock}</strong> with stock
+            <strong className="text-foreground">{itemsWithStock}</strong> with
+            stock
           </span>
           <span>
-            Total Closing: <strong className='font-mono text-foreground'>{totalClosing.toFixed(2)}</strong>
+            Total Closing:{' '}
+            <strong className="font-mono text-foreground">
+              {formatQty(totalClosing)}
+            </strong>
           </span>
         </div>
       </div>
 
       {/* Search */}
-      <div className='relative'>
-        <IconSearch className='absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground' />
+      <div className="relative">
+        <IconSearch className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
-          placeholder='Search items...'
+          placeholder="Search items..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className='h-9 pl-9'
+          className="h-9 pl-9"
         />
       </div>
 
       {/* Table */}
-      <div className='max-h-[500px] overflow-y-auto rounded-md border'>
-        <table className='w-full text-sm'>
-          <thead className='sticky top-0 bg-muted/80 backdrop-blur-sm z-10'>
-            <tr className='border-b'>
-              <th className='p-2 text-left font-medium text-muted-foreground'>Item</th>
-              <th className='p-2 text-right font-medium text-muted-foreground'>Opening</th>
-              <th className='p-2 text-right font-medium text-muted-foreground'>Inward</th>
-              <th className='p-2 text-right font-medium text-muted-foreground'>Outward</th>
-              <th className='p-2 text-right font-medium text-muted-foreground'>Closing</th>
-              <th className='p-2 text-center font-medium text-muted-foreground'>Unit</th>
+      <div className="max-h-[500px] overflow-y-auto rounded-md border">
+        <table className="w-full text-sm">
+          <thead className="sticky top-0 bg-muted/80 backdrop-blur-sm z-10">
+            <tr className="border-b">
+              <th className="p-2 text-left font-medium text-muted-foreground">
+                Item
+              </th>
+              <th className="p-2 text-right font-medium text-muted-foreground">
+                Opening
+              </th>
+              <th className="p-2 text-right font-medium text-muted-foreground">
+                Inward
+              </th>
+              <th className="p-2 text-right font-medium text-muted-foreground">
+                Outward
+              </th>
+              <th className="p-2 text-right font-medium text-muted-foreground">
+                Closing
+              </th>
+              <th className="p-2 text-center font-medium text-muted-foreground">
+                Unit
+              </th>
             </tr>
           </thead>
           <tbody>
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={6} className='p-6 text-center text-muted-foreground'>
+                <td
+                  colSpan={6}
+                  className="p-6 text-center text-muted-foreground"
+                >
                   No items found.
                 </td>
               </tr>
@@ -82,32 +106,43 @@ export default function ItemGrid({ items, onSelectItem, selectedItemId }: ItemGr
                 key={item.itemId}
                 className={cn(
                   'border-b last:border-0 cursor-pointer transition-colors hover:bg-accent/50',
-                  selectedItemId === item.itemId && 'bg-accent/70 font-semibold',
+                  selectedItemId === item.itemId &&
+                    'bg-accent/70 font-semibold',
                   item.closingQuantity === 0 && 'text-muted-foreground/60',
                 )}
                 onClick={() => onSelectItem(item.itemId)}
               >
-                <td className='p-2'>
-                  <div className='flex items-center gap-2'>
-                    <IconChartBar className='h-3.5 w-3.5 text-primary/60' />
+                <td className="p-2">
+                  <div className="flex items-center gap-2">
+                    <IconChartBar className="h-3.5 w-3.5 text-primary/60" />
                     <span>{item.itemName}</span>
                   </div>
                 </td>
-                <td className='p-2 text-right font-mono'>
-                  {item.openingQuantity === 0 ? '-' : item.openingQuantity.toFixed(item.noOfDecimalPlaces ?? 2)}
+                <td className="p-2 text-right font-mono">
+                  {item.openingQuantity === 0
+                    ? '-'
+                    : formatQty(item.openingQuantity, item.noOfDecimalPlaces)}
                 </td>
-                <td className='p-2 text-right font-mono text-green-600'>
-                  {item.inwardQuantity === 0 ? '-' : '+' + item.inwardQuantity.toFixed(item.noOfDecimalPlaces ?? 2)}
+                <td className="p-2 text-right font-mono text-green-600">
+                  {item.inwardQuantity === 0
+                    ? '-'
+                    : '+' +
+                      formatQty(item.inwardQuantity, item.noOfDecimalPlaces)}
                 </td>
-                <td className='p-2 text-right font-mono text-red-600'>
-                  {item.outwardQuantity === 0 ? '-' : '-' + item.outwardQuantity.toFixed(item.noOfDecimalPlaces ?? 2)}
+                <td className="p-2 text-right font-mono text-red-600">
+                  {item.outwardQuantity === 0
+                    ? '-'
+                    : '-' +
+                      formatQty(item.outwardQuantity, item.noOfDecimalPlaces)}
                 </td>
-                <td className='p-2 text-right font-mono font-semibold'>
-                  {item.closingQuantity === 0 ? '-' : item.closingQuantity.toFixed(item.noOfDecimalPlaces ?? 2)}
+                <td className="p-2 text-right font-mono font-semibold">
+                  {item.closingQuantity === 0
+                    ? '-'
+                    : formatQty(item.closingQuantity, item.noOfDecimalPlaces)}
                 </td>
-                <td className='p-2 text-center'>
+                <td className="p-2 text-center">
                   {item.unitCode && (
-                    <Badge variant='secondary' className='text-xs'>
+                    <Badge variant="secondary" className="text-xs">
                       {item.unitCode}
                     </Badge>
                   )}

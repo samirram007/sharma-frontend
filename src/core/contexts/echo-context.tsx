@@ -1,6 +1,12 @@
 import Echo from 'laravel-echo'
 import Pusher from 'pusher-js'
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  type ReactNode,
+} from 'react'
 import { useAuth } from '@/features/auth/contexts/AuthContext'
 
 // Augment Window type for Pusher
@@ -33,7 +39,9 @@ export function EchoProvider({ children }: { children: ReactNode }) {
 
     const instance = new Echo({
       broadcaster: 'reverb',
-      key: import.meta.env.VITE_REVERB_APP_KEY ?? 'af749dfcf9c0012a6a40a3fd24650e4a',
+      key:
+        import.meta.env.VITE_REVERB_APP_KEY ??
+        'af749dfcf9c0012a6a40a3fd24650e4a',
       wsHost: import.meta.env.VITE_REVERB_HOST ?? window.location.hostname,
       wsPort: import.meta.env.VITE_REVERB_PORT ?? 8080,
       wssPort: import.meta.env.VITE_REVERB_PORT ?? 443,
@@ -51,9 +59,7 @@ export function EchoProvider({ children }: { children: ReactNode }) {
   }, [isAuthenticated, user?.id])
 
   return (
-    <EchoContext.Provider value={{ echo }}>
-      {children}
-    </EchoContext.Provider>
+    <EchoContext.Provider value={{ echo }}>{children}</EchoContext.Provider>
   )
 }
 

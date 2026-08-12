@@ -2,8 +2,6 @@ import useDialogState from '@/core/hooks/use-dialog-state'
 import React, { useState } from 'react'
 import type { StockUnit } from '../data/schema'
 
-
-
 type StockUnitDialogType = 'invite' | 'add' | 'edit' | 'delete'
 
 interface StockUnitContextType {
