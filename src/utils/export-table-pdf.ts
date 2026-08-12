@@ -37,6 +37,7 @@ export default function exportTableToPdf<T extends Record<string, any>>({
   fileName = 'table.pdf',
   orientation = 'p',
   sections,
+  signal,
 }: {
   title?: string
   columnData?: { header: string; accessor: keyof T }[]
@@ -44,6 +45,8 @@ export default function exportTableToPdf<T extends Record<string, any>>({
   fileName?: string
   orientation?: 'p' | 'portrait' | 'l' | 'landscape'
   sections?: PdfSection[]
+  /** When aborted, the file is not downloaded (used for cancellable exports). */
+  signal?: AbortSignal
 }) {
   const doc = new jsPDF({
     orientation: orientation,
@@ -111,5 +114,6 @@ export default function exportTableToPdf<T extends Record<string, any>>({
     }
   }
 
+  if (signal?.aborted) return
   doc.save(fileName)
 }

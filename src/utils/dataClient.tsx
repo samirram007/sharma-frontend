@@ -1,12 +1,13 @@
 import { toast } from 'sonner'
 
+import axios, { type AxiosRequestConfig } from 'axios'
 import axiosClient from '@/utils/axios-client'
 import { removeEmptyStrings } from './removeEmptyStrings'
 // import { removeEmptyStrings } from "./removeEmptyStrings";
 
-export const getData = async (apiPath: string) => {
+export const getData = async (apiPath: string, config?: AxiosRequestConfig) => {
   return await axiosClient
-    .get(apiPath)
+    .get(apiPath, config)
     .then((response) => {
       return response.data
     })
@@ -74,6 +75,10 @@ const successHandler = (response: any) => {
 }
 
 const errorHandler = (error: any) => {
+  // Requests aborted via AbortSignal are intentional (e.g. the user cancelled
+  // an export mid-fetch) — not failures worth surfacing as toasts.
+  if (axios.isCancel(error) || error?.code === 'ERR_CANCELED') return
+
   // Check if the error is from a response with data (usually API error responses)
   // console.log("ResponseError", error);
 

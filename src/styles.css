@@ -445,6 +445,22 @@ code {
   animation: slideUp 300ms ease-out;
 }
 
+@keyframes skeleton-shimmer {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-slot='skeleton'] > * {
+    animation: none !important;
+    opacity: 0;
+  }
+}
+
 @keyframes slideDown {
   from {
     height: 0;

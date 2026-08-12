@@ -9,9 +9,14 @@ export interface FreightQueryParams {
   date_to?: string
   search?: string
   freight_status?: string
+  zone_id?: number
 }
 
-async function fetchFreightService(type: string, params?: FreightQueryParams) {
+async function fetchFreightService(
+  type: string,
+  params?: FreightQueryParams,
+  signal?: AbortSignal,
+) {
   const searchParams = new URLSearchParams()
   if (params) {
     Object.entries(params).forEach(([key, value]) => {
@@ -25,7 +30,7 @@ async function fetchFreightService(type: string, params?: FreightQueryParams) {
     ? `${API_PATH}/${type}?${queryString}`
     : `${API_PATH}/${type}`
   console.log('Fetching freight with URL:', url) // Debug log to check the final URL
-  return await getData(url)
+  return await getData(url, signal ? { signal } : undefined)
 }
 async function fetchFreightByIdService(type: string, id: number) {
   return await getData(`${API_PATH}/${type}/${id}`)

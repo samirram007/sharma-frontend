@@ -21,6 +21,116 @@ import { buildDispatchLabel, VoucherPaymentAction } from '../shared/utils'
 import { deliveryNoteGodownWiseQueryOptions } from './data/queryOptions'
 import type { GodownWiseReportItem } from './data/schema'
 import type { GodownList } from '@/features/modules/godown/data/schema'
+import { ExportDropdown, ExportOverlay } from '../shared/export-controls'
+import { useExportJob } from '../shared/export-job'
+
+// ─── Export builders — summary + one section/sheet per godown ────────────
+
+const SUMMARY_COLUMNS = [
+  { header: 'Godown', accessor: 'godownName' },
+  { header: 'Total Entries', accessor: 'totalEntries' },
+  { header: 'Inward Qty', accessor: 'totalInwardQuantity' },
+  { header: 'Outward Qty', accessor: 'totalOutwardQuantity' },
+  { header: 'Closing Qty', accessor: 'totalClosingQuantity' },
+  { header: 'Total Amount', accessor: 'totalAmount' },
+]
+
+const DETAIL_COLUMNS = [
+  { header: 'Voucher No', accessor: 'voucherNo' },
+  { header: 'Date', accessor: 'voucherDate' },
+  { header: 'Party', accessor: 'partyName' },
+  { header: 'Item', accessor: 'itemName' },
+  { header: 'Godown', accessor: 'godownName' },
+  { header: 'Dispatch', accessor: 'dispatch' },
+  { header: 'Qty', accessor: 'actualQuantity' },
+  { header: 'Amount', accessor: 'amount' },
+  { header: 'Status', accessor: 'paymentStatus' },
+]
+
+const summaryRows = (rows: Array<GodownWiseReportItem>) =>
+  rows.map((row) => ({
+    godownName: row.godownName ?? '',
+    totalEntries: row.totalEntries ?? '',
+    totalInwardQuantity: row.totalInwardQuantity ?? '',
+    totalOutwardQuantity: row.totalOutwardQuantity ?? '',
+    totalClosingQuantity: row.totalClosingQuantity ?? '',
+    totalAmount: row.totalAmount ?? '',
+  }))
+
+const detailRows = (row: GodownWiseReportItem) =>
+  (row.voucherDetails ?? []).map((detail: any) => ({
+    ...detail,
+    dispatch: buildDispatchLabel(detail),
+  }))
+
+const buildPdfSections = (rows: Array<GodownWiseReportItem>) => {
+  const sections = rows.map((godown) => ({
+    title: godown.godownName || 'Unknown Godown',
+    columnData: DETAIL_COLUMNS,
+    data: detailRows(godown),
+    chart: {
+      labels: (godown.voucherDetails ?? []).map((d: any) => d.voucherNo),
+      datasets: [
+        {
+          label: `Actual Quantity - ${godown.godownName}`,
+          data: (godown.voucherDetails ?? []).map((d: any) => d.actualQuantity),
+        },
+      ],
+    },
+  }))
+  sections.unshift({
+    title: 'Summary',
+    columnData: SUMMARY_COLUMNS,
+    data: summaryRows(rows),
+    chart: {
+      labels: rows.map((row) => row.godownName),
+      datasets: [
+        {
+          label: 'Total Amount per Godown',
+          data: rows.map((row) => row.totalAmount),
+        },
+      ],
+    },
+  })
+  return sections
+}
+
+const buildExcelSheets = (rows: Array<GodownWiseReportItem>) => {
+  const sheets = rows.map((godown) => ({
+    // Excel worksheet names cannot exceed 31 chars and cannot contain: * ? : / \ [ ]
+    title: (godown.godownName || 'Unknown Godown')
+      .replace(/[\\/*?:[\]]/g, '')
+      .substring(0, 31),
+    columnData: DETAIL_COLUMNS,
+    data: detailRows(godown),
+    chart: {
+      type: 'bar' as const,
+      labels: (godown.voucherDetails ?? []).map((d: any) => d.voucherNo),
+      datasets: [
+        {
+          label: `Actual Quantity - ${godown.godownName}`,
+          data: (godown.voucherDetails ?? []).map((d: any) => d.actualQuantity),
+        },
+      ],
+    },
+  }))
+  sheets.unshift({
+    title: 'Summary',
+    columnData: SUMMARY_COLUMNS,
+    data: summaryRows(rows),
+    chart: {
+      type: 'bar' as const,
+      labels: rows.map((row) => row.godownName),
+      datasets: [
+        {
+          label: 'Total Amount per Godown',
+          data: rows.map((row) => row.totalAmount),
+        },
+      ],
+    },
+  })
+  return sheets
+}
 
 interface DeliveryNoteGodownWiseProps {
   zones: GodownList
@@ -78,6 +188,37 @@ export default function DeliveryNoteGodownWise({
     }
     return selectedZone?.name ?? ''
   }, [selectedGodownId, selectedZone, godowns])
+
+  const {
+    exportJob,
+    eta,
+    progress,
+    runExport,
+    handleRunInBackground,
+    cancelExport,
+  } = useExportJob<GodownWiseReportItem>({
+    getPageRows: () => reportData,
+    getFilteredRows: () => reportData,
+    generate: async (action, rows) => {
+      if (action === 'pdf') {
+        const { default: exportTableToPdf } =
+          await import('@/utils/export-table-pdf')
+        exportTableToPdf({
+          fileName: 'delivery-note-godown-wise.pdf',
+          sections: buildPdfSections(rows),
+          orientation: 'landscape',
+        })
+      } else {
+        const { default: exportTableToExcel } =
+          await import('@/utils/export-table-excel')
+        exportTableToExcel({
+          fileName: 'delivery-note-godown-wise.xlsx',
+          sheets: buildExcelSheets(rows) as any,
+        })
+      }
+    },
+    successLabel: 'record',
+  })
 
   return (
     <div className="w-full min-h-full grid grid-rows-[auto_auto_1fr] gap-2">
@@ -141,12 +282,22 @@ export default function DeliveryNoteGodownWise({
           </div>
         )}
 
-        {isFetching && selectedZoneId && (
-          <div className="flex items-center gap-1 text-xs text-blue-500 ml-auto">
-            <span className="inline-block w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
-            Loading...
-          </div>
-        )}
+        <div className="ml-auto flex items-center gap-2">
+          {isFetching && selectedZoneId && (
+            <div className="flex items-center gap-1 text-xs text-blue-500">
+              <span className="inline-block w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
+              Loading...
+            </div>
+          )}
+          {reportData.length > 0 && (
+            <ExportDropdown
+              job={exportJob}
+              pageCount={reportData.length}
+              totalCount={reportData.length}
+              onSelect={runExport}
+            />
+          )}
+        </div>
       </div>
 
       {/* ── Content area ── */}
@@ -203,6 +354,15 @@ export default function DeliveryNoteGodownWise({
         </div>
       ) : (
         <ReportView data={reportData} zoneName={headerLabel} />
+      )}
+      {exportJob && (
+        <ExportOverlay
+          job={exportJob}
+          eta={eta}
+          progress={progress}
+          onBackground={handleRunInBackground}
+          onCancel={cancelExport}
+        />
       )}
     </div>
   )

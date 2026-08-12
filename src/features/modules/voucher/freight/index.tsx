@@ -10,6 +10,8 @@ import type { TransporterList } from '../../transporter/data/schema'
 import type { DeliveryVehicleList } from '../../delivery_vehicle/data/schema'
 import type { DeliveryPlaceList } from '../../delivery_place/data/schema'
 import type { DeliveryNoteList } from '../delivery_note/data/schema'
+import type { GodownList } from '@/features/modules/godown/data/schema'
+import type { FreightQueryParams } from './data/api'
 import type { PaginationMeta } from './data/schema'
 
 import { Main } from '@/layouts/components/main'
@@ -23,6 +25,8 @@ interface FreightProps {
   deliveryPlaces?: DeliveryPlaceList
   deliveryVehicles?: DeliveryVehicleList
   transporter?: TransporterList
+  zones?: GodownList
+  exportParams?: FreightQueryParams
   search?: FreightSearchParams
   onSearchChange?: (params: Partial<FreightSearchParams>) => void
 }
@@ -32,6 +36,8 @@ export default function Freight({
   isLoading,
   paginationMeta,
   totalFareOverall,
+  zones,
+  exportParams,
   search,
   onSearchChange,
 }: FreightProps) {
@@ -39,6 +45,9 @@ export default function Freight({
   const [localSearch, setLocalSearch] = useState(search?.search ?? '')
   const [localFreightStatus, setLocalFreightStatus] = useState(
     search?.freightStatus ?? 'pending',
+  )
+  const [localZoneId, setLocalZoneId] = useState<number | undefined>(
+    search?.zoneId,
   )
 
   // Server-side pagination values from API response meta
@@ -61,25 +70,29 @@ export default function Freight({
   useEffect(() => {
     setLocalSearch(search?.search ?? '')
     setLocalFreightStatus(search?.freightStatus ?? 'pending')
-  }, [search?.search, search?.freightStatus])
+    setLocalZoneId(search?.zoneId)
+  }, [search?.search, search?.freightStatus, search?.zoneId])
 
   const handleSearch = useCallback(
     (searchValue: string) => {
       onSearchChange?.({
         search: searchValue || undefined,
         freightStatus: localFreightStatus || undefined,
+        zoneId: localZoneId,
         page: 1,
       })
     },
-    [localFreightStatus, onSearchChange],
+    [localFreightStatus, localZoneId, onSearchChange],
   )
 
   const handleReset = useCallback(() => {
     setLocalSearch('')
     setLocalFreightStatus('pending')
+    setLocalZoneId(undefined)
     onSearchChange?.({
       search: undefined,
       freightStatus: undefined,
+      zoneId: undefined,
       page: 1,
     })
   }, [onSearchChange])
@@ -89,6 +102,17 @@ export default function Freight({
       setLocalFreightStatus(status)
       onSearchChange?.({
         freightStatus: status === 'pending' ? undefined : status,
+        page: 1,
+      })
+    },
+    [onSearchChange],
+  )
+
+  const handleZoneChange = useCallback(
+    (zoneId?: number) => {
+      setLocalZoneId(zoneId)
+      onSearchChange?.({
+        zoneId: zoneId || undefined,
         page: 1,
       })
     },
@@ -142,6 +166,15 @@ export default function Freight({
                   ? 'No delivery notes found in this period.'
                   : 'All delivery notes in this period have their fare entered. New delivery notes will appear here once their dispatch details are filled in.'}
             </p>
+
+            {(localSearch || localZoneId || localFreightStatus !== 'pending') && (
+              <button
+                onClick={handleReset}
+                className="mt-4 rounded-lg border border-border bg-background px-4 py-2 text-xs font-medium text-muted-foreground shadow-xs transition-colors hover:bg-accent hover:text-accent-foreground"
+              >
+                Clear filters
+              </button>
+            )}
           </div>
         ) : (
           <FreightProvider>
@@ -160,6 +193,10 @@ export default function Freight({
               onReset={handleReset}
               freightStatus={localFreightStatus}
               onFreightStatusChange={handleFreightStatusChange}
+              zones={zones}
+              zoneId={localZoneId}
+              onZoneChange={handleZoneChange}
+              exportParams={exportParams}
             />
           </FreightProvider>
         )}

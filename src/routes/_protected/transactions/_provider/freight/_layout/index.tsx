@@ -1,12 +1,14 @@
-import { SkeletonTable } from '@/components/skeleton'
+import { FullPageSkeleton } from '@/components/skeleton'
 import { deliveryPlaceQueryOptions } from '@/features/modules/delivery_place/data/queryOptions'
 import { deliveryVehicleQueryOptions } from '@/features/modules/delivery_vehicle/data/queryOptions'
+import { fetchZonesService } from '@/features/modules/godown/data/zones-api'
+import { godownListSchema } from '@/features/modules/godown/data/schema'
 import { stockUnitQueryOptions } from '@/features/modules/stock_unit/data/queryOptions'
 import { transporterQueryOptions } from '@/features/modules/transporter/data/queryOptions'
 import Freight from '@/features/modules/voucher/freight'
 import { freightQueryOptions } from '@/features/modules/voucher/freight/data/queryOptions'
 
-import { useSuspenseQuery } from '@tanstack/react-query'
+import { useQuery, useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { Suspense, useEffect } from 'react'
 import { z } from 'zod'
@@ -19,6 +21,7 @@ const freightSearchSchema = z.object({
   perPage: z.coerce.number().int().positive().default(10).catch(10),
   search: z.string().optional().catch(undefined),
   freightStatus: z.string().optional().catch(undefined),
+  zoneId: z.coerce.number().int().positive().optional().catch(undefined),
 })
 
 export type FreightSearchParams = z.infer<typeof freightSearchSchema>
@@ -49,12 +52,23 @@ export const Route = createFileRoute(
     const search = Route.useSearch()
     const navigate = useNavigate()
 
+    // Zones back the optional zone filter — fetched with a non-suspense query
+    // (same queryKey as the delivery-note-godown-wise report, so the cache is
+    // shared) so a slow/failed /zones call can never block the delivery-note
+    // list itself; the dropdown simply degrades to empty.
+    const { data: zonesResponse } = useQuery({
+      queryKey: ['zones'],
+      queryFn: fetchZonesService,
+    })
+    const zones = godownListSchema.parse(zonesResponse?.data ?? [])
+
     // Convert search params to API-friendly format (snake_case)
     const queryParams = {
       per_page: search.perPage,
       page: search.page,
       search: search.search,
       freight_status: search.freightStatus,
+      zone_id: search.zoneId,
     }
 
     const { data: freightResponse } = useSuspenseQuery(
@@ -78,7 +92,7 @@ export const Route = createFileRoute(
     }, [freightResponse?.data, search.page, navigate])
 
     return (
-      <Suspense fallback={<SkeletonTable />}>
+      <Suspense fallback={<FullPageSkeleton />}>
         <Freight
           data={freightResponse?.data ?? []}
           paginationMeta={paginationMeta}
@@ -86,6 +100,8 @@ export const Route = createFileRoute(
           deliveryVehicles={deliveryVehicles}
           deliveryPlaces={deliveryPlaces}
           transporter={transporter}
+          zones={zones}
+          exportParams={queryParams}
           search={search}
           onSearchChange={(newSearch) => {
             navigate({
@@ -98,5 +114,5 @@ export const Route = createFileRoute(
     )
   },
   errorComponent: () => <div>Error loading freight data.</div>,
-  pendingComponent: () => <SkeletonTable />,
+  pendingComponent: () => <FullPageSkeleton />,
 })

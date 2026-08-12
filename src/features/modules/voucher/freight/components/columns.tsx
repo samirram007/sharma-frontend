@@ -4,6 +4,27 @@ import type { VoucherSchema } from '../../data-schema/voucher-schema'
 import { cn } from '@/lib/utils'
 import { date_format } from '@/utils/removeEmptyStrings'
 
+/**
+ * Format a stock-journal entry quantity for the Items column and exports:
+ * "1,000" / "10.500 MT" / "-" — uses the stock unit's decimal places (same
+ * convention as the Weight column's weightUnit.noOfDecimalPlaces).
+ */
+export function formatItemQuantity(
+  quantity: number | null | undefined,
+  unitCode?: string | null,
+  noOfDecimalPlaces?: number | null,
+): string {
+  const qty = Number(quantity || 0)
+  if (!qty) {
+    return '-'
+  }
+  const dp = noOfDecimalPlaces ?? 2
+  return `${qty.toLocaleString('en-IN', {
+    minimumFractionDigits: dp,
+    maximumFractionDigits: dp,
+  })}${unitCode ? ` ${unitCode}` : ''}`
+}
+
 export const columns: Array<ColumnDef<VoucherSchema>> = [
   {
     id: 'slNo',
@@ -96,6 +117,79 @@ export const columns: Array<ColumnDef<VoucherSchema>> = [
     minSize: 120,
     size: 140,
     meta: { className: cn('min-w-[120px] hidden lg:table-cell') },
+    enableSorting: false,
+  },
+  {
+    id: 'items',
+    header: () => <div>Items</div>,
+    cell: ({ row }) => {
+      const entries =
+        row.original.stockJournal?.stockJournalEntries?.filter(Boolean) ?? []
+      if (entries.length === 0) {
+        return <div className="text-muted-foreground">-</div>
+      }
+      return (
+        <div className="flex min-w-[180px] flex-col gap-1.5 py-0.5">
+          {entries.map((entry, index) => {
+            const item = entry?.stockItem
+            const unit = entry?.stockUnit
+            const godowns =
+              entry?.stockJournalGodownEntries?.filter(Boolean) ?? []
+            return (
+              <div key={index} className="flex flex-col gap-0.5">
+                <div className="flex items-center gap-1.5 text-xs">
+                  <span
+                    className="min-w-0 flex-1 truncate font-medium text-foreground/90"
+                    title={item?.name ?? ''}
+                  >
+                    {item?.name ?? `Item #${entry?.stockItemId ?? '?'}`}
+                  </span>
+                  <span className="shrink-0 tabular-nums text-muted-foreground">
+                    {formatItemQuantity(
+                      entry?.actualQuantity || entry?.billingQuantity,
+                      unit?.code,
+                      unit?.noOfDecimalPlaces,
+                    )}
+                  </span>
+                </div>
+
+                {/* Godowns this item moved through, with per-godown quantity */}
+                {godowns.length > 0 && (
+                  <div className="flex flex-wrap gap-1 pl-3">
+                    {godowns.map((godownEntry, gdIndex) => {
+                      const godownQty = formatItemQuantity(
+                        godownEntry?.actualQuantity ||
+                          godownEntry?.billingQuantity,
+                        unit?.code,
+                        unit?.noOfDecimalPlaces,
+                      )
+                      return (
+                        <span
+                          key={gdIndex}
+                          className="inline-flex items-center gap-1 rounded-full bg-muted/60 px-1.5 py-0.5 text-[10px] leading-none text-muted-foreground dark:bg-muted/40"
+                        >
+                          {godownEntry?.godown?.name ??
+                            `Godown #${godownEntry?.godownId ?? '?'}`}
+                          {godownQty !== '-' && (
+                            <>
+                              <span className="opacity-50">·</span>
+                              <span className="tabular-nums">{godownQty}</span>
+                            </>
+                          )}
+                        </span>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+            )
+          })}
+        </div>
+      )
+    },
+    minSize: 180,
+    size: 220,
+    meta: { className: cn('min-w-[180px]') },
     enableSorting: false,
   },
   {

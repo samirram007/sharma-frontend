@@ -34,6 +34,8 @@ interface ExportToExcelProps<T> {
   columnData?: ExportColumn<T>[] // Used for single sheet
   data?: T[] // Used for single sheet
   sheets?: ExcelSheet[] // Used for multiple sheets
+  /** When aborted, the file is not downloaded (used for cancellable exports). */
+  signal?: AbortSignal
 }
 
 export default async function exportTableToExcel<T>({
@@ -42,11 +44,15 @@ export default async function exportTableToExcel<T>({
   columnData: columns,
   data,
   sheets,
+  signal,
 }: ExportToExcelProps<T>) {
   const [ExcelJS, { saveAs }] = await Promise.all([
     import('exceljs').then((m) => m.default),
     import('file-saver'),
   ])
+
+  // The user cancelled while the file was being built — stop before any work.
+  if (signal?.aborted) return
 
   const workbook = new ExcelJS.Workbook()
 
@@ -184,6 +190,8 @@ export default async function exportTableToExcel<T>({
   }
 
   const buffer = await workbook.xlsx.writeBuffer()
+  // Only start the download if the export wasn't cancelled while building.
+  if (signal?.aborted) return
   saveAs(
     new Blob([buffer], {
       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',

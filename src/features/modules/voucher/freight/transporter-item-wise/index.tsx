@@ -118,6 +118,7 @@ const ReportView = ({
       <DataTableToolbar
         placeHolder="Filter transporters, items or vouchers..."
         filteredRows={data}
+        exportRows={filteredData}
         title={title}
         globalFilter={globalFilter}
         onGlobalFilterChange={setGlobalFilter}

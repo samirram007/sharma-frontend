@@ -1,4 +1,4 @@
-import { SkeletonTable } from '@/components/skeleton'
+import { FullPageSkeleton } from '@/components/skeleton'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { freightReportQueryOptions } from '@/features/modules/voucher/freight/data/queryOptions'
@@ -44,9 +44,5 @@ export const Route = createFileRoute(
       </Card>
     </div>
   ),
-  pendingComponent: () => (
-    <div className="h-[50vh] no-scrollbar flex justify-start items-center flex-col gap-2">
-      <SkeletonTable className="w-full" />
-    </div>
-  ),
+  pendingComponent: () => <FullPageSkeleton />,
 })

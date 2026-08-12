@@ -3,6 +3,41 @@ import { Link } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import type { StockInHandListSchema } from '../../stock_summary/data/schema'
 import { cn } from '@/lib/utils'
+import { ExportDropdown, ExportOverlay } from '../shared/export-controls'
+import { useExportJob } from '../shared/export-job'
+
+const EXPORT_COLUMNS = [
+  { header: 'Particulars', accessor: 'itemName' },
+  { header: 'Opening Qty', accessor: 'openingQuantity' },
+  { header: 'Opening Value', accessor: 'openingAmount' },
+  { header: 'Inward Qty', accessor: 'inwardQuantity' },
+  { header: 'Inward Value', accessor: 'inwardAmount' },
+  { header: 'Outward Qty', accessor: 'outwardQuantity' },
+  { header: 'Outward Value', accessor: 'outwardAmount' },
+  { header: 'Closing Qty', accessor: 'closingQuantity' },
+  { header: 'Closing Value', accessor: 'closingAmount' },
+]
+
+const qtyText = (quantity: number | null | undefined, item: any) =>
+  !quantity
+    ? '-'
+    : `${quantity.toFixed(item.noOfDecimalPlaces ?? 2)} ${item.unitCode ?? ''}`
+
+const valueText = (amount: number | null | undefined) =>
+  !amount ? '-' : `₹${amount.toFixed(2)}`
+
+const toExportRows = (rows: Array<StockInHandListSchema[number]>) =>
+  rows.map((item) => ({
+    itemName: item.itemName ?? '',
+    openingQuantity: qtyText(item.openingQuantity, item),
+    openingAmount: valueText(item.openingAmount),
+    inwardQuantity: qtyText(item.inwardQuantity, item),
+    inwardAmount: valueText(item.inwardAmount),
+    outwardQuantity: qtyText(item.outwardQuantity, item),
+    outwardAmount: valueText(item.outwardAmount),
+    closingQuantity: qtyText(item.closingQuantity, item),
+    closingAmount: valueText(item.closingAmount),
+  }))
 
 interface StockInHandProps {
   data: StockInHandListSchema
@@ -23,10 +58,56 @@ export default function FreightGodownWise({
 }
 
 const ReportView = ({ data }: StockInHandProps) => {
+  const {
+    exportJob,
+    eta,
+    progress,
+    runExport,
+    handleRunInBackground,
+    cancelExport,
+  } = useExportJob<StockInHandListSchema[number]>({
+    getPageRows: () => data,
+    getFilteredRows: () => data,
+    generate: async (action, rows) => {
+      const exportRows = toExportRows(rows)
+      if (action === 'pdf') {
+        const { default: exportTableToPdf } =
+          await import('@/utils/export-table-pdf')
+        exportTableToPdf({
+          title: 'Freight (Godown Wise)',
+          columnData: EXPORT_COLUMNS,
+          data: exportRows as Array<any>,
+          fileName: 'freight-godown-wise.pdf',
+          orientation: 'landscape',
+        })
+      } else {
+        const { default: exportTableToExcel } =
+          await import('@/utils/export-table-excel')
+        exportTableToExcel({
+          title: 'Freight (Godown Wise)',
+          columnData: EXPORT_COLUMNS,
+          data: exportRows as Array<any>,
+          fileName: 'freight-godown-wise.xlsx',
+        })
+      }
+    },
+    successLabel: 'item',
+  })
+
   return (
-    <div className="w-full min-h-full  grid grid-rows-[auto_1fr]">
+    <div className="w-full min-h-full grid grid-rows-[auto_auto_1fr]">
       <ReportHeader />
-      <div className="border-2 min-h-full">
+      <div className="flex items-center justify-end px-2 py-1 border-b">
+        {data.length > 0 && (
+          <ExportDropdown
+            job={exportJob}
+            pageCount={data.length}
+            totalCount={data.length}
+            onSelect={runExport}
+          />
+        )}
+      </div>
+      <div className="border-2 min-h-full overflow-auto">
         {data.map((item, index) => (
           <div
             key={index}
@@ -101,6 +182,15 @@ const ReportView = ({ data }: StockInHandProps) => {
         ))}
       </div>
       <ReportFooter data={data} />
+      {exportJob && (
+        <ExportOverlay
+          job={exportJob}
+          eta={eta}
+          progress={progress}
+          onBackground={handleRunInBackground}
+          onCancel={cancelExport}
+        />
+      )}
     </div>
   )
 }

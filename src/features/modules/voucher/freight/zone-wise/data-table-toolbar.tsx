@@ -9,6 +9,8 @@ import ReportingPeriod from '@/features/global/components/reporting-period'
 
 import { DataTableFacetedFilter } from '@/features/global/components/data-table/data-table-faceted-filter'
 import { buildDispatchLabel } from '../shared/utils'
+import { ExportDropdown, ExportOverlay } from '../shared/export-controls'
+import { useExportJob } from '../shared/export-job'
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>
@@ -21,6 +23,141 @@ interface DataTableToolbarProps<TData> {
 export interface ExportColumn<T> {
   header: string
   accessor: keyof T
+}
+
+const SUMMARY_COLUMNS = [
+  { header: 'Zone', accessor: 'zoneName' },
+  { header: 'Total Entries', accessor: 'totalEntries' },
+  { header: 'Inward Qty', accessor: 'totalInwardQuantity' },
+  { header: 'Outward Qty', accessor: 'totalOutwardQuantity' },
+  { header: 'Closing Qty', accessor: 'totalClosingQuantity' },
+  { header: 'Inward Billing Qty', accessor: 'totalInwardBillingQuantity' },
+  { header: 'Outward Billing Qty', accessor: 'totalOutwardBillingQuantity' },
+  { header: 'Closing Billing Qty', accessor: 'totalBillingClosingQuantity' },
+  { header: 'Total Amount', accessor: 'totalAmount' },
+]
+
+const DETAIL_COLUMNS = [
+  { header: 'Voucher No', accessor: 'voucherNo' },
+  { header: 'Date', accessor: 'voucherDate' },
+  { header: 'Party', accessor: 'partyName' },
+  { header: 'Item', accessor: 'itemName' },
+  { header: 'Godown', accessor: 'godownName' },
+  { header: 'Dispatch', accessor: 'dispatch' },
+  { header: 'Qty', accessor: 'actualQuantity' },
+  { header: 'Amount', accessor: 'amount' },
+  { header: 'Status', accessor: 'paymentStatus' },
+]
+
+const summaryRows = (rows: Array<any>) =>
+  rows.map((row) => ({
+    zoneName: row.zoneName ?? '',
+    totalEntries: row.totalEntries ?? '',
+    totalInwardQuantity: row.totalInwardQuantity ?? '',
+    totalOutwardQuantity: row.totalOutwardQuantity ?? '',
+    totalClosingQuantity: row.totalClosingQuantity ?? '',
+    totalInwardBillingQuantity: row.totalInwardBillingQuantity ?? '',
+    totalOutwardBillingQuantity: row.totalOutwardBillingQuantity ?? '',
+    totalBillingClosingQuantity: row.totalBillingClosingQuantity ?? '',
+    totalAmount: row.totalAmount ?? '',
+  }))
+
+const zoneSummaryChart = (rows: Array<any>) => ({
+  labels: rows.map((row) => row.zoneName),
+  datasets: [
+    {
+      label: 'Total Amount per Zone',
+      data: rows.map((row) => row.totalAmount),
+    },
+  ],
+})
+
+/** Per-zone detailed sections (one per zone) + a summary section first. */
+function buildPdfSections(rows: Array<any>, title: string) {
+  const isDetailedReport =
+    title === 'Delivery Note (Zone Wise)' || title === 'Freight (Zone Wise)'
+
+  if (isDetailedReport) {
+    const sections = rows.map((zone) => ({
+      title: zone.zoneName || 'Unknown Zone',
+      columnData: DETAIL_COLUMNS,
+      data: (zone.godownDetails || []).map((detail: any) => ({
+        ...detail,
+        dispatch: buildDispatchLabel(detail),
+      })),
+      chart: {
+        labels: (zone.godownDetails || []).map((d: any) => d.voucherNo),
+        datasets: [
+          {
+            label: `Actual Quantity - ${zone.zoneName}`,
+            data: (zone.godownDetails || []).map((d: any) => d.actualQuantity),
+          },
+        ],
+      },
+    }))
+    sections.unshift({
+      title: 'Summary',
+      columnData: SUMMARY_COLUMNS,
+      data: summaryRows(rows),
+      chart: zoneSummaryChart(rows),
+    })
+    return sections
+  }
+
+  return [
+    {
+      title: 'Summary Report',
+      columnData: SUMMARY_COLUMNS,
+      data: summaryRows(rows),
+      chart: zoneSummaryChart(rows),
+    },
+  ]
+}
+
+/** Per-zone detailed sheets (one per zone) + a summary sheet first. */
+function buildExcelSheets(rows: Array<any>, title: string) {
+  const isDetailedReport =
+    title === 'Delivery Note (Zone Wise)' || title === 'Freight (Zone Wise)'
+
+  if (isDetailedReport) {
+    const sheets = rows.map((zone) => ({
+      // Excel worksheet names cannot exceed 31 chars and cannot contain: * ? : / \ [ ]
+      title: (zone.zoneName || 'Unknown Zone')
+        .replace(/[\\/*?:[\]]/g, '')
+        .substring(0, 31),
+      columnData: DETAIL_COLUMNS,
+      data: (zone.godownDetails || []).map((detail: any) => ({
+        ...detail,
+        dispatch: buildDispatchLabel(detail),
+      })),
+      chart: {
+        type: 'bar' as const,
+        labels: (zone.godownDetails || []).map((d: any) => d.voucherNo),
+        datasets: [
+          {
+            label: `Actual Quantity - ${zone.zoneName}`,
+            data: (zone.godownDetails || []).map((d: any) => d.actualQuantity),
+          },
+        ],
+      },
+    }))
+    sheets.unshift({
+      title: 'Summary',
+      columnData: SUMMARY_COLUMNS,
+      data: summaryRows(rows),
+      chart: { type: 'bar' as const, ...zoneSummaryChart(rows) },
+    })
+    return sheets
+  }
+
+  return [
+    {
+      title: 'Report',
+      columnData: SUMMARY_COLUMNS,
+      data: summaryRows(rows),
+      chart: { type: 'bar' as const, ...zoneSummaryChart(rows) },
+    },
+  ]
 }
 
 export function DataTableToolbar<TData>({
@@ -45,6 +182,47 @@ export function DataTableToolbar<TData>({
       label: `${name} (${count})`,
     }))
   }, [filteredRows])
+
+  // Rows currently shown on the report (respects the Zone faceted filter +
+  // global search). The report has no pagination, so "This page" and
+  // "All records (filtered)" share the same set.
+  const visibleRows = table
+    .getFilteredRowModel()
+    .rows.map((row) => row.original)
+
+  const {
+    exportJob,
+    eta,
+    progress,
+    runExport,
+    handleRunInBackground,
+    cancelExport,
+  } = useExportJob<any>({
+    getPageRows: () =>
+      table.getFilteredRowModel().rows.map((row) => row.original),
+    getFilteredRows: () =>
+      table.getFilteredRowModel().rows.map((row) => row.original),
+    generate: async (action, rows) => {
+      const fileNameBase = title.toLowerCase().replace(/\s+/g, '-')
+      if (action === 'pdf') {
+        const { default: exportTableToPdf } =
+          await import('@/utils/export-table-pdf')
+        exportTableToPdf({
+          fileName: `${fileNameBase}.pdf`,
+          sections: buildPdfSections(rows, title),
+          orientation: 'landscape', // Landscape is better for more columns
+        })
+      } else {
+        const { default: exportTableToExcel } =
+          await import('@/utils/export-table-excel')
+        exportTableToExcel({
+          fileName: `${fileNameBase}.xlsx`,
+          sheets: buildExcelSheets(rows, title) as any,
+        })
+      }
+    },
+    successLabel: 'zone',
+  })
 
   const zoneNameColumn = table.getColumn('zoneName')
   const isFiltered = table.getState().columnFilters.length > 0
@@ -100,387 +278,24 @@ export function DataTableToolbar<TData>({
           </Button>
         )}
 
-        <Button
-          variant="link"
-          className="h-8 px-2 lg:px-3"
-          onClick={async () => {
-            const { default: exportTableToPdf } =
-              await import('@/utils/export-table-pdf')
-
-            // Apply detailed section breakdown to both Freight and Delivery Note reports
-            const isDetailedReport =
-              title === 'Delivery Note (Zone Wise)' ||
-              title === 'Freight (Zone Wise)'
-
-            if (isDetailedReport) {
-              const sections = (filteredRows as Array<any>).map((zone) => ({
-                title: zone.zoneName || 'Unknown Zone',
-                columnData: [
-                  { header: 'Voucher No', accessor: 'voucherNo' },
-                  { header: 'Date', accessor: 'voucherDate' },
-                  { header: 'Party', accessor: 'partyName' },
-                  { header: 'Item', accessor: 'itemName' },
-                  { header: 'Godown', accessor: 'godownName' },
-                  { header: 'Dispatch', accessor: 'dispatch' },
-                  { header: 'Qty', accessor: 'actualQuantity' },
-                  { header: 'Amount', accessor: 'amount' },
-                  { header: 'Status', accessor: 'paymentStatus' },
-                ],
-                data: (zone.godownDetails || []).map((detail: any) => ({
-                  ...detail,
-                  dispatch: buildDispatchLabel(detail),
-                })),
-                chart: {
-                  labels: (zone.godownDetails || []).map(
-                    (d: any) => d.voucherNo,
-                  ),
-                  datasets: [
-                    {
-                      label: `Actual Quantity - ${zone.zoneName}`,
-                      data: (zone.godownDetails || []).map(
-                        (d: any) => d.actualQuantity,
-                      ),
-                    },
-                  ],
-                },
-              }))
-
-              // Add a summary section at the beginning
-              sections.unshift({
-                title: 'Summary',
-                columnData: [
-                  { header: 'Zone', accessor: 'zoneName' },
-                  { header: 'Total Entries', accessor: 'totalEntries' },
-                  { header: 'Inward Qty', accessor: 'totalInwardQuantity' },
-                  { header: 'Outward Qty', accessor: 'totalOutwardQuantity' },
-                  { header: 'Closing Qty', accessor: 'totalClosingQuantity' },
-                  {
-                    header: 'Inward Billing Qty',
-                    accessor: 'totalInwardBillingQuantity',
-                  },
-                  {
-                    header: 'Outward Billing Qty',
-                    accessor: 'totalOutwardBillingQuantity',
-                  },
-                  {
-                    header: 'Closing Billing Qty',
-                    accessor: 'totalBillingClosingQuantity',
-                  },
-                  { header: 'Total Amount', accessor: 'totalAmount' },
-                ],
-                data: (filteredRows as Array<any>).map((row) => ({
-                  zoneName: row.zoneName ?? '',
-                  totalEntries: row.totalEntries ?? '',
-                  totalInwardQuantity: row.totalInwardQuantity ?? '',
-                  totalOutwardQuantity: row.totalOutwardQuantity ?? '',
-                  totalClosingQuantity: row.totalClosingQuantity ?? '',
-                  totalInwardBillingQuantity:
-                    row.totalInwardBillingQuantity ?? '',
-                  totalOutwardBillingQuantity:
-                    row.totalOutwardBillingQuantity ?? '',
-                  totalBillingClosingQuantity:
-                    row.totalBillingClosingQuantity ?? '',
-                  totalAmount: row.totalAmount ?? '',
-                })),
-                chart: {
-                  labels: (filteredRows as Array<any>).map(
-                    (row) => row.zoneName,
-                  ),
-                  datasets: [
-                    {
-                      label: 'Total Amount per Zone',
-                      data: (filteredRows as Array<any>).map(
-                        (row) => row.totalAmount,
-                      ),
-                    },
-                  ],
-                },
-              })
-
-              exportTableToPdf({
-                fileName: `${title.toLowerCase().replace(/\s+/g, '-')}.pdf`,
-                sections,
-                orientation: 'landscape',
-              })
-            } else {
-              exportTableToPdf({
-                title: title,
-                fileName: `${title.toLowerCase().replace(/\s+/g, '-')}.pdf`,
-                sections: [
-                  {
-                    title: 'Summary Report',
-                    columnData: [
-                      { header: 'Zone', accessor: 'zoneName' },
-                      { header: 'Total Entries', accessor: 'totalEntries' },
-                      { header: 'Inward Qty', accessor: 'totalInwardQuantity' },
-                      {
-                        header: 'Outward Qty',
-                        accessor: 'totalOutwardQuantity',
-                      },
-                      {
-                        header: 'Closing Qty',
-                        accessor: 'totalClosingQuantity',
-                      },
-                      {
-                        header: 'Inward Billing Qty',
-                        accessor: 'totalInwardBillingQuantity',
-                      },
-                      {
-                        header: 'Outward Billing Qty',
-                        accessor: 'totalOutwardBillingQuantity',
-                      },
-                      {
-                        header: 'Closing Billing Qty',
-                        accessor: 'totalBillingClosingQuantity',
-                      },
-                      { header: 'Total Amount', accessor: 'totalAmount' },
-                    ],
-                    data: (filteredRows as Array<any>).map((row) => ({
-                      zoneName: row.zoneName ?? '',
-                      totalEntries: row.totalEntries ?? '',
-                      totalInwardQuantity: row.totalInwardQuantity ?? '',
-                      totalOutwardQuantity: row.totalOutwardQuantity ?? '',
-                      totalClosingQuantity: row.totalClosingQuantity ?? '',
-                      totalInwardBillingQuantity:
-                        row.totalInwardBillingQuantity ?? '',
-                      totalOutwardBillingQuantity:
-                        row.totalOutwardBillingQuantity ?? '',
-                      totalBillingClosingQuantity:
-                        row.totalBillingClosingQuantity ?? '',
-                      totalAmount: row.totalAmount ?? '',
-                    })),
-                    chart: {
-                      labels: (filteredRows as Array<any>).map(
-                        (row) => row.zoneName,
-                      ),
-                      datasets: [
-                        {
-                          label: 'Total Amount per Zone',
-                          data: (filteredRows as Array<any>).map(
-                            (row) => row.totalAmount,
-                          ),
-                        },
-                      ],
-                    },
-                  },
-                ],
-                orientation: 'landscape', // Landscape is better for more columns
-              })
-            }
-          }}
-        >
-          Export PDF
-        </Button>
-        <Button
-          variant="link"
-          className="h-8 px-2 lg:px-3"
-          onClick={async () => {
-            const { default: exportTableToExcel } =
-              await import('@/utils/export-table-excel')
-
-            // Apply detailed sheet breakdown to both Freight and Delivery Note reports
-            const isDetailedReport =
-              title === 'Delivery Note (Zone Wise)' ||
-              title === 'Freight (Zone Wise)'
-
-            if (isDetailedReport) {
-              const sheets = (filteredRows as Array<any>).map((zone) => ({
-                // Excel worksheet names cannot exceed 31 chars and cannot contain: * ? : / \ [ ]
-                title: (zone.zoneName || 'Unknown Zone')
-                  .replace(/[\\/*?:[\]]/g, '')
-                  .substring(0, 31),
-                columnData: [
-                  { header: 'Voucher No', accessor: 'voucherNo' },
-                  { header: 'Date', accessor: 'voucherDate' },
-                  { header: 'Party', accessor: 'partyName' },
-                  { header: 'Item', accessor: 'itemName' },
-                  { header: 'Godown', accessor: 'godownName' },
-                  { header: 'Dispatch', accessor: 'dispatch' },
-                  { header: 'Qty', accessor: 'actualQuantity' },
-                  { header: 'Amount', accessor: 'amount' },
-                  { header: 'Status', accessor: 'paymentStatus' },
-                ],
-                data: (zone.godownDetails || []).map((detail: any) => ({
-                  ...detail,
-                  dispatch: buildDispatchLabel(detail),
-                })),
-                chart: {
-                  type: 'bar' as const,
-                  labels: (zone.godownDetails || []).map(
-                    (d: any) => d.voucherNo,
-                  ),
-                  datasets: [
-                    {
-                      label: `Actual Quantity - ${zone.zoneName}`,
-                      data: (zone.godownDetails || []).map(
-                        (d: any) => d.actualQuantity,
-                      ),
-                    },
-                  ],
-                },
-              }))
-
-              // Add a summary sheet at the beginning
-              sheets.unshift({
-                title: 'Summary',
-                columnData: [
-                  { header: 'Zone', accessor: 'zoneName' },
-                  { header: 'Total Entries', accessor: 'totalEntries' },
-                  { header: 'Inward Qty', accessor: 'totalInwardQuantity' },
-                  { header: 'Outward Qty', accessor: 'totalOutwardQuantity' },
-                  { header: 'Closing Qty', accessor: 'totalClosingQuantity' },
-                  {
-                    header: 'Inward Billing Qty',
-                    accessor: 'totalInwardBillingQuantity',
-                  },
-                  {
-                    header: 'Outward Billing Qty',
-                    accessor: 'totalOutwardBillingQuantity',
-                  },
-                  {
-                    header: 'Closing Billing Qty',
-                    accessor: 'totalBillingClosingQuantity',
-                  },
-                  { header: 'Total Amount', accessor: 'totalAmount' },
-                ],
-                data: (filteredRows as Array<any>).map((row) => ({
-                  zoneName: row.zoneName ?? '',
-                  totalEntries: row.totalEntries ?? '',
-                  totalInwardQuantity: row.totalInwardQuantity ?? '',
-                  totalOutwardQuantity: row.totalOutwardQuantity ?? '',
-                  totalClosingQuantity: row.totalClosingQuantity ?? '',
-                  totalInwardBillingQuantity:
-                    row.totalInwardBillingQuantity ?? '',
-                  totalOutwardBillingQuantity:
-                    row.totalOutwardBillingQuantity ?? '',
-                  totalBillingClosingQuantity:
-                    row.totalBillingClosingQuantity ?? '',
-                  totalAmount: row.totalAmount ?? '',
-                })),
-                chart: {
-                  type: 'bar' as const,
-                  labels: (filteredRows as Array<any>).map(
-                    (row) => row.zoneName,
-                  ),
-                  datasets: [
-                    {
-                      label: 'Total Amount per Zone',
-                      data: (filteredRows as Array<any>).map(
-                        (row) => row.totalAmount,
-                      ),
-                    },
-                  ],
-                },
-              })
-
-              exportTableToExcel({
-                fileName: `${title.toLowerCase().replace(/\s+/g, '-')}.xlsx`,
-                sheets: sheets as any,
-              })
-            } else {
-              exportTableToExcel({
-                title: title,
-                columnData: [
-                  { header: 'Zone', accessor: 'zoneName' },
-                  { header: 'Total Entries', accessor: 'totalEntries' },
-                  { header: 'Inward Qty', accessor: 'totalInwardQuantity' },
-                  { header: 'Outward Qty', accessor: 'totalOutwardQuantity' },
-                  { header: 'Closing Qty', accessor: 'totalClosingQuantity' },
-                  {
-                    header: 'Inward Billing Qty',
-                    accessor: 'totalInwardBillingQuantity',
-                  },
-                  {
-                    header: 'Outward Billing Qty',
-                    accessor: 'totalOutwardBillingQuantity',
-                  },
-                  {
-                    header: 'Closing Billing Qty',
-                    accessor: 'totalBillingClosingQuantity',
-                  },
-                  { header: 'Total Amount', accessor: 'totalAmount' },
-                ],
-                data: (filteredRows as Array<any>).map((row) => ({
-                  zoneName: row.zoneName ?? '',
-                  totalEntries: row.totalEntries ?? '',
-                  totalInwardQuantity: row.totalInwardQuantity ?? '',
-                  totalOutwardQuantity: row.totalOutwardQuantity ?? '',
-                  totalClosingQuantity: row.totalClosingQuantity ?? '',
-                  totalInwardBillingQuantity:
-                    row.totalInwardBillingQuantity ?? '',
-                  totalOutwardBillingQuantity:
-                    row.totalOutwardBillingQuantity ?? '',
-                  totalBillingClosingQuantity:
-                    row.totalBillingClosingQuantity ?? '',
-                  totalAmount: row.totalAmount ?? '',
-                })),
-                fileName: `${title.toLowerCase().replace(/\s+/g, '-')}.xlsx`,
-                sheets: [
-                  {
-                    title: 'Report',
-                    columnData: [
-                      { header: 'Zone', accessor: 'zoneName' },
-                      { header: 'Total Entries', accessor: 'totalEntries' },
-                      { header: 'Inward Qty', accessor: 'totalInwardQuantity' },
-                      {
-                        header: 'Outward Qty',
-                        accessor: 'totalOutwardQuantity',
-                      },
-                      {
-                        header: 'Closing Qty',
-                        accessor: 'totalClosingQuantity',
-                      },
-                      {
-                        header: 'Inward Billing Qty',
-                        accessor: 'totalInwardBillingQuantity',
-                      },
-                      {
-                        header: 'Outward Billing Qty',
-                        accessor: 'totalOutwardBillingQuantity',
-                      },
-                      {
-                        header: 'Closing Billing Qty',
-                        accessor: 'totalBillingClosingQuantity',
-                      },
-                      { header: 'Total Amount', accessor: 'totalAmount' },
-                    ],
-                    data: (filteredRows as Array<any>).map((row) => ({
-                      zoneName: row.zoneName ?? '',
-                      totalEntries: row.totalEntries ?? '',
-                      totalInwardQuantity: row.totalInwardQuantity ?? '',
-                      totalOutwardQuantity: row.totalOutwardQuantity ?? '',
-                      totalClosingQuantity: row.totalClosingQuantity ?? '',
-                      totalInwardBillingQuantity:
-                        row.totalInwardBillingQuantity ?? '',
-                      totalOutwardBillingQuantity:
-                        row.totalOutwardBillingQuantity ?? '',
-                      totalBillingClosingQuantity:
-                        row.totalBillingClosingQuantity ?? '',
-                      totalAmount: row.totalAmount ?? '',
-                    })),
-                    chart: {
-                      type: 'bar' as const,
-                      labels: (filteredRows as Array<any>).map(
-                        (row) => row.zoneName,
-                      ),
-                      datasets: [
-                        {
-                          label: 'Total Amount per Zone',
-                          data: (filteredRows as Array<any>).map(
-                            (row) => row.totalAmount,
-                          ),
-                        },
-                      ],
-                    },
-                  },
-                ] as any,
-              })
-            }
-          }}
-        >
-          Export EXCEL
-        </Button>
+        {visibleRows.length > 0 && (
+          <ExportDropdown
+            job={exportJob}
+            pageCount={visibleRows.length}
+            totalCount={visibleRows.length}
+            onSelect={runExport}
+          />
+        )}
       </div>
+      {exportJob && (
+        <ExportOverlay
+          job={exportJob}
+          eta={eta}
+          progress={progress}
+          onBackground={handleRunInBackground}
+          onCancel={cancelExport}
+        />
+      )}
     </div>
   )
 }

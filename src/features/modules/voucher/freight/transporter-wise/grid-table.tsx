@@ -116,7 +116,6 @@ export function GridTable({ columns, data }: DataTableProps) {
       <DataTableToolbar
         table={table}
         placeHolder={`Filter ${keyName} `}
-        filteredRows={data}
         exportColumnsData={exportColumnsData}
       />
       <div className="rounded-md border">

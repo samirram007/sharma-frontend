@@ -1,6 +1,5 @@
 import { Cross2Icon } from '@radix-ui/react-icons'
 import { IconFilter } from '@tabler/icons-react'
-import { useMemo } from 'react'
 import { DataTableFacetedFilter } from './data-table-faceted-filter'
 import type { Table } from '@tanstack/react-table'
 import { Button } from '@/components/ui/button'
@@ -8,12 +7,12 @@ import { Input } from '@/components/ui/input'
 
 import ReportingPeriod from '@/features/global/components/reporting-period'
 import { date_format, toSentenceCase } from '@/utils/removeEmptyStrings'
-// import { DataTableViewOptions } from './data-table-view-options'
+import { ExportDropdown, ExportOverlay } from '../shared/export-controls'
+import { useExportJob } from '../shared/export-job'
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>
   placeHolder: string
-  filteredRows: Array<TData>
   exportColumnsData: Array<ExportColumn<TData>>
 }
 export interface ExportColumn<T> {
@@ -24,28 +23,64 @@ export interface ExportColumn<T> {
 export function DataTableToolbar<TData>({
   table,
   placeHolder,
-  filteredRows,
   exportColumnsData,
 }: DataTableToolbarProps<TData>) {
-  console.log('filteredData', filteredRows)
+  // The grid renders the full (client-side filtered) dataset on one page, so
+  // "This page" and "All records (filtered)" share the same rows.
+  const filteredRows = table
+    .getFilteredRowModel()
+    .rows.map((row) => row.original)
 
-  const exportData = useMemo(() => {
-    return (filteredRows as Array<any>).map((row) => ({
-      voucherDate: date_format(row.voucherDate) ?? '',
-      transporterName: row.transporterName ?? '',
-      vehicleNumber: row.vehicleNumber ?? '',
-      partyLedger: row.partyLedger?.name ?? '',
-      voucherType:
-        toSentenceCase(row.module ?? row.voucherType?.name ?? '') ?? '',
-      voucherNo: row.voucherNo ?? '',
-      amount: row.amount ?? '',
-      paymentStatus: row.paymentStatus ?? '',
-    }))
-  }, [filteredRows])
-
-  const filteredColumn = exportColumnsData.filter((col) => {
-    return col.header !== 'actions' && col.header !== 'select'
+  const {
+    exportJob,
+    eta,
+    progress,
+    runExport,
+    handleRunInBackground,
+    cancelExport,
+  } = useExportJob<TData>({
+    getPageRows: () =>
+      table.getFilteredRowModel().rows.map((row) => row.original),
+    getFilteredRows: () =>
+      table.getFilteredRowModel().rows.map((row) => row.original),
+    generate: async (action, rows) => {
+      const exportData = (rows as Array<any>).map((row) => ({
+        voucherDate: date_format(row.voucherDate) ?? '',
+        transporterName: row.transporterName ?? '',
+        vehicleNumber: row.vehicleNumber ?? '',
+        partyLedger: row.partyLedger?.name ?? '',
+        voucherType:
+          toSentenceCase(row.module ?? row.voucherType?.name ?? '') ?? '',
+        voucherNo: row.voucherNo ?? '',
+        amount: row.amount ?? '',
+        paymentStatus: row.paymentStatus ?? '',
+      }))
+      const filteredColumn = exportColumnsData.filter(
+        (col) => col.header !== 'actions' && col.header !== 'select',
+      )
+      if (action === 'pdf') {
+        const { default: exportTableToPdf } =
+          await import('@/utils/export-table-pdf')
+        exportTableToPdf({
+          title: 'Freight(Transporter Wise)',
+          columnData: filteredColumn as any,
+          data: exportData,
+          fileName: 'freight-transporter-wise-table.pdf',
+        })
+      } else {
+        const { default: exportTableToExcel } =
+          await import('@/utils/export-table-excel')
+        exportTableToExcel({
+          title: 'Freight(Transporter Wise)',
+          columnData: filteredColumn as any,
+          data: exportData,
+          fileName: 'freight-transporter-wise-table.xlsx',
+        })
+      }
+    },
+    successLabel: 'record',
   })
+
   const isFiltered = table.getState().columnFilters.length > 0
 
   return (
@@ -92,41 +127,24 @@ export function DataTableToolbar<TData>({
             <Cross2Icon className="ml-2 h-4 w-4" />
           </Button>
         )}
-
-        <Button
-          variant="link"
-          className="h-8 px-2 lg:px-3"
-          onClick={async () => {
-            const { default: exportTableToPdf } =
-              await import('@/utils/export-table-pdf')
-            exportTableToPdf({
-              title: 'Freight(Transporter Wise)',
-              columnData: filteredColumn as any,
-              data: exportData,
-              fileName: 'freight-transporter-wise-table.pdf',
-            })
-          }}
-        >
-          Export PDF
-        </Button>
-        <Button
-          variant="link"
-          className="h-8 px-2 lg:px-3"
-          onClick={async () => {
-            const { default: exportTableToExcel } =
-              await import('@/utils/export-table-excel')
-            exportTableToExcel({
-              title: 'Freight(Transporter Wise)',
-              columnData: filteredColumn as any,
-              data: exportData,
-              fileName: 'freight-transporter-wise-table.xlsx',
-            })
-          }}
-        >
-          Export EXCEL
-        </Button>
+        {filteredRows.length > 0 && (
+          <ExportDropdown
+            job={exportJob}
+            pageCount={filteredRows.length}
+            totalCount={filteredRows.length}
+            onSelect={runExport}
+          />
+        )}
       </div>
-      {/* <DataTableViewOptions table={table} /> */}
+      {exportJob && (
+        <ExportOverlay
+          job={exportJob}
+          eta={eta}
+          progress={progress}
+          onBackground={handleRunInBackground}
+          onCancel={cancelExport}
+        />
+      )}
     </div>
   )
 }
