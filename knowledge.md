@@ -21,7 +21,7 @@ React 19 SPA for **AIPT** (Accounts | Inventory | Payroll | Tax). Serves the `sh
 | Check all          | `pnpm check` (`prettier --write . && eslint --fix`)           |
 | SSR (experimental) | `pnpm serve:ssr` / `pnpm dev:server` (`tsx src/server.ts`)    |
 
-**Setup:** copy `.env.example` → `.env`, set `VITE_API_BASE_URL` (must end with `/api`, e.g. `https://aipt-api.local/api`). Dev proxy target is `VITE_BACKEND_URL` (no `/api` suffix).
+**Setup:** copy `.env.example` → `.env` (canonical local defaults: `VITE_API_BASE_URL=/api` through the Vite proxy, `VITE_BACKEND_URL=http://localhost:8000`), then put machine-specific overrides in `.env.local` (gitignored) — e.g. `VITE_BACKEND_URL=https://sharma-api.local` for a Laragon HTTPS dev box. `.env.production` (tracked) holds the prod build config. Local dev login (seed only): `admin@admin.com` / `password`.
 
 ## E2E testing (Playwright)
 
@@ -89,6 +89,14 @@ src/
 - **axios-client.ts** — `baseURL: VITE_API_BASE_URL`, `withCredentials: true`. Request interceptor attaches `Authorization: Bearer <token>` when stored. Response interceptor: on **401** (not on `/auth/refresh` or `/sign-in`) it calls `POST /auth/refresh` once (`_retry` flag) and replays the request; on refresh failure it clears the token and hard-redirects to `/sign-in`.
 - ⚠️ Known issue: the JWT lives **both** in client storage (localStorage/sessionStorage) **and** in an httpOnly cookie — duplication + XSS exposure (see backend knowledge.md, same gap).
 
+### Realtime (Reverb) — verified dev flow
+
+- Vite dev proxy forwards **both** `/api` and `/broadcasting` → `VITE_BACKEND_URL` (`vite.config.js` strips a trailing `/api` from the target).
+- The browser connects directly to `ws://localhost:8080` (Reverb); `VITE_REVERB_APP_KEY` default `af749dfcf9c0012a6a40a3fd24650e4a`, `VITE_REVERB_HOST/PORT/SCHEME` from env.
+- Private/presence channel auth POSTs to **`/broadcasting/auth`** (NOT under `/api`) — a custom `authorizer` in `echo-context.tsx` posts `{socket_id, channel_name}` via `axiosClient` (fresh bearer token + 401 auto-refresh). The endpoint is resolved to an absolute URL against `window.location.origin` (dev: same-origin via the proxy; prod: `VITE_REVERB_AUTH_ENDPOINT`, e.g. `https://api.sharmahardware.co.in/broadcasting/auth`).
+- **Drift check:** `src/lib/broadcast-drift.ts` — the auth-endpoint probe is **lazy**: it only GET-probes `/broadcasting/auth` after a real channel-auth POST fails with a drift-indicative status (404 or network error, not 403 — the route exists then and probing would just add a second 403 console entry), at most once per page load, warning when the endpoint is 404/unreachable (host/path/route-cache drift). The WS app-key check binds eagerly and warns once on Reverb close codes 4001/4008. No `[realtime]` warnings ⇒ config matches the backend. Probing lazily (rather than on every load) keeps the devtools console free of the "Failed to load resource: 403" entry that a bare eager GET probe generated on every healthy page load (dev and prod alike).
+- **Verified locally end-to-end:** sign-in renders → `admin@admin.com`/`password` → dashboard loads → WS connects to `ws://localhost:8080` → channel auth POST returns 200 → realtime functional.
+
 ### Data fetching (TanStack Query)
 
 - **`utils/dataClient.tsx`** — `getData/postData/putData/patchData/deleteData` wrappers over axiosClient. Payloads pass through `removeEmptyStrings()`. **Success auto-toasts `response.data.message`; errors auto-toast per-field validation messages** (session-expired text is rewritten, `duration: 6000`). Don't double-toast in mutation callbacks.
@@ -133,7 +141,7 @@ Two coexisting patterns:
 
 ### Realtime & misc features
 
-- **Laravel Echo + pusher-js → Laravel Reverb** via `EchoProvider` (`core/contexts/echo-context.tsx`); env: `VITE_REVERB_APP_KEY/HOST/PORT/SCHEME` (defaults `localhost:8080/http`). Used by notifications center and chats.
+- **Laravel Echo + pusher-js → Laravel Reverb** via `EchoProvider` (`core/contexts/echo-context.tsx`); env: `VITE_REVERB_APP_KEY/HOST/PORT/SCHEME` (defaults `localhost:8080/http`). Private-channel auth POSTs to `VITE_REVERB_AUTH_ENDPOINT` (derived from `VITE_API_BASE_URL` → `.../broadcasting/auth`, NOT under `/api`) with the bearer token via `axiosClient`. Used by notifications center and chats.
 - **POS / transactions** — `features/modules/voucher/` hosts every voucher type (purchase, sales, receipt, payment, contra, journal, opening_stock, physical_stock, transfer_voucher, freight, day_book, …) sharing `contexts/pos-context.tsx`, `pos-header/body/footer`, `special/save-dialog`, and `components/stock-journal*` grids; shared schema in `data-schema/voucher-schema.ts` (+ `movement-type.ts`).
 - **Dashboard** — recharts widgets with per-widget queries (`/dashboard/summary`, `*_wise`).
 - **Enums** — `features/enums/` + `GET /api/enums/{enumName}`.
@@ -171,7 +179,7 @@ Two coexisting patterns:
 9. **pnpm is the standard package manager**; `package-lock.json` is gitignored, `pnpm-lock.yaml` + `pnpm-workspace.yaml` are canonical. CI installs with `--frozen-lockfile`.
 10. **SSR scripts** (`serve:ssr`, `dev:server`, `server.ts`) are experimental/disabled — the SPA is client-rendered.
 11. **`exceljs`/`jspdf` (v4)/`jspdf-autotable` (v5)/`file-saver`** are heavyweight deps — export handlers use dynamic `import()` for code-splitting; keep it that way.
-12. `.env.example` ships `VITE_API_BASE_URL=https://aipt-api.local/api`; social login URLs default to `#` (disabled); `VITE_AUTH_STORAGE` is honored by code but **not** listed in `.env.example`.
+12. `.env.example` ships `VITE_API_BASE_URL=https://aipt-api.local/api`; social login URLs default to `#` (disabled); `VITE_AUTH_STORAGE` (default `localStorage`) and `VITE_REVERB_AUTH_ENDPOINT` are documented. The resolved API base is shared via `src/lib/env.ts` (`API_BASE_URL`, falls back to `/api`) and consumed by `axios-client.ts` and `echo-context.tsx`.
 
 ## Things to avoid
 

@@ -4,6 +4,7 @@ import axios, {
   type AxiosResponse,
   type InternalAxiosRequestConfig,
 } from 'axios'
+import { API_BASE_URL } from '@/lib/env'
 import { getToken, removeToken } from '@/lib/token-storage'
 
 interface RetryableRequestConfig extends InternalAxiosRequestConfig {
@@ -12,8 +13,7 @@ interface RetryableRequestConfig extends InternalAxiosRequestConfig {
 
 // Create Axios instance
 const axiosClient: AxiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL,
-  // baseURL: '/api',
+  baseURL: API_BASE_URL,
   withCredentials: true,
   // headers: {
   //     'Content-Type': 'application/json',
@@ -24,7 +24,7 @@ const axiosClient: AxiosInstance = axios.create({
 async function refreshToken(): Promise<void> {
   try {
     await axios.post(
-      `${import.meta.env.VITE_API_BASE_URL}/auth/refresh`,
+      `${API_BASE_URL}/auth/refresh`,
       {},
       { withCredentials: true },
     )

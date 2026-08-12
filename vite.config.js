@@ -8,16 +8,30 @@ import { defineConfig, loadEnv } from 'vite'
 export default defineConfig(({ mode }) => {
   // const isProd = mode === 'production'
   const env = loadEnv(mode, process.cwd())
+  // Strip a trailing `/api` from VITE_BACKEND_URL (a common copy-paste mistake):
+  // the dev proxy forwards the full request path, so a suffixed target would
+  // double the prefix (e.g. /api/... -> host/api/api/...).
+  const backendTarget = (
+    env.VITE_BACKEND_URL || 'http://localhost:8000'
+  ).replace(/\/api\/?$/, '')
   return {
     // base: isProd ? '/frontend/' : '/',
     base: env.VITE_BASE_URL,
     server: {
       proxy: {
         '/api': {
-          target: env.VITE_BACKEND_URL || 'http://localhost:8000',
+          target: backendTarget,
           changeOrigin: true,
           secure: env.VITE_API_SECURE === 'true',
           // Do NOT rewrite /api — Laravel routes are already prefixed with /api
+        },
+        // Laravel Echo channel-auth endpoint (registered outside /api by
+        // Broadcast::routes()) — proxy it so dev broadcasting auth works even
+        // when VITE_API_BASE_URL is relative.
+        '/broadcasting': {
+          target: backendTarget,
+          changeOrigin: true,
+          secure: env.VITE_API_SECURE === 'true',
         },
       },
     },
