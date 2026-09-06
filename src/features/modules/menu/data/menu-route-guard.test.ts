@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import type { MenuTreeItem } from './menu-tree-types'
-import { collectMenuRoutes, isBlockedMenuPath } from './menu-route-guard'
+import {
+  collectMenuRoutes,
+  isBlockedMenuPath,
+  matchMostSpecificRoute,
+} from './menu-route-guard'
 
 const node = (overrides: Partial<MenuTreeItem>): MenuTreeItem => ({
   id: 1,
@@ -125,5 +129,48 @@ describe('isBlockedMenuPath', () => {
 
   it('normalizes trailing slashes', () => {
     expect(isBlockedMenuPath('/reports/day_book/', all, visible)).toBe(true)
+  })
+})
+
+describe('matchMostSpecificRoute', () => {
+  it('prefers a child route over its parent when both match', () => {
+    const routes = [
+      '/transactions/vouchers',
+      '/transactions/vouchers/delivery_note',
+      '/transactions/vouchers/receipt_note',
+    ]
+    expect(
+      matchMostSpecificRoute('/transactions/vouchers/delivery_note/4833', routes),
+    ).toBe('/transactions/vouchers/delivery_note')
+  })
+
+  it('matches an exact route when no child exists', () => {
+    const routes = ['/transactions/freight']
+    expect(matchMostSpecificRoute('/transactions/freight/123', routes)).toBe(
+      '/transactions/freight',
+    )
+  })
+
+  it('returns empty string when no route matches', () => {
+    const routes = ['/transactions/freight']
+    expect(matchMostSpecificRoute('/reports/day_book', routes)).toBe('')
+  })
+
+  it('does not let "/" match everything', () => {
+    const routes = ['/', '/dashboard']
+    expect(matchMostSpecificRoute('/dashboard/settings', routes)).toBe(
+      '/dashboard',
+    )
+  })
+
+  it('handles multiple nesting levels', () => {
+    const routes = [
+      '/transactions',
+      '/transactions/vouchers',
+      '/transactions/vouchers/delivery_note',
+    ]
+    expect(
+      matchMostSpecificRoute('/transactions/vouchers/delivery_note/4833', routes),
+    ).toBe('/transactions/vouchers/delivery_note')
   })
 })

@@ -3,10 +3,12 @@ import { deliveryVehicleQueryOptions } from '@/features/modules/delivery_vehicle
 import { stockUnitQueryOptions } from '@/features/modules/stock_unit/data/queryOptions'
 import { transporterQueryOptions } from '@/features/modules/transporter/data/queryOptions'
 import { createFileRoute, Outlet } from '@tanstack/react-router'
+import { requirePermission } from '@/lib/auth'
 
 export const Route = createFileRoute(
   '/_protected/transactions/_provider/vouchers/_layout/delivery_note/_layout',
 )({
+  beforeLoad: requirePermission('DELIVERY_NOTE_MENU_VIEW'),
   loader: async ({ context }) => {
     const { queryClient } = context
 

@@ -490,9 +490,9 @@ code {
 
 /* ── Recent tabs ───────────────────────────────────────────────
  * Entrance for a newly opened tab: fades in while sliding up a touch.
- * (Closing tabs animate through an inline width collapse driven by
- * transition-[width] in recent-tabs.tsx — more prominent than a plain
- * fade.) */
+ * (Closing tabs animate through an inline multi-property collapse in
+ * recent-tabs.tsx — width + padding + border-width with a fade on top —
+ * more prominent than a plain fade.) */
 @keyframes tab-enter {
   from {
     opacity: 0;

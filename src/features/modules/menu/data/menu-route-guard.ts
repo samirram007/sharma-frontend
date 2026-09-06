@@ -48,6 +48,26 @@ const ALWAYS_ALLOWED_PATHS: readonly string[] = [
  * Paths in the ALWAYS_ALLOWED_PATHS list are never blocked — they only
  * require the user to be authenticated.
  */
+/**
+ * Unit-test surface: expose the raw matching logic so tests can verify
+ * the most-specific-route preference without needing the full guard.
+ */
+export function matchMostSpecificRoute(
+  normalized: string,
+  allRoutes: string[],
+): string {
+  let best = ''
+  for (const route of allRoutes) {
+    if (
+      normalized === route ||
+      (route !== '/' && normalized.startsWith(`${route}/`))
+    ) {
+      if (route.length > best.length) best = route
+    }
+  }
+  return best
+}
+
 export function isBlockedMenuPath(
   pathname: string,
   allMenuRoutes: string[],
@@ -64,37 +84,58 @@ export function isBlockedMenuPath(
     return false
   }
 
-  const matchedMenuRoute = allMenuRoutes.find(
-    (route) =>
+  // Find the *most specific* (longest) matching menu route so that
+  // `/transactions/vouchers/delivery_note` wins over the parent
+  // `/transactions/vouchers` when both exist in the tree.
+  let bestMatch = ''
+  for (const route of allMenuRoutes) {
+    if (
       normalized === route ||
       // A root "/" menu entry must only match itself — as a prefix it would
       // blanket-match every path and disable the guard entirely.
-      (route !== '/' && normalized.startsWith(`${route}/`)),
-  )
-  if (!matchedMenuRoute) return false
+      (route !== '/' && normalized.startsWith(`${route}/`))
+    ) {
+      if (route.length > bestMatch.length) {
+        bestMatch = route
+      }
+    }
+  }
+  if (!bestMatch) return false
 
-  return !visibleMenuRoutes.includes(matchedMenuRoute)
+  return !visibleMenuRoutes.includes(bestMatch)
 }
 
-/** Find the menu entry whose route owns `pathname` (leaf or ancestor). */
+/** Find the menu entry whose route owns `pathname` (leaf or ancestor).
+ * When several routes match (e.g. a parent group and a child leaf), the
+ * most specific (longest) route is returned so the per-page permission
+ * code is reported rather than the parent group's.
+ */
 function findMenuEntryForPath(
   nodes: MenuTreeItem[],
   normalized: string,
 ): MenuTreeItem | null {
+  let best: MenuTreeItem | null = null
+  let bestLen = 0
   for (const node of nodes) {
     if (
       node.route &&
       (normalized === node.route ||
         (node.route !== '/' && normalized.startsWith(`${node.route}/`)))
     ) {
-      return node
+      if (node.route.length > bestLen) {
+        best = node
+        bestLen = node.route.length
+      }
     }
     if (Array.isArray(node.children) && node.children.length > 0) {
       const found = findMenuEntryForPath(node.children, normalized)
-      if (found) return found
+      if (found && found.route && found.route.length > bestLen) {
+        best = found
+        bestLen = found.route.length
+      }
     }
   }
-  return null
+  return best
 }
 
 /** Tolerate the different serialisations of the feature code across endpoints. */

@@ -31,7 +31,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Link, useLocation } from '@tanstack/react-router'
+import { Link, useLocation, useNavigate } from '@tanstack/react-router'
 import { isForbiddenRoute } from '@/lib/forbidden-details'
 import {
   useCallback,
@@ -82,7 +82,9 @@ const STRIP_PADDING = 16
 const moreTriggerWidth = (count: number) => 64 + String(count).length * 7
 
 /** How long a closing tab collapses before it is removed from the strip. */
-const CLOSE_COLLAPSE_MS = 230
+const CLOSE_COLLAPSE_MS = 240
+/** Easing of the close collapse — matches the tab-enter curve for symmetry. */
+const CLOSE_EASING = 'cubic-bezier(0.22, 1, 0.36, 1)'
 
 /** Icons per module route from the DB menu tree, keyed by canonical href. */
 function buildIconMap(tree: MenuTreeItem[]): Map<string, string | null> {
@@ -132,6 +134,7 @@ function iconNameFor(href: string, icons: Map<string, string | null>): string {
  */
 export function RecentTabs() {
   const location = useLocation()
+  const navigate = useNavigate()
   const { menuTree, user } = useAuth()
   // Only tabs the current user is actually allowed to see (permission-
   // filtered menu tree) — stale tabs survive storage but must not render.
@@ -289,14 +292,20 @@ export function RecentTabs() {
     if (isForbiddenRoute(location.pathname)) {
       removeRecentPage(location.pathname)
     }
-    // Static pages outside the menu tree (Documents, Profile, …) fall back
-    // to their known titles instead of being skipped entirely.
-    const title = pageTitleForRoute(menuTree ?? [], location.pathname)
-    if (title && !isNeverTabPath(location.pathname)) {
-      pushRecentPage(
-        { title, href: location.pathname },
-        prevPathRef.current ?? undefined,
-      )
+    // Nested URLs (a voucher record at
+    // '/transactions/vouchers/delivery_note/7045') must follow their section
+    // tab: attribute the visit to the deepest open tab covering the path (the
+    // same resolution the active-tab highlight uses) so no tab is created at
+    // the raw URL. Only pages with no covering tab get their own one — static
+    // pages fall back to their known titles.
+    if (!activeHref && !isNeverTabPath(location.pathname)) {
+      const title = pageTitleForRoute(menuTree ?? [], location.pathname)
+      if (title) {
+        pushRecentPage(
+          { title, href: location.pathname },
+          prevPathRef.current ?? undefined,
+        )
+      }
     }
     prevPathRef.current = location.pathname
     setRecents(() => {
@@ -322,7 +331,6 @@ export function RecentTabs() {
       return pinnedFirst(next)
     })
   }, [location.pathname, user, menuTree, allowedRoutes, tabVisible, activeHref])
-
 
   if (recents.length === 0) return null
 
@@ -366,16 +374,45 @@ export function RecentTabs() {
       return next
     })
 
+    // Respect the reduced-motion preference: no collapse, just remove.
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      if (href === activeHref && href !== DEFAULT_TAB.href) {
+        const recentsNow = readTabs()
+        const idx = recentsNow.findIndex((p) => p.href === href)
+        const previous = idx > 0 ? recentsNow[idx - 1] : null
+        removeTab(href)
+        if (previous) void navigate({ to: previous.href })
+      } else {
+        removeTab(href)
+      }
+      return
+    }
+
     const el = tabEls.current.get(href)
     if (el) {
       const width = el.getBoundingClientRect().width
-      el.style.width = `${width}px`
+      // Collapse the box fully: min-width, inline padding and side borders
+      // all clamp the final width from below (border-box), so they must be
+      // zeroed along with the width or the tab bottoms out at ~22px wide
+      // (72px for inactive tabs via min-w-*) and just pops away at the end.
+      el.style.minWidth = '0'
+      el.style.paddingLeft = '0'
+      el.style.paddingRight = '0'
+      el.style.borderLeftWidth = '0'
+      el.style.borderRightWidth = '0'
       el.style.overflow = 'hidden'
       el.style.pointerEvents = 'none'
-      // Force a synchronous layout pass so the width below is transitioned
-      // from the measured value instead of snapping to zero instantly.
+      // Own the whole transition inline while closing: a decelerating curve
+      // on the box collapse matched with a quicker fade that starts slightly
+      // delayed, so the shrink reads first and the content melts away. (The
+      // class transition doesn't cover padding/border-width changes.)
+      el.style.transition = `width 220ms ${CLOSE_EASING}, padding 220ms ${CLOSE_EASING}, border-width 220ms ${CLOSE_EASING}, opacity 150ms ease-in 50ms`
+      el.style.width = `${width}px`
+      // Force a synchronous layout pass so the styles below are transitioned
+      // from the measured values instead of snapping to zero instantly.
       void el.offsetWidth
       el.style.width = '0px'
+      el.style.opacity = '0'
     }
 
     // When the active tab is closed, activate the previous tab in the recents
@@ -387,7 +424,9 @@ export function RecentTabs() {
       const timer = window.setTimeout(() => {
         removeTab(href)
         if (previous) {
-          window.location.href = previous.href
+          // Client-side navigation — a full browser refresh (window.location)
+          // would remount the whole SPA just to close a tab.
+          void navigate({ to: previous.href })
         }
       }, CLOSE_COLLAPSE_MS)
       closeTimers.current.set(href, timer)
