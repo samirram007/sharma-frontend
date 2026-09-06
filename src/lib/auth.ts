@@ -1,7 +1,10 @@
 // src/lib/auth.ts
 
-import { redirect } from '@tanstack/react-router'
 import type { MyRouterContext } from '@/core/contexts/MyRouterContext'
+import {
+  setForbiddenRoute,
+  type ForbiddenDetails,
+} from './forbidden-details'
 
 /**
  * Shared storage key for the bearer token used across auth modules.
@@ -10,12 +13,24 @@ import type { MyRouterContext } from '@/core/contexts/MyRouterContext'
  */
 export { AUTH_TOKEN_KEY } from './token-storage'
 
+/** Shape of the location the router hands to a `beforeLoad` guard. */
+interface GuardInput {
+  context: MyRouterContext
+  location?: { pathname?: string }
+  /** 'preload' when the guard runs for a hover/link preload, not navigation. */
+  cause?: 'preload' | 'enter' | 'stay'
+}
+
 /**
  * Creates a reusable TanStack Router `beforeLoad` guard that checks if the
  * authenticated user has the given permission.
  *
+ * When the permission is missing the navigation is blocked in place — the URL
+ * keeps showing the requested path and the protected layout renders the 403
+ * content instead of the page (no redirect to /forbidden).
+ *
  * @param permission - The permission code to check (e.g. 'USER_MENU_VIEW')
- * @param fallback - Optional redirect path when permission is missing (default: '/')
+ * @param _fallback - Unused; kept so existing call sites keep compiling.
  *
  * @example
  * // In a route file:
@@ -23,11 +38,17 @@ export { AUTH_TOKEN_KEY } from './token-storage'
  */
 export function requirePermission(
   permission: string,
-  fallback: string = '/forbidden',
+  _fallback: string = '/forbidden',
 ) {
-  return async ({ context }: { context: MyRouterContext }) => {
+  return async ({ context, location, cause }: GuardInput) => {
+    // Link preloads also run beforeLoad — they must never touch the visible
+    // block state of the page the user is currently on.
+    if (cause === 'preload') return
     if (!context.auth?.permissions?.includes(permission)) {
-      throw redirect({ to: fallback })
+      setForbiddenRoute({
+        attemptedPath: location?.pathname,
+        permissionCodes: [permission],
+      } satisfies ForbiddenDetails)
     }
   }
 }
@@ -40,19 +61,53 @@ export function requirePermission(
  * (e.g. `/reports/freight/_layout` hosts both DELIVERY_NOTE_REPORT_MENU_VIEW
  * and FREIGHT_REPORT_MENU_VIEW pages).
  *
+ * When none of the permissions are present the navigation is blocked in place
+ * (no redirect — the 403 content renders on the requested URL).
+ *
  * @param permissions - Permission codes to check (e.g. ['DAYBOOK_MENU_VIEW', 'DAYBOOK_SELF_MENU_VIEW'])
- * @param fallback - Optional redirect path when all permissions are missing (default: '/forbidden')
+ * @param _fallback - Unused; kept so existing call sites keep compiling.
  */
 export function requireAnyPermission(
   permissions: string[],
-  fallback: string = '/forbidden',
+  _fallback: string = '/forbidden',
 ) {
-  return async ({ context }: { context: MyRouterContext }) => {
+  return async ({ context, location, cause }: GuardInput) => {
+    if (cause === 'preload') return
     const hasAny = permissions.some((permission) =>
       context.auth?.permissions?.includes(permission),
     )
     if (!hasAny) {
-      throw redirect({ to: fallback })
+      setForbiddenRoute({
+        attemptedPath: location?.pathname,
+        permissionCodes: permissions,
+      } satisfies ForbiddenDetails)
+    }
+  }
+}
+
+/**
+ * Creates a TanStack Router `beforeLoad` guard that only lets users holding a
+ * specific role code through (e.g. 'DEVELOPER'). Everyone else gets the 403
+ * content rendered in place on the requested URL. Role codes match the
+ * backend `RoleSeeder` (sharma-api/app/Modules/Role).
+ */
+export function requireRole(
+  roleCode: string,
+  _fallback: string = '/forbidden',
+  pageName?: string,
+) {
+  return async ({ context, location, cause }: GuardInput) => {
+    if (cause === 'preload') return
+    const codes =
+      context.auth?.user?.roles
+        ?.map((role) => role.code)
+        .filter((code): code is string => Boolean(code)) ?? []
+    if (!codes.includes(roleCode)) {
+      setForbiddenRoute({
+        attemptedPath: location?.pathname,
+        pageName,
+        permissionCodes: [roleCode],
+      } satisfies ForbiddenDetails)
     }
   }
 }

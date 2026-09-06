@@ -8,26 +8,37 @@ import { DataTableViewOptions } from './data-table-view-options'
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>
+  /** Accessor key of the text column the filter input binds to (default 'name'). */
+  searchColumn?: string
+  /**
+   * Whether to render the client-side Status faceted filter. Pages that
+   * filter status server-side (e.g. stock groups defaulting to active-only)
+   * set this to false to avoid a redundant, misleading filter.
+   */
+  showStatusFilter?: boolean
 }
 
 export function DataTableToolbar<TData>({
   table,
+  searchColumn = 'name',
+  showStatusFilter = true,
 }: DataTableToolbarProps<TData>) {
   const isFiltered = table.getState().columnFilters.length > 0
+  const searchColumnDef = table.getColumn(searchColumn)
 
   return (
     <div className="flex items-center justify-between">
       <div className="flex flex-1 flex-col-reverse items-start gap-y-2 sm:flex-row sm:items-center sm:space-x-2">
         <Input
           placeholder="Filter .."
-          value={(table.getColumn('name')?.getFilterValue() as string) ?? ''}
+          value={(searchColumnDef?.getFilterValue() as string) ?? ''}
           onChange={(event) =>
-            table.getColumn('name')?.setFilterValue(event.target.value)
+            searchColumnDef?.setFilterValue(event.target.value)
           }
           className="h-8 w-[150px] lg:w-[250px]"
         />
         <div className="flex gap-x-2">
-          {table.getColumn('status') && (
+          {showStatusFilter && table.getColumn('status') && (
             <DataTableFacetedFilter
               column={table.getColumn('status')}
               title="Status"

@@ -95,7 +95,7 @@ const FeatureDropdown = (props: FormProps) => {
                           )}
                         />
                         <span className="font-medium">{f.name}</span>
-                        <span className="ml-2 text-xs text-muted-foreground font-mono">
+                        <span className="ml-2 text-sm text-muted-foreground font-mono">
                           {f.code}
                         </span>
                       </CommandItem>

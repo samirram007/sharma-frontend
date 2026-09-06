@@ -8,6 +8,7 @@ export const userSchema = z.object({
   username: z.string().nullish(),
   userType: z.string().nullish(),
   status: ActiveInactiveStatusSchema.default('active'),
+  avatar: z.string().nullish(),
 
   roleIds: z.array(z.number().int().positive()).nullish(),
 })

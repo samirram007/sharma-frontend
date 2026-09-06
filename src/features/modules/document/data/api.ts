@@ -20,6 +20,16 @@ export async function searchDocumentsService(term: string) {
   return await getData(`${API_PATH}/search?q=${encodeURIComponent(term)}`)
 }
 
+/** Flat list of nodes other people shared with the current user. */
+export async function sharedWithMeService() {
+  return await getData(`${API_PATH}/shared-with-me`)
+}
+
+/** Flat list of the current user's nodes shared outward. */
+export async function sharedByMeService() {
+  return await getData(`${API_PATH}/shared-by-me`)
+}
+
 export async function documentMetaService() {
   return await getData(`${API_PATH}/meta`)
 }
@@ -30,11 +40,17 @@ export async function shareTargetsService() {
 
 export async function syncNodeSharesService(
   id: number,
-  payload: { userIds: number[]; roleIds: number[] },
+  payload: {
+    userIds: number[]
+    roleIds: number[]
+    /** Per-target action grants, keyed "user:3" / "role:5". */
+    permissions?: Record<string, string[]>
+  },
 ) {
   return await putData(`${API_PATH}/nodes/${id}/shares`, {
     user_ids: payload.userIds,
     role_ids: payload.roleIds,
+    permissions: payload.permissions ?? {},
   })
 }
 
@@ -69,9 +85,11 @@ export async function uploadDocumentService(
   const formData = new FormData()
   formData.append('file', file)
   if (options.name) formData.append('name', options.name)
-  if (options.parentId != null) formData.append('parentId', String(options.parentId))
+  if (options.parentId != null)
+    formData.append('parentId', String(options.parentId))
   if (options.visibility) formData.append('visibility', options.visibility)
-  if (options.categoryId != null) formData.append('categoryId', String(options.categoryId))
+  if (options.categoryId != null)
+    formData.append('categoryId', String(options.categoryId))
   if (options.description) formData.append('description', options.description)
 
   // Relative path — axiosClient already has baseURL = API_BASE_URL, so
@@ -100,12 +118,102 @@ export async function updateNodeService(
     description?: string | null
     parentId?: number | null
   },
+  conflict?: 'replace' | 'rename',
 ) {
-  return await putData(`${API_PATH}/nodes/${id}`, payload)
+  // PATCH — the backend route only accepts PATCH/DELETE on nodes/{node}.
+  // Sent through axios directly (not dataClient) so a null parentId survives:
+  // dataClient's removeEmptyStrings strips nulls, which would make moving a
+  // node back to the root impossible.
+  return await axiosClient
+    .patch(
+      `${API_PATH}/nodes/${id}`,
+      conflict ? { ...payload, conflict } : payload,
+    )
+    .then((response) => response.data)
 }
 
-export async function moveNodeService(id: number, parentId: number | null) {
-  return await updateNodeService(id, { parentId })
+export async function moveNodeService(
+  id: number,
+  parentId: number | null,
+  conflict?: 'replace' | 'rename',
+) {
+  return await updateNodeService(id, { parentId }, conflict)
+}
+
+/** Deep copy: folders clone their whole subtree (incl. stored files). */
+export async function copyNodeService(
+  id: number,
+  parentId: number | null,
+  conflict?: 'replace' | 'rename',
+) {
+  return await axiosClient
+    .post(
+      `${API_PATH}/nodes/${id}/copy`,
+      conflict ? { parentId, conflict } : { parentId },
+    )
+    .then((response) => response.data)
+}
+
+/** A name collision reported by the backend's /conflicts pre-check. */
+export interface NodeConflict {
+  movedId: number
+  movedName: string
+  movedKind: 'folder' | 'file'
+  movedSizeBytes?: number | null
+  movedUpdatedAt?: string | null
+  existingId?: number | null
+  existingKind?: 'folder' | 'file' | null
+  existingSizeBytes?: number | null
+  existingUpdatedAt?: string | null
+  existingOwnerName?: string | null
+}
+
+/**
+ * Which destination siblings already hold the given names. Called before a
+ * move/copy so the UI can offer Skip / Replace / Keep both. Root (null
+ * parentId) never conflicts — the backend allows same-name roots — so the
+ * call is skipped entirely in that case.
+ */
+export async function conflictsService(ids: number[], parentId: number) {
+  return await postData(`${API_PATH}/conflicts`, { ids, parentId })
+}
+
+// ─── Shortcuts (links) ───────────────────────────────────────────────────
+
+/** Create a shortcut to a folder/file inside parentId (null = root). */
+export async function createShortcutService(payload: {
+  targetId: number
+  parentId?: number | null
+  name?: string
+}) {
+  return await postData(`${API_PATH}/shortcuts`, {
+    targetId: payload.targetId,
+    parentId: payload.parentId ?? null,
+    name: payload.name ?? null,
+  })
+}
+
+/**
+ * Where a shortcut points. Resolves to the target node shape; a broken
+ * link rejects with HTTP 410 so the UI can offer cleanup.
+ */
+export async function resolveShortcutService(shortcutId: number) {
+  return await getData(`${API_PATH}/shortcuts/${shortcutId}/resolve`)
+}
+
+/** Remove a broken shortcut (intact ones go through the normal delete). */
+export async function deleteBrokenShortcutService(shortcutId: number) {
+  return await deleteData(`${API_PATH}/shortcuts/${shortcutId}`)
+}
+
+/** Flat list of accessible folders — destination pickers for move/copy. */
+export async function folderOptionsService() {
+  return await getData(`${API_PATH}/folders`)
+}
+
+/** Recursive contents summary for a folder (files/folders counts + size). */
+export async function folderStatsService(id: number) {
+  return await getData(`${API_PATH}/nodes/${id}/stats`)
 }
 
 export async function deleteNodeService(id: number) {

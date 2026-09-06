@@ -1,10 +1,17 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { Loader } from 'lucide-react'
+import { z } from 'zod'
 import { Main } from '@/layouts/components/main'
 import { DocumentsManager } from '@/features/modules/document/components/documents-manager'
 import { documentBrowseQueryOptions } from '@/features/modules/document/data/queryOptions'
 
+/** ?folder=<id> keeps the open folder in the URL (browser back/forward). */
+const documentsSearchSchema = z.object({
+  folder: z.coerce.number().int().positive().optional(),
+})
+
 export const Route = createFileRoute('/_protected/documents/')({
+  validateSearch: (search) => documentsSearchSchema.parse(search),
   loader: ({ context }) =>
     context.queryClient.ensureQueryData(documentBrowseQueryOptions(null)),
   pendingComponent: () => (

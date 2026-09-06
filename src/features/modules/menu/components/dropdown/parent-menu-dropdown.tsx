@@ -111,7 +111,7 @@ const ParentMenuDropdown = (props: FormProps) => {
                         />
                         <span>{m.menuName}</span>
                         {m.isGroup && (
-                          <span className="ml-2 text-[10px] text-muted-foreground">
+                          <span className="ml-2 text-xs text-muted-foreground">
                             (group)
                           </span>
                         )}

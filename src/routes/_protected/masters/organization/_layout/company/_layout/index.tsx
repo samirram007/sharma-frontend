@@ -1,3 +1,4 @@
+import DataLoadError from '@/features/errors/data-load-error'
 import { companyQueryOptions } from '@/features/modules/company/data/queryOptions'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
@@ -19,6 +20,8 @@ export const Route = createFileRoute(
       </Suspense>
     )
   },
-  errorComponent: () => <div>Error loading company data...</div>,
+  errorComponent: ({ error }) => (
+    <DataLoadError error={error} title="Couldn't load the company list" />
+  ),
   pendingComponent: () => <Loader className="animate-spin" />,
 })

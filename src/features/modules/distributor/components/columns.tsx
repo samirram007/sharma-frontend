@@ -1,4 +1,3 @@
-import LongText from '@/components/long-text'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
 import { cn } from '@/lib/utils'
@@ -50,9 +49,12 @@ export const columns: ColumnDef<Distributor>[] = [
       />
     ),
     cell: ({ row }) => (
-      <LongText className="max-w-64 text-shadow-2xs">
+      <div
+        className="min-w-52 max-w-80 whitespace-normal break-words"
+        title={row.getValue('name')}
+      >
         {row.getValue('name')}
-      </LongText>
+      </div>
     ),
     meta: {
       className: cn(

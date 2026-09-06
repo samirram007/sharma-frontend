@@ -2,6 +2,7 @@ import { queryOptions } from '@tanstack/react-query'
 import {
   fetchDashboardSummary,
   fetchGodownWiseDashboard,
+  fetchMonthlyTrendDashboard,
   fetchTransporterWiseDashboard,
   fetchUserWiseDashboard,
   fetchZoneWiseDashboard,
@@ -45,6 +46,14 @@ export const userWiseQueryOptions = () =>
   queryOptions({
     queryKey: [Key, 'user-wise'],
     queryFn: fetchUserWiseDashboard,
+    staleTime: 1000 * 60 * 5,
+    retry: 1,
+  })
+
+export const monthlyTrendQueryOptions = () =>
+  queryOptions({
+    queryKey: [Key, 'monthly-trend'],
+    queryFn: fetchMonthlyTrendDashboard,
     staleTime: 1000 * 60 * 5,
     retry: 1,
   })

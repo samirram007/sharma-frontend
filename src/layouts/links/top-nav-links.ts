@@ -110,49 +110,106 @@ export const topNavLinks: TopNavLink[] = [
 export function buildTopNavLinksFromTree(tree: MenuTreeItem[]): TopNavLink[] {
   return tree
     .filter((node) => node.isTopMenu)
-    .map((node): TopNavLink | null => {
-      const routableChildren = node.children.filter((child) => !!child.route)
-
-      if (routableChildren.length > 0) {
-        return {
-          title: node.menuName,
-          href: node.route ?? routableChildren[0].route ?? '',
-          icon: resolveIcon(node.icon),
-          visible: true,
-          isActive: false,
-          disabled: false,
-          hasSubmenu: true,
-          submenuItems: [
-            {
-              title: node.menuName,
-              icon: resolveIcon(node.icon),
-              visible: true,
-              menus: routableChildren.map((child) => ({
-                title: child.menuName,
-                href: child.route!,
-                icon: resolveIcon(child.icon),
-                visible: true,
-                isActive: false,
-                disabled: false,
-              })),
-            },
-          ],
-        }
-      }
-
-      // Leaf node — needs a route to be a useful link
-      if (!node.route) return null
-
-      return {
-        title: node.menuName,
-        href: node.route,
-        icon: resolveIcon(node.icon),
-        visible: true,
-        isActive: false,
-        disabled: false,
-      }
-    })
+    .map((node) => buildTopNavLink(node))
     .filter((link): link is TopNavLink => link !== null)
+}
+
+/**
+ * Resolve which links the header should render.
+ *
+ * While the DB top menus are still loading this returns [] (never the
+ * hardcoded fallback) so entries like "Reports" — which exist only in the
+ * fallback and not in the DB — don't flash on screen and then vanish when the
+ * DB list arrives. The fallback is used only once loading has finished AND the
+ * DB produced no top menus.
+ */
+export function resolveTopNavLinks({
+  dbTopMenus,
+  isPending,
+  menuTree,
+}: {
+  dbTopMenus: MenuTreeItem[]
+  isPending: boolean
+  menuTree: MenuTreeItem[]
+}): TopNavLink[] {
+  if (isPending) return []
+
+  const dbLinks = buildTopNavLinksFromTree(dbTopMenus)
+  if (dbLinks.length > 0) return dbLinks
+
+  return filterTopNavLinks(topNavLinks, collectAllowedRoutes(menuTree))
+}
+
+function buildTopNavLink(node: MenuTreeItem): TopNavLink | null {
+  const children = node.children ?? []
+
+  // Direct routable children (leaves) and nested groups both feed the
+  // dropdown. Nested groups keep their own heading (Financial Statements,
+  // Freight Reports, …); stray leaves under the node are collected into a
+  // trailing group named after the node itself.
+  const groups: TopNavSubmenuGroup[] = []
+
+  for (const child of children) {
+    const leafChildren = (child.children ?? []).filter((leaf) => !!leaf.route)
+    if (leafChildren.length === 0) continue
+
+    groups.push({
+      title: child.menuName,
+      icon: resolveIcon(child.icon),
+      visible: true,
+      menus: leafChildren.map(toSubmenuItem),
+    })
+  }
+
+  const directLeaves = children.filter(
+    (child) => !!child.route && (child.children?.length ?? 0) === 0,
+  )
+  if (directLeaves.length > 0) {
+    groups.push({
+      title: node.menuName,
+      icon: resolveIcon(node.icon),
+      visible: true,
+      menus: directLeaves.map(toSubmenuItem),
+    })
+  }
+
+  if (groups.length === 0) {
+    // Leaf node — needs a route to be a useful link
+    if (!node.route) return null
+
+    return {
+      title: node.menuName,
+      href: node.route,
+      icon: resolveIcon(node.icon),
+      visible: true,
+      isActive: false,
+      disabled: false,
+    }
+  }
+
+  const firstRoutable = children.find((child) => !!child.route)?.route ?? ''
+
+  return {
+    title: node.menuName,
+    href: node.route ?? firstRoutable ?? '',
+    icon: resolveIcon(node.icon),
+    visible: true,
+    isActive: false,
+    disabled: false,
+    hasSubmenu: true,
+    submenuItems: groups,
+  }
+}
+
+function toSubmenuItem(child: MenuTreeItem): TopNavSubmenuItem {
+  return {
+    title: child.menuName,
+    href: child.route!,
+    icon: resolveIcon(child.icon),
+    visible: true,
+    isActive: false,
+    disabled: false,
+  }
 }
 
 /**

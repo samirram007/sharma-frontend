@@ -3,9 +3,9 @@ import { Link } from '@tanstack/react-router'
 import {
   ArrowRight,
   Banknote,
+  BarChart3,
   Boxes,
   FileText,
-  Loader2,
   Map,
   RefreshCw,
   Truck,
@@ -22,28 +22,40 @@ import {
 } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Main } from '@/layouts/components/main'
+import { ChartCard } from './components/chart-card'
+import { Overview } from './components/overview'
+import { TopTransporters } from './components/top-transporters'
+import { TrendChart } from './components/trend-chart'
 import {
   dashboardQueryOptions,
   godownWiseQueryOptions,
+  monthlyTrendQueryOptions,
   transporterWiseQueryOptions,
   userWiseQueryOptions,
   zoneWiseQueryOptions,
 } from './data/queryOptions'
-import { Overview } from './components/overview'
 import type { UserWiseDatum } from './data/api'
 import { formatAmount, formatNumber, initials } from './utils'
 
 export default function Dashboard() {
-  const { data, isLoading, isError, refetch, isFetching } = useQuery(
-    dashboardQueryOptions(),
-  )
-  const { data: zoneWiseData } = useQuery(zoneWiseQueryOptions())
-  const { data: godownWiseData } = useQuery(godownWiseQueryOptions())
-  const { data: transporterWiseData } = useQuery(transporterWiseQueryOptions())
-  const { data: userWiseData } = useQuery(userWiseQueryOptions())
+  const summaryQuery = useQuery(dashboardQueryOptions())
+  const zoneQuery = useQuery(zoneWiseQueryOptions())
+  const godownQuery = useQuery(godownWiseQueryOptions())
+  const transporterQuery = useQuery(transporterWiseQueryOptions())
+  const userQuery = useQuery(userWiseQueryOptions())
+  const monthlyQuery = useQuery(monthlyTrendQueryOptions())
+
+  const data = summaryQuery.data
 
   const handleRefresh = () => {
-    void refetch()
+    void Promise.all([
+      summaryQuery.refetch(),
+      zoneQuery.refetch(),
+      godownQuery.refetch(),
+      transporterQuery.refetch(),
+      userQuery.refetch(),
+      monthlyQuery.refetch(),
+    ])
   }
 
   const stats = [
@@ -109,7 +121,7 @@ export default function Dashboard() {
     },
   ]
 
-  if (isError) {
+  if (summaryQuery.isError) {
     return (
       <Main>
         <div className="flex flex-col items-center justify-center gap-4 py-24">
@@ -122,22 +134,22 @@ export default function Dashboard() {
     )
   }
 
-  const zoneChartData = (zoneWiseData ?? []).map((zone) => ({
+  const zoneChartData = (zoneQuery.data ?? []).map((zone) => ({
     name: zone.zoneName,
     total: zone.totalAmount,
   }))
 
-  const godownChartData = (godownWiseData ?? []).map((godown) => ({
+  const godownChartData = (godownQuery.data ?? []).map((godown) => ({
     name: godown.godownName,
     total: godown.totalAmount,
   }))
 
-  const transporterChartData = (transporterWiseData ?? []).map((t) => ({
+  const transporterChartData = (transporterQuery.data ?? []).map((t) => ({
     name: t.transporterName,
     total: t.totalAmount,
   }))
 
-  const topUsers = (userWiseData ?? []).slice(0, 5)
+  const topUsers = (userQuery.data ?? []).slice(0, 5)
 
   return (
     <Main>
@@ -155,12 +167,12 @@ export default function Dashboard() {
           variant="outline"
           size="sm"
           onClick={handleRefresh}
-          disabled={isFetching}
+          disabled={summaryQuery.isFetching}
         >
           <RefreshCw
-            className={`h-4 w-4 ${isFetching ? 'animate-spin' : ''}`}
+            className={`h-4 w-4 ${summaryQuery.isFetching ? 'animate-spin' : ''}`}
           />
-          {isFetching ? 'Refreshing…' : 'Refresh'}
+          {summaryQuery.isFetching ? 'Refreshing…' : 'Refresh'}
         </Button>
       </div>
 
@@ -176,7 +188,7 @@ export default function Dashboard() {
                 <stat.icon className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                {isLoading && !data ? (
+                {summaryQuery.isPending ? (
                   <Skeleton className="h-8 w-20" />
                 ) : (
                   <div className="text-2xl font-bold">
@@ -190,46 +202,93 @@ export default function Dashboard() {
         ))}
       </div>
 
-      {/* Charts */}
+      {/* Group-wise charts */}
       <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <Card className="col-span-1">
+        <ChartCard
+          title="Freight by Zone"
+          description="Total freight value per zone"
+          loading={zoneQuery.isPending}
+          error={zoneQuery.isError}
+          onRetry={() => void zoneQuery.refetch()}
+        >
+          {zoneChartData.length === 0 ? (
+            <ChartEmpty message="No freight bills yet this fiscal year." />
+          ) : (
+            <Overview data={zoneChartData} />
+          )}
+        </ChartCard>
+        <ChartCard
+          title="Freight by Godown"
+          description="Total freight value per godown (top 12)"
+          loading={godownQuery.isPending}
+          error={godownQuery.isError}
+          onRetry={() => void godownQuery.refetch()}
+        >
+          {godownChartData.length === 0 ? (
+            <ChartEmpty message="No delivery notes this fiscal year." />
+          ) : (
+            <Overview data={godownChartData} limit={12} />
+          )}
+        </ChartCard>
+        <ChartCard
+          title="Freight by Transporter"
+          description="Total freight value per transporter (top 10)"
+          loading={transporterQuery.isPending}
+          error={transporterQuery.isError}
+          onRetry={() => void transporterQuery.refetch()}
+        >
+          {transporterChartData.length === 0 ? (
+            <ChartEmpty message="No freight bills yet this fiscal year." />
+          ) : (
+            <Overview data={transporterChartData} limit={10} />
+          )}
+        </ChartCard>
+      </div>
+
+      {/* Trend + leaderboard */}
+      <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <Card className="col-span-1 lg:col-span-2">
           <CardHeader>
-            <CardTitle>Freight by Zone</CardTitle>
-            <CardDescription>Total freight amount per zone</CardDescription>
-          </CardHeader>
-          <CardContent className="pl-2">
-            {isLoading && !data ? (
-              <Skeleton className="h-[240px] w-full" />
-            ) : (
-              <Overview data={zoneChartData} />
-            )}
-          </CardContent>
-        </Card>
-        <Card className="col-span-1">
-          <CardHeader>
-            <CardTitle>Freight by Godown</CardTitle>
-            <CardDescription>Total freight amount per godown</CardDescription>
-          </CardHeader>
-          <CardContent className="pl-2">
-            {isLoading && !data ? (
-              <Skeleton className="h-[240px] w-full" />
-            ) : (
-              <Overview data={godownChartData} />
-            )}
-          </CardContent>
-        </Card>
-        <Card className="col-span-1">
-          <CardHeader>
-            <CardTitle>Freight by Transporter</CardTitle>
+            <CardTitle>Monthly Activity</CardTitle>
             <CardDescription>
-              Total freight amount per transporter
+              Delivery, receipt &amp; freight vouchers per month, with freight
+              billed (₹)
             </CardDescription>
           </CardHeader>
           <CardContent className="pl-2">
-            {isLoading && !data ? (
+            {monthlyQuery.isPending ? (
               <Skeleton className="h-[240px] w-full" />
+            ) : monthlyQuery.isError ? (
+              <WidgetError
+                message="Couldn't load the monthly trend."
+                onRetry={() => void monthlyQuery.refetch()}
+              />
+            ) : (monthlyQuery.data ?? []).length === 0 ? (
+              <ChartEmpty message="No activity yet this fiscal year." />
             ) : (
-              <Overview data={transporterChartData} />
+              <TrendChart data={monthlyQuery.data ?? []} />
+            )}
+          </CardContent>
+        </Card>
+        <Card className="col-span-1">
+          <CardHeader>
+            <CardTitle>Top Transporters</CardTitle>
+            <CardDescription>
+              Highest freight value so far (top 8)
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pl-2">
+            {transporterQuery.isPending ? (
+              <Skeleton className="h-[240px] w-full" />
+            ) : transporterQuery.isError ? (
+              <WidgetError
+                message="Couldn't load transporter ranking."
+                onRetry={() => void transporterQuery.refetch()}
+              />
+            ) : (transporterQuery.data ?? []).length === 0 ? (
+              <ChartEmpty message="No freight bills yet this fiscal year." />
+            ) : (
+              <TopTransporters data={transporterQuery.data ?? []} />
             )}
           </CardContent>
         </Card>
@@ -245,7 +304,7 @@ export default function Dashboard() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {isLoading && !data ? (
+            {userQuery.isPending ? (
               <div className="space-y-4">
                 {Array.from({ length: 5 }).map((_, i) => (
                   <div key={i} className="flex items-center gap-4">
@@ -256,6 +315,19 @@ export default function Dashboard() {
                     </div>
                   </div>
                 ))}
+              </div>
+            ) : userQuery.isError ? (
+              <div className="flex flex-col items-center justify-center gap-3 py-10 text-center">
+                <p className="text-sm text-muted-foreground">
+                  Couldn't load user entries.
+                </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => void userQuery.refetch()}
+                >
+                  <RefreshCw className="h-3.5 w-3.5" /> Retry
+                </Button>
               </div>
             ) : (
               <UserWiseList items={topUsers} />
@@ -296,14 +368,33 @@ export default function Dashboard() {
           </CardContent>
         </Card>
       </div>
-
-      {isLoading && !data && (
-        <div className="mt-4 flex items-center justify-center gap-2 py-4 text-xs text-muted-foreground">
-          <Loader2 className="h-3 w-3 animate-spin" />
-          Loading live data…
-        </div>
-      )}
     </Main>
+  )
+}
+
+function ChartEmpty({ message }: { message: string }) {
+  return (
+    <div className="flex h-[240px] flex-col items-center justify-center gap-2 rounded-md border border-dashed px-4 text-center">
+      <BarChart3 className="h-5 w-5 text-muted-foreground/70" />
+      <p className="text-sm text-muted-foreground">{message}</p>
+    </div>
+  )
+}
+
+function WidgetError({
+  message,
+  onRetry,
+}: {
+  message: string
+  onRetry: () => void
+}) {
+  return (
+    <div className="flex h-[240px] flex-col items-center justify-center gap-3 rounded-md border border-dashed px-4 text-center">
+      <p className="text-sm text-muted-foreground">{message}</p>
+      <Button variant="outline" size="sm" onClick={onRetry}>
+        <RefreshCw className="h-3.5 w-3.5" /> Retry
+      </Button>
+    </div>
   )
 }
 

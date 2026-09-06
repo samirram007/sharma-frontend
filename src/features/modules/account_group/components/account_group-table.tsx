@@ -43,7 +43,9 @@ export function AccountGroupTable({ columns, data }: DataTableProps) {
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
     select: false,
   })
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([
+    { id: 'status', value: ['active'] },
+  ])
   const [sorting, setSorting] = useState<SortingState>([])
   console.log('AccountGroupTable data', data)
   console.log('AccountGroupTable columns', columns)

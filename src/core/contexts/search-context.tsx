@@ -1,4 +1,4 @@
-import { CommandMenu } from '@/layouts/components/command-menu'
+import { SearchCommandMenu } from '@/layouts/components/search-command-menu'
 import React from 'react'
 
 interface SearchContextType {
@@ -17,9 +17,13 @@ export function SearchProvider({ children }: Props) {
 
   React.useEffect(() => {
     const down = (e: KeyboardEvent) => {
-      if (e.key === 'i' && (e.metaKey || e.ctrlKey)) {
+      if (!(e.metaKey || e.ctrlKey)) return
+      const key = e.key.toLowerCase()
+      // Cmd/Ctrl-K is the standard launcher shortcut; Cmd/Ctrl-I kept as a
+      // legacy alias for muscle memory.
+      if (key === 'k' || key === 'i') {
         e.preventDefault()
-        setOpen((open) => !open)
+        setOpen((current) => !current)
       }
     }
     document.addEventListener('keydown', down)
@@ -29,7 +33,7 @@ export function SearchProvider({ children }: Props) {
   return (
     <SearchContext.Provider value={{ open, setOpen }}>
       {children}
-      <CommandMenu />
+      <SearchCommandMenu />
     </SearchContext.Provider>
   )
 }

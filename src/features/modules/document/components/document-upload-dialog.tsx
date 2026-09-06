@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
-import { IconUpload, IconTrash, IconCircleCheck, IconAlertCircle } from '@tabler/icons-react'
+import {
+  IconUpload,
+  IconTrash,
+  IconCircleCheck,
+  IconAlertCircle,
+} from '@tabler/icons-react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -94,7 +99,9 @@ export function DocumentUploadDialog({
   }
 
   const patchItem = (id: string, patch: Partial<QueueItem>) => {
-    setQueue((prev) => prev.map((item) => (item.id === id ? { ...item, ...patch } : item)))
+    setQueue((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, ...patch } : item)),
+    )
   }
 
   const removeItem = (id: string) => {
@@ -102,7 +109,9 @@ export function DocumentUploadDialog({
   }
 
   const uploadAll = async () => {
-    const pending = queue.filter((item) => item.status === 'queued' || item.status === 'error')
+    const pending = queue.filter(
+      (item) => item.status === 'queued' || item.status === 'error',
+    )
     if (pending.length === 0) {
       toast.warning('Add at least one file before uploading.')
       return
@@ -127,8 +136,8 @@ export function DocumentUploadDialog({
         succeeded += 1
       } catch (error) {
         const message =
-          (error as { response?: { data?: { message?: string } } })?.response?.data?.message ??
-          'Upload failed'
+          (error as { response?: { data?: { message?: string } } })?.response
+            ?.data?.message ?? 'Upload failed'
         patchItem(item.id, { status: 'error', error: message })
         failed += 1
       }
@@ -188,11 +197,13 @@ export function DocumentUploadDialog({
             onDrop={(event) => {
               event.preventDefault()
               setDragOver(false)
-              if (event.dataTransfer.files?.length) addFiles(event.dataTransfer.files)
+              if (event.dataTransfer.files?.length)
+                addFiles(event.dataTransfer.files)
             }}
             onClick={() => inputRef.current?.click()}
             onKeyDown={(event) => {
-              if (event.key === 'Enter' || event.key === ' ') inputRef.current?.click()
+              if (event.key === 'Enter' || event.key === ' ')
+                inputRef.current?.click()
             }}
           >
             <IconUpload className="h-7 w-7 text-muted-foreground" />
@@ -227,7 +238,9 @@ export function DocumentUploadDialog({
                 <SelectContent>
                   <SelectItem value="private">Private (only me)</SelectItem>
                   <SelectItem value="public">Public (company)</SelectItem>
-                  <SelectItem value="protected">Shared (via sharing)</SelectItem>
+                  <SelectItem value="protected">
+                    Shared (via sharing)
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -267,7 +280,10 @@ export function DocumentUploadDialog({
                 {queue.map((item) => (
                   <li key={item.id} className="flex items-center gap-2 text-sm">
                     <QueueStatusIcon status={item.status} />
-                    <span className="min-w-0 flex-1 truncate" title={item.file.name}>
+                    <span
+                      className="min-w-0 flex-1 truncate"
+                      title={item.file.name}
+                    >
                       {item.file.name}
                     </span>
                     <span className="shrink-0 text-xs text-muted-foreground">
@@ -287,7 +303,10 @@ export function DocumentUploadDialog({
                       </span>
                     )}
                     {item.status === 'error' && (
-                      <span className="max-w-32 shrink-0 truncate text-xs text-destructive" title={item.error}>
+                      <span
+                        className="max-w-32 shrink-0 truncate text-xs text-destructive"
+                        title={item.error}
+                      >
                         {item.error}
                       </span>
                     )}
@@ -309,10 +328,17 @@ export function DocumentUploadDialog({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => handleOpenChange(false)} disabled={uploading}>
+          <Button
+            variant="outline"
+            onClick={() => handleOpenChange(false)}
+            disabled={uploading}
+          >
             Close
           </Button>
-          <Button onClick={uploadAll} disabled={uploading || pendingCount === 0}>
+          <Button
+            onClick={uploadAll}
+            disabled={uploading || pendingCount === 0}
+          >
             {uploading
               ? 'Uploading…'
               : `Upload ${pendingCount > 0 ? `(${pendingCount})` : ''}`}

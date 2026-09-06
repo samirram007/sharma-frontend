@@ -14,7 +14,7 @@ const StockGroupDropdown = (props: Props) => {
   const { form } = props as Props
   const { data: StockGroupList, isLoading } = useQuery({
     queryKey: ['StockGroups'],
-    queryFn: fetchStockGroupService,
+    queryFn: () => fetchStockGroupService(),
   })
 
   if (isLoading) {

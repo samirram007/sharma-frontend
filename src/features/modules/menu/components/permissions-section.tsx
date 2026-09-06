@@ -193,14 +193,14 @@ export default function PermissionsSection() {
           value={selectedRoleId?.toString() ?? ''}
           onValueChange={(v) => setSelectedRoleId(Number(v))}
         >
-          <SelectTrigger className="w-56 h-7 text-xs">
+          <SelectTrigger className="w-56 h-8 text-sm">
             <SelectValue placeholder="Choose a role..." />
           </SelectTrigger>
           <SelectContent>
             {roles.map((role: any) => (
               <SelectItem key={role.id} value={role.id.toString()}>
                 {role.name}
-                <span className="ml-2 text-[10px] text-muted-foreground font-mono">
+                <span className="ml-2 text-xs text-muted-foreground font-mono">
                   ({role.code})
                 </span>
               </SelectItem>
@@ -213,7 +213,7 @@ export default function PermissionsSection() {
             <Button
               variant="ghost"
               size="sm"
-              className="h-6 px-2 text-[10px] text-green-600 hover:text-green-700 hover:bg-green-50 dark:hover:bg-green-950/30"
+              className="h-6 px-2 text-xs text-green-600 hover:text-green-700 hover:bg-green-50 dark:hover:bg-green-950/30"
               onClick={() => handleToggleAll(true)}
               disabled={permSaving}
             >
@@ -223,7 +223,7 @@ export default function PermissionsSection() {
             <Button
               variant="ghost"
               size="sm"
-              className="h-6 px-2 text-[10px] text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30"
+              className="h-6 px-2 text-xs text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30"
               onClick={() => handleToggleAll(false)}
               disabled={permSaving}
             >
@@ -234,7 +234,7 @@ export default function PermissionsSection() {
         )}
 
         {selectedRoleId && !permLoading && (
-          <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground ml-auto lg:ml-0">
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground ml-auto lg:ml-0">
             <span className="flex items-center gap-0.5 text-green-600">
               <ShieldCheck className="h-3 w-3" />
               {counts.granted}
@@ -256,7 +256,7 @@ export default function PermissionsSection() {
 
       {/* Permission tree */}
       {!selectedRoleId && (
-        <div className="flex items-center justify-center py-10 text-xs text-muted-foreground">
+        <div className="flex items-center justify-center py-10 text-sm text-muted-foreground">
           Select a role above to manage its menu permissions.
         </div>
       )}
@@ -281,7 +281,7 @@ export default function PermissionsSection() {
               />
             ))
           ) : (
-            <div className="flex items-center justify-center py-10 text-xs text-muted-foreground">
+            <div className="flex items-center justify-center py-10 text-sm text-muted-foreground">
               No menu entries found. Create menu entries in the Menu module
               first.
             </div>
@@ -358,21 +358,21 @@ function PermissionsTreeNode({
               </div>
 
               {/* Name */}
-              <span className="truncate text-xs font-medium">
+              <span className="truncate text-sm font-medium">
                 {node.menuName}
               </span>
 
               {node.isGroup && (
                 <Badge
                   variant="secondary"
-                  className="shrink-0 text-[9px] px-1 py-0 leading-none"
+                  className="shrink-0 text-[11px] px-1 py-0 leading-none"
                 >
                   Group
                 </Badge>
               )}
 
               {node.feature?.code && (
-                <code className="hidden shrink-0 truncate rounded bg-muted/60 px-1 py-0.5 text-[9px] font-mono text-muted-foreground/70 sm:inline-block max-w-24">
+                <code className="hidden shrink-0 truncate rounded bg-muted/60 px-1 py-0.5 text-[11px] font-mono text-muted-foreground/70 sm:inline-block max-w-24">
                   {node.feature.code}
                 </code>
               )}
@@ -393,7 +393,7 @@ function PermissionsTreeNode({
               {statusBadgeColor && (
                 <span
                   className={cn(
-                    'rounded px-1 py-0 text-[9px] font-medium capitalize',
+                    'rounded px-1 py-0 text-[11px] font-medium capitalize',
                     statusBadgeColor,
                   )}
                 >
@@ -463,12 +463,12 @@ function PermissionsTreeNode({
             </div>
 
             {/* Name */}
-            <span className="truncate text-xs font-medium">
+            <span className="truncate text-sm font-medium">
               {node.menuName}
             </span>
 
             {node.feature?.code && (
-              <code className="hidden shrink-0 truncate rounded bg-muted/60 px-1 py-0.5 text-[9px] font-mono text-muted-foreground/70 sm:inline-block max-w-24">
+              <code className="hidden shrink-0 truncate rounded bg-muted/60 px-1 py-0.5 text-[11px] font-mono text-muted-foreground/70 sm:inline-block max-w-24">
                 {node.feature.code}
               </code>
             )}
@@ -489,7 +489,7 @@ function PermissionsTreeNode({
             {statusBadgeColor && (
               <span
                 className={cn(
-                  'rounded px-1 py-0 text-[9px] font-medium capitalize',
+                  'rounded px-1 py-0 text-[11px] font-medium capitalize',
                   statusBadgeColor,
                 )}
               >

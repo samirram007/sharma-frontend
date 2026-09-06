@@ -1,4 +1,28 @@
 /**
+ * Formats a byte count as a human-readable size (KB / MB / GB …).
+ * Uses binary units (1 KB = 1024 B) which matches how file systems report sizes.
+ *
+ * @example
+ *   formatBytes(512)      // → "512 B"
+ *   formatBytes(1536)     // → "1.5 KB"
+ *   formatBytes(5242880)  // → "5.0 MB"
+ *   formatBytes(null)     // → "—"
+ */
+export function formatBytes(bytes?: number | null, fallback = '—'): string {
+  if (bytes == null || !isFinite(bytes) || bytes < 0) return fallback
+  if (bytes < 1024) return `${Math.round(bytes)} B`
+  const units = ['KB', 'MB', 'GB', 'TB']
+  let value = bytes
+  let unit = 'B'
+  for (const next of units) {
+    value /= 1024
+    unit = next
+    if (value < 1024) break
+  }
+  return `${value.toFixed(1)} ${unit}`
+}
+
+/**
  * Safely coerces any value to a number.
  * Handles null, undefined, empty strings, and NaN — returns 0 for all of them.
  * Use before calling .toFixed(), .toLocaleString(), or arithmetic.

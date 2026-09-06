@@ -106,7 +106,7 @@ const PosFooter = ({ mainForm }: PosFooterProps) => {
   return (
     <div
       ref={footerRef}
-      className="bg-green-600/20 grid grid-cols-[1fr_1fr] px-8"
+      className="bg-red-500/10 grid grid-cols-[1fr_1fr] px-8"
     >
       <div className="grid ">
         {/* <Button autoFocus={true} variant="outline" className="w-full h-20 text-left"

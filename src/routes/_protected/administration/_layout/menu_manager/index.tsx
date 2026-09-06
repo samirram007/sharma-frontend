@@ -1,14 +1,20 @@
-import { requirePermission } from '@/lib/auth'
+import { requirePermission, requireRole } from '@/lib/auth'
 import MenuManager from '@/features/modules/menu_manager'
 import { MenuTreeQueryOptions } from '@/features/modules/menu/data/queryOptions'
 import { roleQueryOptions } from '@/features/modules/role/data/queryOptions'
 import { createFileRoute } from '@tanstack/react-router'
 import { Loader } from 'lucide-react'
 
+/** The Menu Manager is a developer-only tool for wiring menus + features. */
+const requireDeveloper = requireRole('DEVELOPER', undefined, 'Menu Manager')
+
 export const Route = createFileRoute(
   '/_protected/administration/_layout/menu_manager/',
 )({
-  beforeLoad: requirePermission('MENU_MANAGER_VIEW'),
+  beforeLoad: async (args) => {
+    await requirePermission('MENU_MANAGER_VIEW')(args)
+    await requireDeveloper(args)
+  },
   loader: async ({ context }) => {
     await Promise.all([
       context.queryClient.ensureQueryData(roleQueryOptions()),

@@ -1,4 +1,3 @@
-// import { Link } from '@tanstack/react-router'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import {
@@ -12,11 +11,14 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { useAuth } from '@/features/auth/contexts/AuthContext'
+import { useAvatarUrl } from '@/features/modules/document/components/appearance-store'
 import { Link } from '@tanstack/react-router'
 import { Route as ChangePasswordRoute } from '@/routes/_protected/(auth)/change-password'
 
 export function ProfileDropdown() {
   const auth = useAuth()
+  // Image chosen via document manager right-click "Set as profile image".
+  const avatarUrl = useAvatarUrl()
   const handleLogout = async () => {
     await auth.logout()
   }
@@ -25,7 +27,10 @@ export function ProfileDropdown() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-8 w-8">
-            <AvatarImage src="/avatars/01.png" alt="@shadcn" />
+            <AvatarImage
+              src={avatarUrl ?? '/avatars/01.png'}
+              alt={auth.user?.name ?? '@user'}
+            />
             <AvatarFallback>
               {/* if name has two part take the first letter from each word else take the first two letters */}
               {auth.user?.name
@@ -61,11 +66,30 @@ export function ProfileDropdown() {
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
+            <Link to="/profile" search={{ tab: 'background' }}>
+              Change Background
+              <DropdownMenuShortcut>⇧⌘B</DropdownMenuShortcut>
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
             <Link to={ChangePasswordRoute.to}>
               Change Password
               <DropdownMenuShortcut>⇧⌘D</DropdownMenuShortcut>
             </Link>
           </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link to="/faq-user">FAQs</Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link to="/documents">Documents</Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link to="/tickets">Support Tickets</Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link to="/help-center">Help Center</Link>
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
           <DropdownMenuItem asChild>
             <Link to="/settings">
               Settings

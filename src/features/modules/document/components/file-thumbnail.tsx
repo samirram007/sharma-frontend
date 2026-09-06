@@ -1,5 +1,12 @@
 import { useEffect, useState } from 'react'
-import { IconFile, IconFolderFilled } from '@tabler/icons-react'
+import {
+  IconFile,
+  IconFolderFilled,
+  IconLink,
+  IconLock,
+  IconUsersGroup,
+  IconWorld,
+} from '@tabler/icons-react'
 import { documentUrl } from '@/features/modules/document/data/api'
 import type { DocumentNode } from '@/features/modules/document/data/schema'
 
@@ -21,12 +28,84 @@ export function isImageMime(mimeType: string | null | undefined): boolean {
 }
 
 /**
+ * Visibility badge for a node — small shield-style glyph in the corner:
+ *  - private   → padlock (only the owner sees it)
+ *  - public    → globe (whole company)
+ *  - protected → people (shared with explicit users/roles)
+ *  - shared    → people + link (protected node reached via a share)
+ */
+export function VisibilityBadge({
+  node,
+  large = false,
+}: {
+  node: DocumentNode
+  large?: boolean
+}) {
+  const size = large ? 'h-3.5 w-3.5' : 'h-3 w-3'
+  const sharedVia = node.sharedWith.length > 0
+
+  let icon: React.ReactNode = null
+  let title: string
+  if (node.visibility === 'public') {
+    icon = (
+      <IconWorld className={`${size} text-emerald-600 dark:text-emerald-400`} />
+    )
+    title = 'Public — visible to the whole company'
+  } else if (
+    node.visibility === 'protected' ||
+    (node.visibility === 'private' && sharedVia)
+  ) {
+    icon = (
+      <IconUsersGroup
+        className={`${size} text-violet-600 dark:text-violet-400`}
+      />
+    )
+    title =
+      node.visibility === 'protected'
+        ? 'Protected — shared with specific people'
+        : 'Shared with you'
+  } else {
+    icon = <IconLock className={`${size} text-muted-foreground`} />
+    title = 'Private — only you'
+  }
+
+  return (
+    <span title={title} aria-label={title} className="inline-flex items-center">
+      {icon}
+    </span>
+  )
+}
+
+/**
+ * Shortcut overlay: chain-link glyph in a corner + the arrow badge that
+ * marks every alias (broken shortcuts get the ghost styling from
+ * `isBrokenShortcut` in the grid instead).
+ */
+export function ShortcutGlyph({ large = false }: { large?: boolean }) {
+  const size = large ? 'h-3.5 w-3.5' : 'h-3 w-3'
+  return (
+    <IconLink
+      className={`${size} text-teal-600 dark:text-teal-400`}
+      aria-label="Shortcut"
+    />
+  )
+}
+
+/** A shortcut whose target row is missing renders as a broken alias. */
+export function isBrokenShortcut(node: DocumentNode): boolean {
+  return node.kind === 'shortcut' && !node.target
+}
+
+/**
  * Thumbnail for a document node: image files render the actual picture via
  * the /preview endpoint (JWT httpOnly cookie auth — the <img> request carries
  * the cookie automatically), everything else falls back to the plain icons.
  *
  * A broken/403 image degrades silently to the icon, so grids never show
  * broken-image glyphs (e.g. when a share revokes access mid-session).
+ *
+ * Shortcuts show their target's thumbnail (folder/file) with a link badge —
+ * a broken shortcut falls back to the muted link glyph.
  */
 export function FileThumbnail({
   node,
@@ -43,6 +122,32 @@ export function FileThumbnail({
   useEffect(() => {
     setFailed(false)
   }, [node.id])
+
+  if (node.kind === 'shortcut') {
+    if (node.target) {
+      // Show the target's own glyph so the alias is recognizable at a glance.
+      const targetNode = {
+        ...node,
+        id: node.target.id,
+        kind: node.target.kind,
+        mimeType: node.target.mimeType,
+      } as DocumentNode
+      return (
+        <span className="relative inline-flex shrink-0">
+          <FileThumbnail node={targetNode} large={large} />
+          <span className="absolute -bottom-1 -right-1 rounded-full bg-background p-px shadow-sm">
+            <ShortcutGlyph large={large} />
+          </span>
+        </span>
+      )
+    }
+    return (
+      <IconLink
+        className={`${large ? 'h-8 w-8' : 'h-4 w-4'} shrink-0 text-muted-foreground/50`}
+        aria-label="Broken shortcut"
+      />
+    )
+  }
 
   if (node.kind === 'folder') {
     return (

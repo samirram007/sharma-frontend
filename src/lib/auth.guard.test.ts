@@ -1,22 +1,45 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vitest'
 import { requirePermission } from '@/lib/auth'
+import {
+  getForbiddenRoute,
+  clearForbiddenRoute,
+} from '@/lib/forbidden-details'
 
 const makeContext = (permissions: string[]) =>
   ({ auth: { permissions } }) as never
 
 describe('requirePermission route guard', () => {
-  it('redirects to /forbidden when the permission is missing', async () => {
+  beforeEach(() => {
+    clearForbiddenRoute()
+  })
+
+  it('blocks in place (no redirect) when the permission is missing', async () => {
     const guard = requirePermission('RECEIPT_NOTE_MENU_VIEW')
     await expect(
       guard({ context: makeContext(['DELIVERY_NOTE_MENU_VIEW']) }),
-    ).rejects.toMatchObject({ options: { to: '/forbidden' } })
+    ).resolves.toBeUndefined()
+    expect(getForbiddenRoute()).toMatchObject({
+      attemptedPath: undefined,
+      permissionCodes: ['RECEIPT_NOTE_MENU_VIEW'],
+    })
   })
 
-  it('redirects when the user has no permissions at all', async () => {
+  it('blocks when the user has no permissions at all', async () => {
     const guard = requirePermission('FREIGHT_MENU_VIEW')
-    await expect(guard({ context: makeContext([]) })).rejects.toMatchObject({
-      options: { to: '/forbidden' },
+    await expect(
+      guard({ context: makeContext([]) }),
+    ).resolves.toBeUndefined()
+    expect(getForbiddenRoute()).toMatchObject({
+      permissionCodes: ['FREIGHT_MENU_VIEW'],
     })
+  })
+
+  it('does not block when running for a link preload', async () => {
+    const guard = requirePermission('FREIGHT_MENU_VIEW')
+    await expect(
+      guard({ context: makeContext([]), cause: 'preload' }),
+    ).resolves.toBeUndefined()
+    expect(getForbiddenRoute()).toBeNull()
   })
 
   it('passes when the permission is present', async () => {
@@ -24,6 +47,7 @@ describe('requirePermission route guard', () => {
     await expect(
       guard({ context: makeContext(['DELIVERY_NOTE_MENU_VIEW']) }),
     ).resolves.toBeUndefined()
+    expect(getForbiddenRoute()).toBeNull()
   })
 
   it('passes when the user has several permissions including the required one', async () => {
@@ -39,5 +63,6 @@ describe('requirePermission route guard', () => {
         ]),
       }),
     ).resolves.toBeUndefined()
+    expect(getForbiddenRoute()).toBeNull()
   })
 })

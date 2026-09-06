@@ -50,6 +50,10 @@ export const GodownCombobox = ({
   const lastSelectedValueRef = React.useRef<string | null>(null)
   const [open, setOpen] = React.useState(false)
   const selectedId = form.watch('godownId')?.toString()
+  // Autofocus only rows that still need a godown picked (e.g. a freshly
+  // added row). Pre-filled rows (an existing voucher opened for editing)
+  // must not grab focus away from the field the user is looking at.
+  const needsGodown = selectedId == null || selectedId === ''
   // const stockItem = form.watch('stockItem')
   const { data: godownItemStocks } = useQuery({
     queryKey: ['godownItemStocks', stockItem?.id],
@@ -169,7 +173,7 @@ export const GodownCombobox = ({
           role="combobox"
           aria-expanded={open}
           className={cn('w-full justify-between')}
-          autoFocus={true}
+          autoFocus={needsGodown}
           onBlur={handleBlur}
           onKeyDown={handleKeyDown}
         >

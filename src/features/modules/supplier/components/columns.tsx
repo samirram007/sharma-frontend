@@ -1,4 +1,3 @@
-import LongText from '@/components/long-text'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
 import { cn } from '@/lib/utils'
@@ -46,7 +45,12 @@ export const columns: ColumnDef<Supplier>[] = [
       <DataTableColumnHeader column={column} title="Name" />
     ),
     cell: ({ row }) => (
-      <LongText className="max-w-36">{row.getValue('name')}</LongText>
+      <div
+        className="min-w-52 max-w-80 whitespace-normal break-words"
+        title={row.getValue('name')}
+      >
+        {row.getValue('name')}
+      </div>
     ),
     meta: {
       className: cn(

@@ -15,7 +15,11 @@ import {
 } from '@/components/ui/select'
 
 import { usePermissionMutation } from '@/features/modules/permission/data/queryOptions'
-import { MenuTreeQueryOptions } from '@/features/modules/menu/data/queryOptions'
+import {
+  MenuTreeQueryOptions,
+  useMenuBatchUpdateMutation,
+  useMenuQuickUpdateMutation,
+} from '@/features/modules/menu/data/queryOptions'
 import { resolveIcon } from '@/features/modules/menu/data/menu-icon-map'
 import {
   MenuTreeSchema,
@@ -49,7 +53,14 @@ import {
 } from '@tanstack/react-query'
 import { cn } from '@/lib/utils'
 import { IconChevronDown, IconGripVertical } from '@tabler/icons-react'
-import { Loader, ShieldCheck, ShieldOff } from 'lucide-react'
+import {
+  Eye,
+  EyeOff,
+  Loader,
+  PanelTop,
+  ShieldCheck,
+  ShieldOff,
+} from 'lucide-react'
 import { useMemo, useState, useCallback, useEffect } from 'react'
 import { toast } from 'sonner'
 
@@ -209,6 +220,38 @@ export default function MenuManager() {
     ],
   )
 
+  // ── Top-menu (header) toggles ────────────────────────────────
+  const { mutate: quickUpdateMenu, isPending: topMenuSaving } =
+    useMenuQuickUpdateMutation()
+  const { mutate: batchUpdateMenus, isPending: batchTopMenuSaving } =
+    useMenuBatchUpdateMutation()
+  const topMenuBusy = topMenuSaving || batchTopMenuSaving
+
+  const invalidateTopMenus = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ['TopMenuTree'] })
+  }, [queryClient])
+
+  /** Toggle the global is_top_menu flag for one entry (header top nav). */
+  const handleToggleTopMenu = useCallback(
+    (node: MenuTreeNode) => {
+      quickUpdateMenu(
+        { id: node.id, isTopMenu: !node.isTopMenu },
+        {
+          onSuccess: () => {
+            invalidateTopMenus()
+            toast.success(
+              node.isTopMenu
+                ? `"${node.menuName}" removed from top menu`
+                : `"${node.menuName}" added to top menu`,
+            )
+          },
+          onError: () => toast.error('Could not update top menu flag'),
+        },
+      )
+    },
+    [quickUpdateMenu, invalidateTopMenus],
+  )
+
   // ── DnD state ──────────────────────────────────────────────────────
   const menuTree = useMemo(
     () => MenuTreeSchema.parse(treeData?.data ?? []),
@@ -337,6 +380,74 @@ export default function MenuManager() {
     setSelectedIds(new Set())
   }, [selectedRoleId])
 
+  /** Bulk-add/remove the selected entries to/from the header top menu. */
+  const handleBatchTopMenu = useCallback(
+    (value: boolean) => {
+      const ids = Array.from(selectedIds)
+      if (ids.length === 0) return
+
+      batchUpdateMenus(
+        { ids, data: { isTopMenu: value } },
+        {
+          onSuccess: () => {
+            invalidateTopMenus()
+            setSelectedIds(new Set())
+            toast.success(
+              `${ids.length} ${value ? 'added to' : 'removed from'} top menu`,
+            )
+          },
+          onError: () => toast.error('Could not update top menu flags'),
+        },
+      )
+    },
+    [selectedIds, batchUpdateMenus, invalidateTopMenus],
+  )
+
+  /** Toggle the sidebar visibility flag (is_visible) for one entry. */
+  const handleToggleVisibility = useCallback(
+    (node: MenuTreeNode) => {
+      quickUpdateMenu(
+        { id: node.id, isVisible: !node.isVisible },
+        {
+          onSuccess: () => {
+            // Sidebar tree is permission + visibility filtered server-side.
+            queryClient.invalidateQueries({ queryKey: ['MenuTree'] })
+            toast.success(
+              node.isVisible
+                ? `"${node.menuName}" hidden from the sidebar`
+                : `"${node.menuName}" shown in the sidebar`,
+            )
+          },
+          onError: () => toast.error('Could not update visibility'),
+        },
+      )
+    },
+    [quickUpdateMenu, queryClient],
+  )
+
+  /** Bulk show/hide the selected entries in the sidebar. */
+  const handleBatchVisibility = useCallback(
+    (value: boolean) => {
+      const ids = Array.from(selectedIds)
+      if (ids.length === 0) return
+
+      batchUpdateMenus(
+        { ids, data: { isVisible: value } },
+        {
+          onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['MenuTree'] })
+            setSelectedIds(new Set())
+            toast.success(
+              `${ids.length} ${value ? 'shown in' : 'hidden from'} the sidebar`,
+            )
+          },
+          onError: () => toast.error('Could not update visibility'),
+        },
+      )
+    },
+    [selectedIds, batchUpdateMenus, queryClient],
+  )
+
   // ── Permissions for menu items (used in tree rendering) ───────────
   const getPermissionInfo = useCallback(
     (node: MenuTreeNode) => {
@@ -350,6 +461,32 @@ export default function MenuManager() {
     [featureMetaMap, featurePermissionMap],
   )
 
+  // How many entries are currently pinned to the header top menu
+  const topMenuCount = useMemo(() => {
+    let count = 0
+    const walk = (nodes: MenuTreeNode[]) => {
+      for (const n of nodes) {
+        if (n.isTopMenu) count += 1
+        if (n.children?.length) walk(n.children)
+      }
+    }
+    walk(renderTree)
+    return count
+  }, [renderTree])
+
+  // How many entries are hidden from the sidebar
+  const hiddenCount = useMemo(() => {
+    let count = 0
+    const walk = (nodes: MenuTreeNode[]) => {
+      for (const n of nodes) {
+        if (!n.isVisible) count += 1
+        if (n.children?.length) walk(n.children)
+      }
+    }
+    walk(renderTree)
+    return count
+  }, [renderTree])
+
   // ── Render ────────────────────────────────────────────────────────
 
   return (
@@ -357,29 +494,29 @@ export default function MenuManager() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Menu Manager</h1>
         <p className="text-muted-foreground">
-          Drag &amp; drop to reorder menu items. Toggle permissions to control
-          role access.
+          Drag &amp; drop to reorder menu items, toggle permissions for role
+          access, and pin entries to the header top menu (applies to all roles).
         </p>
       </div>
 
       {/* Role Selector */}
       <div className="flex flex-wrap items-center gap-3 rounded-lg border bg-card p-3 shadow-sm">
         <div className="flex items-center gap-2">
-          <span className="text-xs font-medium text-muted-foreground">
+          <span className="text-sm font-medium text-muted-foreground">
             Role:
           </span>
           <Select
             value={selectedRoleId?.toString() ?? ''}
             onValueChange={(v) => setSelectedRoleId(Number(v))}
           >
-            <SelectTrigger className="w-56 h-8 text-xs">
+            <SelectTrigger className="w-56 h-9 text-sm">
               <SelectValue placeholder="Choose a role to manage…" />
             </SelectTrigger>
             <SelectContent>
               {roles.map((role: any) => (
                 <SelectItem key={role.id} value={role.id.toString()}>
                   {role.name}
-                  <span className="ml-2 text-[10px] text-muted-foreground font-mono">
+                  <span className="ml-2 text-[11px] text-muted-foreground font-mono">
                     ({role.code})
                   </span>
                 </SelectItem>
@@ -390,7 +527,7 @@ export default function MenuManager() {
 
         {/* Stats */}
         {selectedRoleId && !permLoading && (
-          <div className="flex items-center gap-2 text-xs text-muted-foreground ml-auto">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground ml-auto">
             <span className="flex items-center gap-1 text-green-600">
               <ShieldCheck className="h-3 w-3" />
               {
@@ -409,6 +546,16 @@ export default function MenuManager() {
                 ).length
               }{' '}
               denied
+            </span>
+            <span className="text-muted-foreground/30">|</span>
+            <span className="flex items-center gap-1 text-indigo-600">
+              <PanelTop className="h-3 w-3" />
+              {topMenuCount} in top menu
+            </span>
+            <span className="text-muted-foreground/30">|</span>
+            <span className="flex items-center gap-1 text-amber-600">
+              <EyeOff className="h-3 w-3" />
+              {hiddenCount} hidden
             </span>
           </div>
         )}
@@ -432,18 +579,58 @@ export default function MenuManager() {
       {selectedRoleId && !treeLoading && !permLoading && (
         <div className="rounded-lg border bg-card shadow-sm">
           <div className="border-b px-3 py-1.5 flex items-center justify-between">
-            <span className="text-xs font-medium text-muted-foreground">
+            <span className="text-sm font-medium text-muted-foreground">
               Menu Structure
             </span>
             {selectedIds.size > 0 && (
-              <div className="flex items-center gap-2 text-[10px]">
+              <div className="flex items-center gap-1.5 text-xs">
                 <span className="text-muted-foreground">
                   {selectedIds.size} selected
                 </span>
                 <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-6 px-2 text-xs"
+                  onClick={() => handleBatchTopMenu(true)}
+                  disabled={topMenuBusy}
+                  title="Pin the selected entries to the header top menu (all roles)"
+                >
+                  <PanelTop className="h-3 w-3" /> Add to Top Menu
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-6 px-2 text-xs"
+                  onClick={() => handleBatchTopMenu(false)}
+                  disabled={topMenuBusy}
+                  title="Unpin the selected entries from the header top menu"
+                >
+                  <PanelTop className="h-3 w-3" /> Remove from Top Menu
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-6 px-2 text-xs"
+                  onClick={() => handleBatchVisibility(false)}
+                  disabled={topMenuBusy}
+                  title="Hide the selected entries from the sidebar (all roles)"
+                >
+                  <EyeOff className="h-3 w-3" /> Hide
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-6 px-2 text-xs"
+                  onClick={() => handleBatchVisibility(true)}
+                  disabled={topMenuBusy}
+                  title="Show the selected entries in the sidebar (all roles)"
+                >
+                  <Eye className="h-3 w-3" /> Show
+                </Button>
+                <Button
                   variant="ghost"
                   size="sm"
-                  className="h-5 px-1.5 text-[9px]"
+                  className="h-6 px-2 text-xs"
                   onClick={() => setSelectedIds(new Set())}
                 >
                   Deselect
@@ -468,6 +655,9 @@ export default function MenuManager() {
                   permSaving={permSaving}
                   selectedIds={selectedIds}
                   onToggleSelect={toggleSelect}
+                  onToggleTopMenu={handleToggleTopMenu}
+                  onToggleVisibility={handleToggleVisibility}
+                  topMenuBusy={topMenuBusy}
                 />
 
                 <DragOverlay>
@@ -477,11 +667,11 @@ export default function MenuManager() {
                         {(() => {
                           const Icon = resolveIcon(activeItem.icon ?? undefined)
                           return (
-                            <Icon className="h-3 w-3 text-muted-foreground" />
+                            <Icon className="h-3.5 w-3.5 text-muted-foreground" />
                           )
                         })()}
                       </div>
-                      <span className="text-xs font-medium">
+                      <span className="text-base font-medium">
                         {activeItem.menuName}
                       </span>
                     </div>
@@ -490,8 +680,8 @@ export default function MenuManager() {
               </DndContext>
             ) : (
               <div className="flex flex-col items-center justify-center py-10 text-muted-foreground">
-                <p className="text-xs font-medium">No menu entries found</p>
-                <p className="text-[10px]">
+                <p className="text-sm font-medium">No menu entries found</p>
+                <p className="text-xs">
                   Create menu entries in the Menu module first.
                 </p>
               </div>
@@ -516,6 +706,9 @@ interface TreeLevelProps {
   permSaving: boolean
   selectedIds: Set<number>
   onToggleSelect: (id: number) => void
+  onToggleTopMenu: (node: MenuTreeNode) => void
+  onToggleVisibility: (node: MenuTreeNode) => void
+  topMenuBusy: boolean
 }
 
 function TreeLevel({
@@ -526,6 +719,9 @@ function TreeLevel({
   permSaving,
   selectedIds,
   onToggleSelect,
+  onToggleTopMenu,
+  onToggleVisibility,
+  topMenuBusy,
 }: TreeLevelProps) {
   if (!items.length) return null
 
@@ -545,6 +741,9 @@ function TreeLevel({
             permSaving={permSaving}
             selectedIds={selectedIds}
             onToggleSelect={onToggleSelect}
+            onToggleTopMenu={onToggleTopMenu}
+            onToggleVisibility={onToggleVisibility}
+            topMenuBusy={topMenuBusy}
           />
         ))}
       </div>
@@ -565,6 +764,9 @@ interface TreeNodeProps {
   permSaving: boolean
   selectedIds: Set<number>
   onToggleSelect: (id: number) => void
+  onToggleTopMenu: (node: MenuTreeNode) => void
+  onToggleVisibility: (node: MenuTreeNode) => void
+  topMenuBusy: boolean
 }
 
 function TreeNode({
@@ -575,6 +777,9 @@ function TreeNode({
   permSaving,
   selectedIds,
   onToggleSelect,
+  onToggleTopMenu,
+  onToggleVisibility,
+  topMenuBusy,
 }: TreeNodeProps) {
   const [isOpen, setIsOpen] = useState(depth < 1)
   const hasChildren = node.children && node.children.length > 0
@@ -601,7 +806,7 @@ function TreeNode({
   const rowNode = () => (
     <div
       className={cn(
-        'relative flex items-center gap-1.5 rounded-md border px-2 py-1 transition-all',
+        'relative flex items-center gap-2 rounded-md border px-2.5 py-1.5 transition-all',
         isSelected
           ? 'border-primary/30 bg-primary/[0.04]'
           : 'border-transparent hover:border-border hover:bg-muted/40',
@@ -611,76 +816,76 @@ function TreeNode({
       style={depth > 0 ? { marginLeft: `${depth * 1.25}rem` } : undefined}
     >
       {/* Checkbox */}
-      <div className="flex w-4 shrink-0 items-center justify-center">
+      <div className="flex w-5 shrink-0 items-center justify-center">
         <Checkbox
           checked={isSelected}
           onClick={(e) => {
             e.stopPropagation()
             onToggleSelect(node.id)
           }}
-          className="h-3.5 w-3.5"
+          className="h-4 w-4"
           aria-label={`Select ${node.menuName}`}
         />
       </div>
 
       {/* Drag handle */}
       <button
-        className="flex h-5 w-4 shrink-0 cursor-grab items-center justify-center rounded text-muted-foreground/30 hover:text-muted-foreground hover:bg-muted active:cursor-grabbing"
+        className="flex h-6 w-5 shrink-0 cursor-grab items-center justify-center rounded text-muted-foreground/30 hover:text-muted-foreground hover:bg-muted active:cursor-grabbing"
         {...attributes}
         {...listeners}
         title="Drag to reorder"
         tabIndex={-1}
       >
-        <IconGripVertical className="h-3 w-3" />
+        <IconGripVertical className="h-3.5 w-3.5" />
       </button>
 
       {/* Expand/collapse */}
-      <div className="flex w-4 shrink-0 items-center justify-center">
+      <div className="flex w-5 shrink-0 items-center justify-center">
         {hasChildren ? (
           <CollapsibleTrigger asChild>
             <Button
               variant="ghost"
               size="icon"
-              className="h-4 w-4 p-0 text-muted-foreground hover:text-foreground"
+              className="h-5 w-5 p-0 text-muted-foreground hover:text-foreground"
             >
               <IconChevronDown
                 className={cn(
-                  'h-3 w-3 transition-transform duration-200',
+                  'h-3.5 w-3.5 transition-transform duration-200',
                   isOpen ? 'rotate-0' : '-rotate-90',
                 )}
               />
             </Button>
           </CollapsibleTrigger>
         ) : (
-          <span className="h-4 w-4" />
+          <span className="h-5 w-5" />
         )}
       </div>
 
       {/* Icon */}
-      <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded border bg-background">
-        <Icon className="h-2.5 w-2.5 text-muted-foreground" />
+      <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded border bg-background">
+        <Icon className="h-3.5 w-3.5 text-muted-foreground" />
       </div>
 
       {/* Name + meta */}
       <div className="flex min-w-0 flex-1 items-center gap-1.5">
-        <span className="truncate text-xs font-medium">{node.menuName}</span>
+        <span className="truncate text-base font-medium">{node.menuName}</span>
         {node.isGroup && (
           <Badge
             variant="secondary"
-            className="shrink-0 text-[9px] px-1 py-0 leading-none"
+            className="shrink-0 text-[11px] px-1 py-0 leading-none"
           >
             Group
           </Badge>
         )}
         {node.route && (
-          <code className="hidden shrink-0 truncate rounded bg-muted/60 px-1 py-0.5 text-[9px] font-mono text-muted-foreground/70 sm:inline-block max-w-24">
+          <code className="hidden shrink-0 truncate rounded bg-muted/60 px-1 py-0.5 text-xs font-mono text-muted-foreground/70 sm:inline-block max-w-24">
             {node.route}
           </code>
         )}
         {node.feature?.code && (
           <Badge
             variant="outline"
-            className="shrink-0 text-[9px] font-mono px-1 py-0 leading-none hidden md:inline-flex"
+            className="shrink-0 text-[11px] font-mono px-1 py-0 leading-none hidden md:inline-flex"
           >
             {node.feature.code}
           </Badge>
@@ -691,13 +896,65 @@ function TreeNode({
       {statusBadgeColor && (
         <span
           className={cn(
-            'shrink-0 rounded px-1 py-0 text-[9px] font-medium capitalize',
+            'shrink-0 rounded px-1 py-0 text-[11px] font-medium capitalize',
             statusBadgeColor,
           )}
         >
           {node.status}
         </span>
       )}
+
+      {/* Visibility toggle (sidebar — applies to all roles) */}
+      <Button
+        variant="ghost"
+        size="sm"
+        className={cn(
+          'h-6 w-6 p-0 shrink-0',
+          node.isVisible
+            ? 'text-emerald-500 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950/30'
+            : 'text-muted-foreground/40 hover:text-foreground hover:bg-muted',
+        )}
+        onClick={(e) => {
+          e.stopPropagation()
+          onToggleVisibility(node)
+        }}
+        disabled={topMenuBusy}
+        title={
+          node.isVisible
+            ? 'Visible in sidebar — click to hide'
+            : 'Hidden from sidebar — click to show'
+        }
+      >
+        {node.isVisible ? (
+          <Eye className="h-3.5 w-3.5" />
+        ) : (
+          <EyeOff className="h-3.5 w-3.5" />
+        )}
+      </Button>
+
+      {/* Top-menu toggle (header nav — applies to all roles) */}
+      <Button
+        variant="ghost"
+        size="sm"
+        className={cn(
+          'h-6 w-6 p-0 shrink-0',
+          node.isTopMenu
+            ? 'text-indigo-500 hover:text-indigo-700 hover:bg-indigo-50 dark:hover:bg-indigo-950/30'
+            : 'text-muted-foreground/40 hover:text-foreground hover:bg-muted',
+        )}
+        onClick={(e) => {
+          e.stopPropagation()
+          onToggleTopMenu(node)
+        }}
+        disabled={topMenuBusy}
+        title={
+          node.isTopMenu
+            ? 'In header top menu (all roles) — click to remove'
+            : 'Add to header top menu (all roles)'
+        }
+      >
+        <PanelTop className="h-3.5 w-3.5" />
+      </Button>
 
       {/* Permission toggle */}
       {hasPermission && (
@@ -718,9 +975,9 @@ function TreeNode({
           title={isAllowed ? 'Click to deny' : 'Click to allow'}
         >
           {isAllowed ? (
-            <ShieldCheck className="h-3 w-3" />
+            <ShieldCheck className="h-3.5 w-3.5" />
           ) : (
-            <ShieldOff className="h-3 w-3" />
+            <ShieldOff className="h-3.5 w-3.5" />
           )}
         </Button>
       )}
@@ -746,6 +1003,9 @@ function TreeNode({
                 permSaving={permSaving}
                 selectedIds={selectedIds}
                 onToggleSelect={onToggleSelect}
+                onToggleTopMenu={onToggleTopMenu}
+                onToggleVisibility={onToggleVisibility}
+                topMenuBusy={topMenuBusy}
               />
             </div>
           </CollapsibleContent>

@@ -1,3 +1,4 @@
+import DataLoadError from '@/features/errors/data-load-error'
 import { Main } from '@/layouts/components/main'
 import { columns } from './components/columns'
 
@@ -13,7 +14,19 @@ interface CompanyProps {
 }
 
 export default function Company({ data }: CompanyProps) {
-  console.log(data)
+  // Validate the payload before rendering the table. A response that doesn't
+  // match the expected shape (e.g. a stale cached payload from an older
+  // backend or an upstream error object) must surface as a readable error
+  // page with the exact details — not crash the route through the generic
+  // error boundary.
+  let parsed: CompanyList
+  try {
+    parsed = companyListSchema.parse(data ?? [])
+  } catch (error) {
+    return (
+      <DataLoadError error={error} title="Couldn't display the company list" />
+    )
+  }
 
   return (
     <>
@@ -30,10 +43,7 @@ export default function Company({ data }: CompanyProps) {
           <PrimaryButtons />
         </div>
         <div className="-mx-4 flex-1 overflow-auto px-4 py-1 lg:flex-row lg:space-y-0 lg:space-x-12">
-          <GridTable
-            data={companyListSchema.parse(data ?? [])}
-            columns={columns}
-          />
+          <GridTable data={parsed} columns={columns} />
         </div>
       </Main>
 

@@ -49,6 +49,7 @@ export const formSchema = z.discriminatedUnion('unitType', [
     name: z.string().min(1, 'Name is required'),
     uniqueQuantityCodeId: z.number().int().positive().optional().nullish(),
     noOfDecimalPlaces: z.coerce.number().min(0).optional().nullish(),
+    status: ActiveInactiveStatusSchema.default('active'),
 
     uniqueQuantityCode: z.lazy(() => uniqueQuantityCodeSchema).nullish(),
     isEdit: z.boolean(),
@@ -60,6 +61,7 @@ export const formSchema = z.discriminatedUnion('unitType', [
     primaryStockUnitId: z.number().int().positive(),
     conversionFactor: z.coerce.number().min(0.0001),
     secondaryStockUnitId: z.number().int().positive(),
+    status: ActiveInactiveStatusSchema.default('active'),
     primaryStockUnit: z.lazy(() => stockUnitSchema).nullish(),
     secondaryStockUnit: z.lazy(() => stockUnitSchema).nullish(),
     isEdit: z.boolean(),

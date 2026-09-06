@@ -267,7 +267,6 @@ const StockJournalGodownEntry = (props: StockJournalGodownEntryFormProps) => {
               form={stockJournalGodownEntryForm}
               stockItem={stockItem}
               godownId={Number(stockJournalGodownEntryForm.watch('godownId'))}
-              rowIndex={index}
             />
           )}
 
@@ -1212,6 +1211,7 @@ const AmountBox = ({
     <Input
       type="text"
       inputMode="decimal"
+      data-amount-input=""
       value={boxValue}
       onChange={handleChange}
       onBlur={(e: React.FocusEvent<HTMLInputElement>) => {

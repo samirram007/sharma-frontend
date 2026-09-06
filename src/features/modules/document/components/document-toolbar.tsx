@@ -7,6 +7,7 @@ import {
   IconFolderPlus,
   IconLayoutGrid,
   IconList,
+  IconUsersGroup,
 } from '@tabler/icons-react'
 
 export type DocumentView = 'cards' | 'table'
@@ -18,6 +19,12 @@ interface Props {
   onViewChange: (view: DocumentView) => void
   onUpload: () => void
   onCreateFolder: () => void
+  /** Show only documents other people shared with the current user. */
+  sharedOnly: boolean
+  onSharedOnlyChange: (sharedOnly: boolean) => void
+  /** Show only documents the current user shared outward. */
+  sharedByMe: boolean
+  onSharedByMeChange: (sharedByMe: boolean) => void
 }
 
 export function DocumentToolbar({
@@ -27,6 +34,10 @@ export function DocumentToolbar({
   onViewChange,
   onUpload,
   onCreateFolder,
+  sharedOnly,
+  onSharedOnlyChange,
+  sharedByMe,
+  onSharedByMeChange,
 }: Props) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-3">
@@ -52,6 +63,24 @@ export function DocumentToolbar({
       </div>
 
       <div className="flex items-center gap-2">
+        <Button
+          variant={sharedOnly ? 'secondary' : 'outline'}
+          className={`h-8 gap-1.5 ${sharedOnly ? 'ring-1 ring-primary/40' : ''}`}
+          onClick={() => onSharedOnlyChange(!sharedOnly)}
+          title="Documents other people shared with you"
+        >
+          <IconUsersGroup className="h-4 w-4" />
+          Shared with me
+        </Button>
+        <Button
+          variant={sharedByMe ? 'secondary' : 'outline'}
+          className={`h-8 gap-1.5 ${sharedByMe ? 'ring-1 ring-primary/40' : ''}`}
+          onClick={() => onSharedByMeChange(!sharedByMe)}
+          title="Documents you shared with others"
+        >
+          <IconUsersGroup className="h-4 w-4" />
+          Shared by me
+        </Button>
         <div className="flex items-center rounded-md border">
           <Button
             variant="ghost"
@@ -73,7 +102,11 @@ export function DocumentToolbar({
           </Button>
         </div>
 
-        <Button variant="outline" className="h-8 gap-1.5" onClick={onCreateFolder}>
+        <Button
+          variant="outline"
+          className="h-8 gap-1.5"
+          onClick={onCreateFolder}
+        >
           <IconFolderPlus className="h-4 w-4" />
           New folder
         </Button>

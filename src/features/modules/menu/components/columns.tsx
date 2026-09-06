@@ -47,7 +47,7 @@ export const columns: ColumnDef<Menu>[] = [
     cell: ({ row }) => (
       <div className="flex items-center gap-2">
         {row.original.isGroup && (
-          <Badge variant="secondary" className="text-[10px] px-1 py-0">
+          <Badge variant="secondary" className="text-xs px-1 py-0">
             Group
           </Badge>
         )}
@@ -69,7 +69,7 @@ export const columns: ColumnDef<Menu>[] = [
       <DataTableColumnHeader column={column} title="Route" />
     ),
     cell: ({ row }) => (
-      <code className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono">
+      <code className="rounded bg-muted px-1.5 py-0.5 text-sm font-mono">
         {row.getValue('route') ?? '—'}
       </code>
     ),
@@ -104,7 +104,7 @@ export const columns: ColumnDef<Menu>[] = [
       return (
         <div className="text-sm">
           {feature ? (
-            <Badge variant="outline" className="text-[10px] font-mono">
+            <Badge variant="outline" className="text-xs font-mono">
               {feature.code}
             </Badge>
           ) : (

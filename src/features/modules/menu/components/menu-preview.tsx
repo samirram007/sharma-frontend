@@ -21,8 +21,8 @@ export default function MenuPreview({
   if (!tree || tree.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-10 text-muted-foreground">
-        <p className="text-xs font-medium">No menu items to preview</p>
-        <p className="text-[10px]">Add entries in the tree view first.</p>
+        <p className="text-sm font-medium">No menu items to preview</p>
+        <p className="text-xs">Add entries in the tree view first.</p>
       </div>
     )
   }
@@ -40,7 +40,7 @@ export default function MenuPreview({
           <span className="text-[8px] font-bold text-white">A</span>
         </div>
         <div className="flex min-w-0 flex-col leading-none">
-          <span className="truncate text-[10px] font-bold text-sidebar-foreground">
+          <span className="truncate text-xs font-bold text-sidebar-foreground">
             SIDEBAR PREVIEW
           </span>
           <span className="truncate text-[8px] font-medium text-sidebar-foreground/40">
@@ -90,7 +90,7 @@ function PreviewGroup({ node, depth, compact }: PreviewGroupProps) {
             <span
               className={cn(
                 'font-semibold uppercase tracking-wider text-sidebar-foreground/40',
-                compact ? 'text-[9px]' : 'text-[10px]',
+                compact ? 'text-[11px]' : 'text-xs',
               )}
             >
               {node.menuName}
@@ -163,7 +163,7 @@ function PreviewGroup({ node, depth, compact }: PreviewGroupProps) {
               className={cn(
                 'flex-1 truncate text-sidebar-foreground',
                 node.isGroup && 'font-semibold',
-                compact ? 'text-xs' : 'text-sm font-medium',
+                compact ? 'text-sm' : 'text-sm font-medium',
               )}
             >
               {node.menuName}

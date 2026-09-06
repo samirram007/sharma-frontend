@@ -727,6 +727,12 @@ export const sidebarData: SidebarData = {
           icon: IconHelp,
           requiredFeature: 'HELP_CENTER_MENU_VIEW',
         },
+        {
+          title: 'FAQs',
+          url: '/faq-user',
+          icon: IconHelp,
+          requiredFeature: 'HELP_CENTER_MENU_VIEW',
+        },
       ],
     },
   ],

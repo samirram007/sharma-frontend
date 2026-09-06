@@ -44,7 +44,9 @@ export function GridTable({ columns, data }: DataTableProps) {
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
     select: false,
   })
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([
+    { id: 'status', value: ['active'] },
+  ])
   const [sorting, setSorting] = useState<SortingState>([])
 
   const table = useReactTable({
@@ -52,7 +54,7 @@ export function GridTable({ columns, data }: DataTableProps) {
     columns,
     initialState: {
       pagination: {
-        pageSize: 100, // 👈 default
+        pageSize: 10,
       },
     },
     state: {

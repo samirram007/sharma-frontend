@@ -1,7 +1,8 @@
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { Link, useRouter } from '@tanstack/react-router'
-import { ServerCrash, ArrowLeft, Home, RefreshCcw, LogIn } from 'lucide-react'
+import { ServerCrash, RefreshCcw } from 'lucide-react'
+import { ErrorActions } from './error-actions'
+import { ErrorDetails } from './error-details'
 import { useAuthSafe } from './use-auth-safe'
 
 interface GeneralErrorProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -12,7 +13,6 @@ export default function GeneralError({
   className,
   minimal = false,
 }: GeneralErrorProps) {
-  const { history } = useRouter()
   const { user, isAuthenticated } = useAuthSafe()
 
   return (
@@ -23,7 +23,7 @@ export default function GeneralError({
         className,
       )}
     >
-      <div className="mx-auto flex w-full max-w-lg flex-col items-center px-6 text-center">
+      <div className="mx-auto flex w-full max-w-2xl flex-col items-center px-6 text-center">
         {/* Animated server crash icon */}
         <div className="relative mb-8">
           <div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-red-500/10 ring-1 ring-red-500/20">
@@ -42,55 +42,41 @@ export default function GeneralError({
         </h2>
 
         {isAuthenticated && user ? (
-          <p className="mb-8 max-w-md text-sm leading-relaxed text-muted-foreground sm:text-base">
+          <p className="mb-3 max-w-xl text-sm leading-relaxed text-muted-foreground sm:text-base">
             Hi <span className="font-medium text-foreground">{user.name}</span>,
-            we apologize for the inconvenience. An unexpected error occurred.
-            Please try again or contact your administrator.
+            an unexpected error occurred while loading this page. This is
+            usually temporary — a server hiccup, a timeout, or a slow
+            connection.
           </p>
         ) : (
-          <p className="mb-8 max-w-md text-sm leading-relaxed text-muted-foreground sm:text-base">
-            We apologize for the inconvenience. An unexpected error occurred.
-            Please try again later.
+          <p className="mb-3 max-w-xl text-sm leading-relaxed text-muted-foreground sm:text-base">
+            An unexpected error occurred while loading this page. This is
+            usually temporary — a server hiccup, a timeout, or a slow
+            connection.
           </p>
         )}
 
-        {!minimal && (
-          <div className="flex flex-col gap-3 sm:flex-row">
+        <ErrorDetails code="500">
+          <li>Click Retry — a temporary glitch often clears on refresh.</li>
+          <li>Wait a moment, then reload the page from the navigation menu.</li>
+          <li>
+            If it keeps happening, note the page and time above and contact your
+            administrator.
+          </li>
+        </ErrorDetails>
+
+        <ErrorActions
+          extra={
             <Button
               variant="outline"
-              size="lg"
-              onClick={() => history.go(-1)}
               className="gap-2"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Go Back
-            </Button>
-            <Button
-              variant="outline"
-              size="lg"
               onClick={() => window.location.reload()}
-              className="gap-2"
             >
               <RefreshCcw className="h-4 w-4" />
               Retry
             </Button>
-            {isAuthenticated ? (
-              <Button asChild variant="default" size="lg" className="gap-2">
-                <Link to="/">
-                  <Home className="h-4 w-4" />
-                  Back to Dashboard
-                </Link>
-              </Button>
-            ) : (
-              <Button asChild variant="default" size="lg" className="gap-2">
-                <Link to="/sign-in">
-                  <LogIn className="h-4 w-4" />
-                  Sign In
-                </Link>
-              </Button>
-            )}
-          </div>
-        )}
+          }
+        />
       </div>
     </div>
   )

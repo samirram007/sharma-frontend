@@ -454,7 +454,7 @@ function DndTreeView({
     return (
       <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
         <p className="text-sm font-medium">No menu entries yet</p>
-        <p className="text-xs">
+        <p className="text-sm">
           Create a root-level menu entry to get started.
         </p>
       </div>
@@ -464,7 +464,7 @@ function DndTreeView({
   return (
     <div>
       {/* Selection toolbar — always visible when there are items */}
-      <div className="mb-1.5 flex items-center gap-2 text-[10px] text-muted-foreground">
+      <div className="mb-1.5 flex items-center gap-2 text-xs text-muted-foreground">
         <button
           className="hover:text-foreground transition-colors"
           onClick={selectedCount > 0 ? deselectAll : selectAll}
@@ -512,10 +512,10 @@ function DndTreeView({
                   return <Icon className="h-3 w-3 text-muted-foreground" />
                 })()}
               </div>
-              <span className="text-xs font-medium">{activeItem.menuName}</span>
+              <span className="text-sm font-medium">{activeItem.menuName}</span>
               <Badge
                 variant="outline"
-                className="text-[9px] px-1 py-0 leading-none"
+                className="text-[11px] px-1 py-0 leading-none"
               >
                 {activeNodeDepth > 0 ? `Level ${activeNodeDepth}` : 'Root'}
               </Badge>
@@ -526,7 +526,7 @@ function DndTreeView({
 
       {/* ── Batch actions toolbar ───────────────────────────────────── */}
       {selectedCount > 0 && (
-        <div className="mt-2 flex items-center gap-2 rounded-md border bg-muted/50 px-3 py-2 text-xs animate-in fade-in slide-in-from-bottom-2 duration-200">
+        <div className="mt-2 flex items-center gap-2 rounded-md border bg-muted/50 px-3 py-2 text-sm animate-in fade-in slide-in-from-bottom-2 duration-200">
           <span className="font-medium text-foreground/80">
             {selectedCount} selected
           </span>
@@ -534,7 +534,7 @@ function DndTreeView({
           <Button
             variant="ghost"
             size="sm"
-            className="h-6 px-2 text-[10px] text-muted-foreground"
+            className="h-6 px-2 text-xs text-muted-foreground"
             onClick={deselectAll}
           >
             Deselect
@@ -543,7 +543,7 @@ function DndTreeView({
           <Button
             variant="ghost"
             size="sm"
-            className="h-6 px-2 text-[10px] text-muted-foreground"
+            className="h-6 px-2 text-xs text-muted-foreground"
             onClick={handleBatchToggleVisibility}
             title="Toggle visibility for selected items"
           >
@@ -553,7 +553,7 @@ function DndTreeView({
           <Button
             variant="ghost"
             size="sm"
-            className="h-6 px-2 text-[10px] text-muted-foreground"
+            className="h-6 px-2 text-xs text-muted-foreground"
             onClick={handleBatchToggleStatus}
             title="Toggle status for selected items"
           >
@@ -563,7 +563,7 @@ function DndTreeView({
           <Button
             variant="ghost"
             size="sm"
-            className="h-6 px-2 text-[10px] text-destructive hover:text-destructive"
+            className="h-6 px-2 text-xs text-destructive hover:text-destructive"
             onClick={handleBatchDelete}
             title="Delete selected items"
           >
@@ -761,7 +761,7 @@ function TreeNode({
   const rowNode = (childrenContent?: React.ReactNode) => (
     <div
       className={cn(
-        'relative flex items-center gap-1 rounded-md border px-1.5 py-1 text-xs transition-all',
+        'relative flex items-center gap-1 rounded-md border px-1.5 py-1 text-sm transition-all',
         isSelected
           ? 'border-primary/30 bg-primary/[0.04]'
           : 'border-transparent hover:border-border hover:bg-muted/40',
@@ -849,12 +849,12 @@ function TreeNode({
         ) : (
           <span
             className={cn(
-              'truncate text-xs font-medium cursor-pointer rounded px-0.5 -mx-0.5',
+              'truncate text-sm font-medium cursor-pointer rounded px-0.5 -mx-0.5',
               'hover:bg-muted/60 hover:text-foreground',
               node.isGroup && 'font-semibold text-foreground',
             )}
             onClick={() => setEditingField('name')}
-            title="Click to rename"
+            title={node.description?.trim() || 'Click to rename'}
           >
             {node.menuName}
           </span>
@@ -862,13 +862,13 @@ function TreeNode({
         {node.isGroup && (
           <Badge
             variant="secondary"
-            className="shrink-0 text-[9px] px-1 py-0 leading-none"
+            className="shrink-0 text-[11px] px-1 py-0 leading-none"
           >
             G
           </Badge>
         )}
         {node.route && (
-          <code className="hidden shrink-0 truncate rounded bg-muted/60 px-1 py-0.5 text-[9px] font-mono text-muted-foreground/70 sm:inline-block max-w-24">
+          <code className="hidden shrink-0 truncate rounded bg-muted/60 px-1 py-0.5 text-[11px] font-mono text-muted-foreground/70 sm:inline-block max-w-24">
             {node.route}
           </code>
         )}
@@ -877,7 +877,7 @@ function TreeNode({
       {node.feature && (
         <Badge
           variant="outline"
-          className="hidden shrink-0 text-[9px] font-mono px-1 py-0 leading-none md:inline-flex"
+          className="hidden shrink-0 text-[11px] font-mono px-1 py-0 leading-none md:inline-flex"
         >
           {node.feature.code}
         </Badge>
@@ -886,7 +886,7 @@ function TreeNode({
       {/* Status badge — clickable to toggle */}
       <button
         className={cn(
-          'shrink-0 rounded px-1 py-0 text-[9px] font-medium capitalize transition-colors',
+          'shrink-0 rounded px-1 py-0 text-[11px] font-medium capitalize transition-colors',
           statusBadgeColor,
           'hover:ring-1 hover:ring-foreground/20',
           updatingStatus && 'animate-pulse',
@@ -899,7 +899,7 @@ function TreeNode({
       </button>
 
       {/* Sort order */}
-      <span className="hidden shrink-0 text-[10px] text-muted-foreground/50 lg:inline-block">
+      <span className="hidden shrink-0 text-xs text-muted-foreground/50 lg:inline-block">
         #{node.sortOrder}
       </span>
 
@@ -1019,7 +1019,7 @@ export function SelectionToolbar({
   const allSelected = selectedIds.size === totalCount
 
   return (
-    <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+    <div className="flex items-center gap-2 text-xs text-muted-foreground">
       <button
         className="hover:text-foreground transition-colors"
         onClick={allSelected ? onDeselectAll : onSelectAll}
@@ -1085,7 +1085,7 @@ function InlineNameEditor({
         }
       }}
       onKeyDown={handleKeyDown}
-      className="h-6 min-w-0 flex-1 rounded border px-1.5 py-0 text-xs shadow-none focus-visible:ring-1"
+      className="h-7 min-w-0 flex-1 rounded border px-1.5 py-0 text-sm shadow-none focus-visible:ring-1"
     />
   )
 }

@@ -167,7 +167,9 @@ export default function Freight({
                   : 'All delivery notes in this period have their fare entered. New delivery notes will appear here once their dispatch details are filled in.'}
             </p>
 
-            {(localSearch || localZoneId || localFreightStatus !== 'pending') && (
+            {(localSearch ||
+              localZoneId ||
+              localFreightStatus !== 'pending') && (
               <button
                 onClick={handleReset}
                 className="mt-4 rounded-lg border border-border bg-background px-4 py-2 text-xs font-medium text-muted-foreground shadow-xs transition-colors hover:bg-accent hover:text-accent-foreground"

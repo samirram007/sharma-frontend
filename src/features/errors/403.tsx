@@ -1,19 +1,40 @@
-import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { Link, useRouter } from '@tanstack/react-router'
-import { ShieldX, ArrowLeft, Home, Lock, LogIn } from 'lucide-react'
+import { permissionLabel, type ForbiddenDetails } from '@/lib/forbidden-details'
+import { ShieldX, Lock } from 'lucide-react'
+import { ErrorActions } from './error-actions'
+import { ErrorDetails } from './error-details'
 import { useAuthSafe } from './use-auth-safe'
 
 interface ForbiddenErrorProps extends React.HTMLAttributes<HTMLDivElement> {
   minimal?: boolean
+  /**
+   * Why access was denied. In-place rendering (the protected layout gate)
+   * passes the live details from the guard; the standalone /403 page renders
+   * without them and falls back to generic copy.
+   */
+  details?: ForbiddenDetails | null
+}
+
+/** Small mono chip showing the raw permission code. */
+function PermissionCodeChip({ code }: { code: string }) {
+  return (
+    <code className="ml-1.5 inline-block max-w-full overflow-hidden rounded border border-red-200 bg-red-50 px-1.5 py-px font-mono text-[10px] text-red-700 align-middle whitespace-nowrap text-ellipsis dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">
+      {code}
+    </code>
+  )
 }
 
 export default function ForbiddenError({
   className,
   minimal = false,
+  details,
 }: ForbiddenErrorProps) {
-  const { history } = useRouter()
   const { user, isAuthenticated } = useAuthSafe()
+
+  const missingCodes = details?.permissionCodes?.length
+    ? details.permissionCodes
+    : null
+  const pageName = details?.pageName
 
   return (
     <div
@@ -23,7 +44,7 @@ export default function ForbiddenError({
         className,
       )}
     >
-      <div className="mx-auto flex w-full max-w-lg flex-col items-center px-6 text-center">
+      <div className="mx-auto flex w-full max-w-2xl flex-col items-center px-6 text-center">
         {/* Animated shield icon */}
         <div className="relative mb-8">
           <div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-destructive/10 ring-1 ring-destructive/20">
@@ -45,47 +66,99 @@ export default function ForbiddenError({
         </h2>
 
         {isAuthenticated && user ? (
-          <p className="mb-8 max-w-md text-sm leading-relaxed text-muted-foreground sm:text-base">
+          <p className="mb-3 w-full max-w-xl text-sm leading-relaxed text-muted-foreground sm:text-base">
             Sorry{' '}
             <span className="font-medium text-foreground">{user.name}</span>,
-            you don&apos;t have the necessary permissions to view this page.
-            Please contact your administrator if you believe this is a mistake.
+            your account doesn&apos;t have permission to view{' '}
+            {pageName ? (
+              <>
+                the{' '}
+                <span className="font-medium text-foreground">{pageName}</span>{' '}
+                page
+              </>
+            ) : (
+              'this page'
+            )}
+            . Access is controlled by your role and the permissions assigned to
+            it.
           </p>
         ) : (
-          <p className="mb-8 max-w-md text-sm leading-relaxed text-muted-foreground sm:text-base">
-            You don&apos;t have the necessary permissions to view this page.
-            Please contact your administrator if you believe this is a mistake.
+          <p className="mb-3 w-full max-w-xl text-sm leading-relaxed text-muted-foreground sm:text-base">
+            You don&apos;t have permission to view{' '}
+            {pageName ? (
+              <>
+                the{' '}
+                <span className="font-medium text-foreground">{pageName}</span>{' '}
+                page
+              </>
+            ) : (
+              'this page'
+            )}
+            . Access is controlled by your role and the permissions assigned to
+            it.
           </p>
         )}
 
-        {!minimal && (
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <Button
-              variant="outline"
-              size="lg"
-              onClick={() => history.go(-1)}
-              className="gap-2"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Go Back
-            </Button>
-            {isAuthenticated ? (
-              <Button asChild variant="default" size="lg" className="gap-2">
-                <Link to="/">
-                  <Home className="h-4 w-4" />
-                  Back to Dashboard
-                </Link>
-              </Button>
+        <ErrorDetails code="403" path={details?.attemptedPath}>
+          {missingCodes ? (
+            missingCodes.length === 1 ? (
+              <li>
+                Your role is missing the{' '}
+                <span className="font-semibold text-foreground">
+                  {permissionLabel(missingCodes[0])}
+                </span>{' '}
+                permission
+                {pageName
+                  ? ` needed to open the ${pageName} page`
+                  : ' required to view this page'}
+                .<PermissionCodeChip code={missingCodes[0]} />
+              </li>
             ) : (
-              <Button asChild variant="default" size="lg" className="gap-2">
-                <Link to="/sign-in">
-                  <LogIn className="h-4 w-4" />
-                  Sign In
-                </Link>
-              </Button>
-            )}
-          </div>
-        )}
+              <li className="max-w-xl">
+                Your role has none of the permissions required to open
+                {pageName ? (
+                  <>
+                    {' '}
+                    the{' '}
+                    <span className="font-semibold text-foreground">
+                      {pageName}
+                    </span>{' '}
+                    page
+                  </>
+                ) : (
+                  ' this page'
+                )}
+                :
+                <span className="flex flex-wrap items-center gap-1 pt-1">
+                  {missingCodes.map((code) => (
+                    <PermissionCodeChip key={code} code={code} />
+                  ))}
+                </span>
+              </li>
+            )
+          ) : pageName ? (
+            <li>
+              The{' '}
+              <span className="font-semibold text-foreground">{pageName}</span>{' '}
+              page may be hidden from the sidebar or restricted to a specific
+              role.
+            </li>
+          ) : (
+            <li>
+              The page may be hidden from the sidebar or restricted to a
+              specific role.
+            </li>
+          )}
+          <li>
+            Contact your administrator to request access if you believe this is
+            a mistake.
+          </li>
+          <li>
+            In the meantime, use the navigation to reach a page you can access.
+          </li>
+        </ErrorDetails>
+
+        <ErrorActions />
       </div>
     </div>
   )

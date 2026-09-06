@@ -203,7 +203,7 @@ function TreeViewSection() {
 
   if (isError) {
     return (
-      <div className="flex items-center justify-center py-16 text-xs text-destructive">
+      <div className="flex items-center justify-center py-16 text-sm text-destructive">
         Failed to load menu tree. Please try again.
       </div>
     )
@@ -234,7 +234,7 @@ function TreeViewSection() {
               if (e.key === 'Escape') setSearchFocused(false)
             }}
             placeholder="Search menu items..."
-            className="h-7 rounded border pl-7 pr-7 text-xs shadow-none"
+            className="h-7 rounded border pl-7 pr-7 text-sm shadow-none"
           />
           {/* Save filter button (bookmark) */}
           {searchQuery.trim() && (
@@ -254,12 +254,12 @@ function TreeViewSection() {
               {hasRecent && (
                 <div>
                   <div className="flex items-center justify-between px-2.5 py-1.5">
-                    <span className="flex items-center gap-1 text-[9px] font-medium uppercase tracking-wider text-muted-foreground/60">
+                    <span className="flex items-center gap-1 text-[11px] font-medium uppercase tracking-wider text-muted-foreground/60">
                       <IconClock className="h-3 w-3" />
                       Recent
                     </span>
                     <button
-                      className="text-[9px] text-muted-foreground/40 hover:text-muted-foreground transition-colors"
+                      className="text-[11px] text-muted-foreground/40 hover:text-muted-foreground transition-colors"
                       onClick={clearRecent}
                       title="Clear recent searches"
                     >
@@ -269,7 +269,7 @@ function TreeViewSection() {
                   {recentSearches.map((term) => (
                     <button
                       key={term}
-                      className="flex w-full items-center gap-2 px-2.5 py-1.5 text-[11px] text-left hover:bg-muted/60 transition-colors"
+                      className="flex w-full items-center gap-2 px-2.5 py-1.5 text-xs text-left hover:bg-muted/60 transition-colors"
                       onClick={() => applyFilter(term)}
                     >
                       <IconClock className="h-3 w-3 shrink-0 text-muted-foreground/40" />
@@ -289,7 +289,7 @@ function TreeViewSection() {
                 <div>
                   <div className="flex items-center gap-1 px-2.5 py-1.5">
                     <IconBookmark className="h-3 w-3 text-muted-foreground/40" />
-                    <span className="text-[9px] font-medium uppercase tracking-wider text-muted-foreground/60">
+                    <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground/60">
                       Saved Filters
                     </span>
                   </div>
@@ -299,12 +299,12 @@ function TreeViewSection() {
                       className="group flex items-center gap-1 px-2.5 py-1.5 hover:bg-muted/60 transition-colors"
                     >
                       <button
-                        className="flex flex-1 items-center gap-2 text-[11px] text-left"
+                        className="flex flex-1 items-center gap-2 text-xs text-left"
                         onClick={() => applyFilter(f.query)}
                       >
                         <IconBookmark className="h-3 w-3 shrink-0 text-muted-foreground/40" />
                         <span className="truncate font-medium">{f.name}</span>
-                        <span className="ml-auto truncate text-[9px] text-muted-foreground/50 hidden sm:inline">
+                        <span className="ml-auto truncate text-[11px] text-muted-foreground/50 hidden sm:inline">
                           {f.query}
                         </span>
                       </button>
@@ -327,7 +327,7 @@ function TreeViewSection() {
           <Button
             variant="ghost"
             size="sm"
-            className="h-7 px-1.5 text-[10px] text-muted-foreground"
+            className="h-7 px-1.5 text-xs text-muted-foreground"
             onClick={() => setExpandAll((v) => !v)}
             title={expandAll ? 'Collapse all' : 'Expand all'}
           >
@@ -339,7 +339,7 @@ function TreeViewSection() {
             {expandAll ? 'Collapse' : 'Expand'} All
           </Button>
         </div>
-        <div className="flex items-center gap-2 text-[10px] text-muted-foreground ml-auto">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground ml-auto">
           <span className="font-medium text-foreground/70">{stats.total}</span>{' '}
           items
           <span className="text-muted-foreground/40">·</span>
@@ -371,10 +371,10 @@ function TreeViewSection() {
           />
         ) : (
           <div className="flex flex-col items-center justify-center py-10 text-muted-foreground">
-            <p className="text-xs font-medium">
+            <p className="text-sm font-medium">
               No results match &ldquo;{searchQuery}&rdquo;
             </p>
-            <p className="text-[10px]">Try a different search term.</p>
+            <p className="text-xs">Try a different search term.</p>
           </div>
         )}
       </div>
@@ -497,7 +497,7 @@ export default function Menu({ data }: MenuProps) {
                   key={mode}
                   variant={viewMode === mode ? 'default' : 'ghost'}
                   size="sm"
-                  className="h-7 px-2 text-xs"
+                  className="h-7 px-2 text-sm"
                   onClick={() => setViewMode(mode)}
                 >
                   <Icon className="mr-1 h-3.5 w-3.5" />
@@ -513,7 +513,7 @@ export default function Menu({ data }: MenuProps) {
             <Button
               variant="outline"
               size="sm"
-              className="h-7 px-2 text-[10px]"
+              className="h-7 px-2 text-xs"
               onClick={handleExport}
               disabled={exporting}
               title="Export all menu entries as JSON"
@@ -524,7 +524,7 @@ export default function Menu({ data }: MenuProps) {
             <Button
               variant="outline"
               size="sm"
-              className="h-7 px-2 text-[10px]"
+              className="h-7 px-2 text-xs"
               onClick={() => importInputRef.current?.click()}
               disabled={importing}
               title="Import menu entries from JSON file"
@@ -544,7 +544,7 @@ export default function Menu({ data }: MenuProps) {
             {/* Tree Editor */}
             <div className="min-w-0 flex-1 rounded-lg border bg-card shadow-sm">
               <div className="border-b px-3 py-1.5">
-                <span className="text-xs font-medium text-muted-foreground">
+                <span className="text-sm font-medium text-muted-foreground">
                   Menu Tree
                 </span>
               </div>
@@ -557,7 +557,7 @@ export default function Menu({ data }: MenuProps) {
             <div className="w-full shrink-0 lg:w-72 xl:w-80">
               <div className="sticky top-4 rounded-lg border bg-card shadow-sm">
                 <div className="border-b px-3 py-1.5">
-                  <span className="text-xs font-medium text-muted-foreground">
+                  <span className="text-sm font-medium text-muted-foreground">
                     Sidebar Preview
                   </span>
                 </div>
@@ -572,7 +572,7 @@ export default function Menu({ data }: MenuProps) {
         {viewMode === 'tree' && (
           <div className="rounded-lg border bg-card shadow-sm">
             <div className="border-b px-3 py-1.5">
-              <span className="text-xs font-medium text-muted-foreground">
+              <span className="text-sm font-medium text-muted-foreground">
                 Menu Tree
               </span>
             </div>
@@ -585,10 +585,10 @@ export default function Menu({ data }: MenuProps) {
         {viewMode === 'table' && (
           <div className="rounded-lg border bg-card shadow-sm">
             <div className="border-b px-3 py-1.5">
-              <span className="text-xs font-medium text-muted-foreground">
+              <span className="text-sm font-medium text-muted-foreground">
                 All Menu Entries
               </span>
-              <span className="ml-2 text-[10px] text-muted-foreground/50">
+              <span className="ml-2 text-xs text-muted-foreground/50">
                 ({data?.length ?? 0} items)
               </span>
             </div>
@@ -604,7 +604,7 @@ export default function Menu({ data }: MenuProps) {
         {viewMode === 'preview' && (
           <div className="mx-auto max-w-sm rounded-lg border bg-card shadow-sm">
             <div className="border-b px-3 py-1.5">
-              <span className="text-xs font-medium text-muted-foreground">
+              <span className="text-sm font-medium text-muted-foreground">
                 Full Sidebar Preview
               </span>
             </div>
@@ -615,10 +615,10 @@ export default function Menu({ data }: MenuProps) {
         {viewMode === 'permissions' && (
           <div className="rounded-lg border bg-card shadow-sm">
             <div className="border-b px-3 py-1.5">
-              <span className="text-xs font-medium text-muted-foreground">
+              <span className="text-sm font-medium text-muted-foreground">
                 Role Permissions
               </span>
-              <span className="ml-2 text-[10px] text-muted-foreground/50">
+              <span className="ml-2 text-xs text-muted-foreground/50">
                 Control which roles can see each sidebar item
               </span>
             </div>

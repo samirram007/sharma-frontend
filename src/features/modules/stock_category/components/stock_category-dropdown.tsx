@@ -11,6 +11,7 @@ import { useQuery } from '@tanstack/react-query'
 import type { UseFormReturn } from 'react-hook-form'
 
 import { fetchStockCategoryService } from '../data/api'
+import { StockCategoryListKey } from '../data/queryOptions'
 import type { StockCategory } from '../data/schema'
 import type { StockCategoryForm } from '../types/types'
 
@@ -20,7 +21,7 @@ type Props = {
 const StockCategoryDropdown = (props: Props) => {
   const { form } = props as Props
   const { data: StockCategoryList, isLoading } = useQuery({
-    queryKey: ['StockCategories'],
+    queryKey: [StockCategoryListKey],
     queryFn: fetchStockCategoryService,
   })
 

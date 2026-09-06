@@ -218,6 +218,17 @@ export function StockUnitActionDialog({
                   )}
                 </>
               )}
+              <FormInputField
+                type="checkbox"
+                gapClass={gapClass}
+                form={form}
+                name="status"
+                label="Status"
+                options={[
+                  { label: 'Active', value: 'active' },
+                  { label: 'Inactive', value: 'inactive' },
+                ]}
+              />
             </form>
           </Form>
         </div>

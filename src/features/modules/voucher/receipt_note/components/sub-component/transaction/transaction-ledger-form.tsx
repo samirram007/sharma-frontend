@@ -76,7 +76,11 @@ export default TransactionLedgerForm
 const CurrentBalance = () => {
   const form = useFormContext<ReceiptNoteForm>()
   const ledgerId = form.watch('transactionLedger.id')
-  const { data: currentBalance, isLoading, isError } = useQuery({
+  const {
+    data: currentBalance,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ['currentBalance', ledgerId],
     queryFn: () => fetchLedgerBalanceService(ledgerId!),
     enabled: !!ledgerId,

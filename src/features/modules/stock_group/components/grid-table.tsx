@@ -80,7 +80,8 @@ export function GridTable({ columns, data }: DataTableProps) {
 
   return (
     <div className="space-y-4">
-      <DataTableToolbar table={table} />
+      {/* Status is filtered server-side on this page (defaults to active), so the client-side Status filter is hidden. */}
+      <DataTableToolbar table={table} showStatusFilter={false} />
       <div className="rounded-md border">
         <Table>
           <TableHeader>

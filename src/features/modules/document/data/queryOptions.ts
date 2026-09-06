@@ -7,12 +7,18 @@ import {
 } from '@tanstack/react-query'
 import {
   browseDocumentsService,
+  copyNodeService,
   createFolderService,
+  createShortcutService,
   deleteNodeService,
   documentMetaService,
+  folderOptionsService,
+  folderStatsService,
   moveNodeService,
   searchDocumentsService,
   shareTargetsService,
+  sharedByMeService,
+  sharedWithMeService,
   syncNodeSharesService,
   updateNodeService,
 } from './api'
@@ -36,11 +42,43 @@ export const documentSearchQueryOptions = (term: string) =>
     enabled: term.trim().length > 0,
   })
 
+export const sharedWithMeQueryOptions = () =>
+  queryOptions({
+    queryKey: ['document-manager', 'shared-with-me'],
+    queryFn: sharedWithMeService,
+    staleTime: 1000 * 60 * 2,
+    retry: 1,
+  })
+
+export const sharedByMeQueryOptions = () =>
+  queryOptions({
+    queryKey: ['document-manager', 'shared-by-me'],
+    queryFn: sharedByMeService,
+    staleTime: 1000 * 60 * 2,
+    retry: 1,
+  })
+
+export const documentFolderOptionsQueryOptions = () =>
+  queryOptions({
+    queryKey: ['document-manager', 'folder-options'],
+    queryFn: folderOptionsService,
+    staleTime: 1000 * 60 * 2,
+    retry: 1,
+  })
+
 export const documentMetaQueryOptions = () =>
   queryOptions({
     queryKey: ['document-manager', 'meta'],
     queryFn: documentMetaService,
     staleTime: 1000 * 60 * 10,
+    retry: 1,
+  })
+
+export const folderStatsQueryOptions = (folderId: number) =>
+  queryOptions({
+    queryKey: ['document-manager', 'stats', folderId],
+    queryFn: () => folderStatsService(folderId),
+    staleTime: 1000 * 60 * 2,
     retry: 1,
   })
 
@@ -104,10 +142,12 @@ export function useMoveNode() {
     mutationFn: ({
       id,
       parentId,
+      conflict,
     }: {
       id: number
       parentId: number | null
-    }) => moveNodeService(id, parentId),
+      conflict?: 'replace' | 'rename'
+    }) => moveNodeService(id, parentId, conflict),
     onSuccess: () => invalidate(),
   })
 }
@@ -115,13 +155,24 @@ export function useMoveNode() {
 export function useRenameNode() {
   const invalidate = useInvalidateDocuments()
   return useMutation({
+    mutationFn: ({ id, name }: { id: number; name: string }) =>
+      updateNodeService(id, { name }),
+    onSuccess: () => invalidate(),
+  })
+}
+
+export function useCopyNode() {
+  const invalidate = useInvalidateDocuments()
+  return useMutation({
     mutationFn: ({
       id,
-      name,
+      parentId,
+      conflict,
     }: {
       id: number
-      name: string
-    }) => updateNodeService(id, { name }),
+      parentId: number | null
+      conflict?: 'replace' | 'rename'
+    }) => copyNodeService(id, parentId, conflict),
     onSuccess: () => invalidate(),
   })
 }
@@ -141,11 +192,22 @@ export function useSyncShares() {
       id,
       userIds,
       roleIds,
+      permissions,
     }: {
       id: number
       userIds: number[]
       roleIds: number[]
-    }) => syncNodeSharesService(id, { userIds, roleIds }),
+      /** Per-target action grants, keyed "user:3" / "role:5". */
+      permissions?: Record<string, string[]>
+    }) => syncNodeSharesService(id, { userIds, roleIds, permissions }),
+    onSuccess: () => invalidate(),
+  })
+}
+
+export function useCreateShortcut() {
+  const invalidate = useInvalidateDocuments()
+  return useMutation({
+    mutationFn: createShortcutService,
     onSuccess: () => invalidate(),
   })
 }

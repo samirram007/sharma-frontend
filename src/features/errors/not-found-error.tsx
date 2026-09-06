@@ -1,7 +1,7 @@
-import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { Link, useRouter } from '@tanstack/react-router'
-import { MapPin, ArrowLeft, Home, LogIn } from 'lucide-react'
+import { MapPin } from 'lucide-react'
+import { ErrorActions } from './error-actions'
+import { ErrorDetails } from './error-details'
 import { useAuthSafe } from './use-auth-safe'
 
 interface NotFoundErrorProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -12,7 +12,6 @@ export default function NotFoundError({
   className,
   minimal = false,
 }: NotFoundErrorProps) {
-  const { history } = useRouter()
   const { user, isAuthenticated } = useAuthSafe()
 
   return (
@@ -23,7 +22,7 @@ export default function NotFoundError({
         className,
       )}
     >
-      <div className="mx-auto flex w-full max-w-lg flex-col items-center px-6 text-center">
+      <div className="mx-auto flex w-full max-w-2xl flex-col items-center px-6 text-center">
         {/* Animated map pin icon */}
         <div className="relative mb-8">
           <div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-blue-500/10 ring-1 ring-blue-500/20">
@@ -42,46 +41,30 @@ export default function NotFoundError({
         </h2>
 
         {isAuthenticated && user ? (
-          <p className="mb-8 max-w-md text-sm leading-relaxed text-muted-foreground sm:text-base">
+          <p className="mb-3 max-w-xl text-sm leading-relaxed text-muted-foreground sm:text-base">
             Hi <span className="font-medium text-foreground">{user.name}</span>,
-            it seems like the page you&apos;re looking for does not exist or
-            might have been removed.
+            the page you&apos;re looking for doesn&apos;t exist — the address
+            may be mistyped, the page may have moved or been renamed, or an old
+            bookmark may point here.
           </p>
         ) : (
-          <p className="mb-8 max-w-md text-sm leading-relaxed text-muted-foreground sm:text-base">
-            It seems like the page you&apos;re looking for does not exist or
-            might have been removed.
+          <p className="mb-3 max-w-xl text-sm leading-relaxed text-muted-foreground sm:text-base">
+            The page you&apos;re looking for doesn&apos;t exist — the address
+            may be mistyped, the page may have moved or been renamed, or an old
+            bookmark may point here.
           </p>
         )}
 
-        {!minimal && (
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <Button
-              variant="outline"
-              size="lg"
-              onClick={() => history.go(-1)}
-              className="gap-2"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Go Back
-            </Button>
-            {isAuthenticated ? (
-              <Button asChild variant="default" size="lg" className="gap-2">
-                <Link to="/">
-                  <Home className="h-4 w-4" />
-                  Back to Dashboard
-                </Link>
-              </Button>
-            ) : (
-              <Button asChild variant="default" size="lg" className="gap-2">
-                <Link to="/sign-in">
-                  <LogIn className="h-4 w-4" />
-                  Sign In
-                </Link>
-              </Button>
-            )}
-          </div>
-        )}
+        <ErrorDetails code="404">
+          <li>Double-check the address for typos.</li>
+          <li>
+            Use the sidebar navigation, the search box, or the shortcuts page to
+            find what you need.
+          </li>
+          <li>Refresh your bookmarks if the page was recently renamed.</li>
+        </ErrorDetails>
+
+        <ErrorActions showShortcuts />
       </div>
     </div>
   )

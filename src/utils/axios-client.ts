@@ -5,7 +5,7 @@ import axios, {
   type InternalAxiosRequestConfig,
 } from 'axios'
 import { API_BASE_URL } from '@/lib/env'
-import { getToken, removeToken } from '@/lib/token-storage'
+import { getToken, removeToken, setToken } from '@/lib/token-storage'
 
 interface RetryableRequestConfig extends InternalAxiosRequestConfig {
   _retry?: boolean
@@ -23,11 +23,19 @@ const axiosClient: AxiosInstance = axios.create({
 // Refresh token handler
 async function refreshToken(): Promise<void> {
   try {
-    await axios.post(
+    const response = await axios.post(
       `${API_BASE_URL}/auth/refresh`,
       {},
       { withCredentials: true },
     )
+    // The backend (tymon/jwt-auth) returns the fresh token in the response
+    // body. Persist it so the retried request — whose Authorization header
+    // the request interceptor rebuilds from storage — uses the new token.
+    // Without this the retry resends the stale token and 401s again.
+    const newToken = response.data?.token
+    if (newToken) {
+      setToken(newToken)
+    }
   } catch (error) {
     console.error('🔁 Token refresh failed:', error)
     throw error

@@ -23,6 +23,7 @@ import {
   storeStockCategoryService,
   updateStockCategoryService,
 } from '../data/api'
+import { StockCategoryListKey } from '../data/queryOptions'
 import { formSchema, type StockCategory } from '../data/schema'
 import type { StockCategoryForm } from '../types/types'
 import VoucherCategoryDropdown from './stock_category-dropdown'
@@ -53,7 +54,7 @@ export function StockCategoryActionDialog({
     },
     onSuccess: (data) => {
       console.log(data, 'Account Group saved successfully!')
-      queryClient.invalidateQueries({ queryKey: ['StockCategory'] })
+      queryClient.invalidateQueries({ queryKey: [StockCategoryListKey] })
     },
   })
 

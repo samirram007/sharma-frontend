@@ -3,6 +3,7 @@ import type { MenuTreeItem } from '@/features/modules/menu/data/menu-tree-types'
 import {
   buildTopNavLinksFromTree,
   filterTopNavLinks,
+  resolveTopNavLinks,
   topNavLinks,
 } from './top-nav-links'
 
@@ -11,12 +12,74 @@ const node = (overrides: Partial<MenuTreeItem>): MenuTreeItem => ({
   menuName: 'Menu',
   route: '/some/route',
   icon: null,
+  description: null,
   isGroup: false,
   isTopMenu: false,
   sortOrder: 0,
   featureCode: null,
   children: [],
   ...overrides,
+})
+
+describe('resolveTopNavLinks', () => {
+  const dbOnlyTopMenus = [
+    node({
+      id: 1,
+      menuName: 'Freight',
+      route: '/transactions/freight',
+      isTopMenu: true,
+    }),
+  ]
+  // A sidebar tree that grants the hardcoded fallback's report routes
+  const sidebarTree = [
+    node({
+      id: 10,
+      menuName: 'Reports',
+      route: null,
+      isGroup: true,
+      children: [
+        node({ id: 11, menuName: 'Day Book', route: '/reports/day_book' }),
+        node({
+          id: 12,
+          menuName: 'Receipt Note Report',
+          route: '/reports/receipt_note_report',
+        }),
+      ],
+    }),
+  ]
+
+  it('renders nothing while the DB query is pending (no fallback flash)', () => {
+    const links = resolveTopNavLinks({
+      dbTopMenus: dbOnlyTopMenus,
+      isPending: true,
+      menuTree: sidebarTree,
+    })
+
+    expect(links).toEqual([])
+  })
+
+  it('uses the DB-driven links once loaded, never mixing in fallback-only entries like Reports', () => {
+    const links = resolveTopNavLinks({
+      dbTopMenus: dbOnlyTopMenus,
+      isPending: false,
+      menuTree: sidebarTree,
+    })
+
+    const titles = links.map((link) => link.title)
+    expect(titles).toEqual(['Freight'])
+    expect(titles).not.toContain('Reports')
+  })
+
+  it('falls back to the hardcoded links only after loading finishes with zero DB menus', () => {
+    const links = resolveTopNavLinks({
+      dbTopMenus: [],
+      isPending: false,
+      menuTree: sidebarTree,
+    })
+
+    const titles = links.map((link) => link.title)
+    expect(titles).toContain('Reports')
+  })
 })
 
 describe('filterTopNavLinks', () => {
@@ -144,6 +207,77 @@ describe('buildTopNavLinksFromTree', () => {
 
     expect(links[0].href).toBe('/child')
     expect(links[0].hasSubmenu).toBe(true)
+  })
+
+  it('groups nested children under their own headings with direct leaves in a trailing group', () => {
+    const links = buildTopNavLinksFromTree([
+      node({
+        id: 1,
+        menuName: 'Reports',
+        route: null,
+        isTopMenu: true,
+        children: [
+          node({
+            id: 2,
+            menuName: 'Financial Statements',
+            route: null,
+            children: [
+              node({
+                id: 3,
+                menuName: 'Balance Sheet',
+                route: '/reports/balance_sheet',
+              }),
+              node({
+                id: 4,
+                menuName: 'Profit & Loss',
+                route: '/reports/profit_and_loss',
+              }),
+            ],
+          }),
+          node({
+            id: 5,
+            menuName: 'Freight Reports',
+            route: null,
+            children: [
+              node({
+                id: 6,
+                menuName: 'Freight (Zone Wise)',
+                route: '/reports/freight/freight-zone-wise',
+              }),
+            ],
+          }),
+          node({
+            id: 7,
+            menuName: 'Conversion Journal Report',
+            route: '/reports/conversion_journal_report',
+          }),
+        ],
+      }),
+    ])
+
+    expect(links).toHaveLength(1)
+    const reports = links[0]
+    expect(reports.hasSubmenu).toBe(true)
+
+    const groupTitles = (reports.submenuItems ?? []).map((g) => g.title)
+    expect(groupTitles).toEqual([
+      'Financial Statements',
+      'Freight Reports',
+      'Reports',
+    ])
+
+    const groups = reports.submenuItems ?? []
+    expect(groups[0].menus.map((m) => m.href)).toEqual([
+      '/reports/balance_sheet',
+      '/reports/profit_and_loss',
+    ])
+    expect(groups[1].menus.map((m) => m.href)).toEqual([
+      '/reports/freight/freight-zone-wise',
+    ])
+    // Stray leaves directly under the top node land in the trailing group
+    expect(groups[2].menus.map((m) => m.title)).toEqual([
+      'Conversion Journal Report',
+    ])
   })
 
   it('resolves DB icon names to icon components for links, submenu groups and items', () => {

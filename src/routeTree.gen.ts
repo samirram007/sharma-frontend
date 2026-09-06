@@ -13,6 +13,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ProtectedRouteImport } from './routes/_protected'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ProtectedNewTabRouteImport } from './routes/_protected/new-tab'
 import { Route as ProtectedDashboardRouteImport } from './routes/_protected/dashboard'
 import { Route as ProtectedChartsRouteImport } from './routes/_protected/charts'
 import { Route as guestSignInRouteImport } from './routes/(guest)/sign-in'
@@ -22,12 +23,17 @@ import { Route as false_redirectWebsiteRouteImport } from './routes/(false_redir
 import { Route as false_redirectFrontendRouteImport } from './routes/(false_redirect)/frontend'
 import { Route as ProtectedSettingsRouteRouteImport } from './routes/_protected/settings/route'
 import { Route as ProtectedTransactionsIndexRouteImport } from './routes/_protected/transactions/index'
+import { Route as ProtectedTicketsIndexRouteImport } from './routes/_protected/tickets/index'
 import { Route as ProtectedTasksIndexRouteImport } from './routes/_protected/tasks/index'
 import { Route as ProtectedSettingsIndexRouteImport } from './routes/_protected/settings/index'
 import { Route as ProtectedReportsIndexRouteImport } from './routes/_protected/reports/index'
 import { Route as ProtectedNotificationsIndexRouteImport } from './routes/_protected/notifications/index'
 import { Route as ProtectedMastersIndexRouteImport } from './routes/_protected/masters/index'
 import { Route as ProtectedHelpCenterIndexRouteImport } from './routes/_protected/help-center/index'
+import { Route as ProtectedFaqsIndexRouteImport } from './routes/_protected/faqs/index'
+import { Route as ProtectedFaqUserIndexRouteImport } from './routes/_protected/faq-user/index'
+import { Route as ProtectedDocumentsIndexRouteImport } from './routes/_protected/documents/index'
+import { Route as ProtectedDocumentManagerIndexRouteImport } from './routes/_protected/document-manager/index'
 import { Route as ProtectedDashboardIndexRouteImport } from './routes/_protected/dashboard/index'
 import { Route as ProtectedChatsIndexRouteImport } from './routes/_protected/chats/index'
 import { Route as ProtectedAppsIndexRouteImport } from './routes/_protected/apps/index'
@@ -36,6 +42,7 @@ import { Route as ProtectedSettingsNotificationsRouteImport } from './routes/_pr
 import { Route as ProtectedSettingsDisplayRouteImport } from './routes/_protected/settings/display'
 import { Route as ProtectedSettingsAppearanceRouteImport } from './routes/_protected/settings/appearance'
 import { Route as ProtectedSettingsAccountRouteImport } from './routes/_protected/settings/account'
+import { Route as ProtectedHelpCenterLayoutRouteImport } from './routes/_protected/help-center/_layout'
 import { Route as ProtectedDashboardUserWiseRouteImport } from './routes/_protected/dashboard/user-wise'
 import { Route as ProtectedAdministrationLayoutRouteImport } from './routes/_protected/administration/_layout'
 import { Route as ProtectedauthChangePasswordRouteImport } from './routes/_protected/(auth)/change-password'
@@ -366,6 +373,11 @@ const errors401LazyRoute = errors401LazyRouteImport
     getParentRoute: () => rootRouteImport,
   } as any)
   .lazy(() => import('./routes/(errors)/401.lazy').then((d) => d.Route))
+const ProtectedNewTabRoute = ProtectedNewTabRouteImport.update({
+  id: '/new-tab',
+  path: '/new-tab',
+  getParentRoute: () => ProtectedRoute,
+} as any)
 const ProtectedDashboardRoute = ProtectedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -412,6 +424,11 @@ const ProtectedTransactionsIndexRoute =
     path: '/transactions/',
     getParentRoute: () => ProtectedRoute,
   } as any)
+const ProtectedTicketsIndexRoute = ProtectedTicketsIndexRouteImport.update({
+  id: '/tickets/',
+  path: '/tickets/',
+  getParentRoute: () => ProtectedRoute,
+} as any)
 const ProtectedTasksIndexRoute = ProtectedTasksIndexRouteImport.update({
   id: '/tasks/',
   path: '/tasks/',
@@ -442,6 +459,27 @@ const ProtectedHelpCenterIndexRoute =
   ProtectedHelpCenterIndexRouteImport.update({
     id: '/help-center/',
     path: '/help-center/',
+    getParentRoute: () => ProtectedRoute,
+  } as any)
+const ProtectedFaqsIndexRoute = ProtectedFaqsIndexRouteImport.update({
+  id: '/faqs/',
+  path: '/faqs/',
+  getParentRoute: () => ProtectedRoute,
+} as any)
+const ProtectedFaqUserIndexRoute = ProtectedFaqUserIndexRouteImport.update({
+  id: '/faq-user/',
+  path: '/faq-user/',
+  getParentRoute: () => ProtectedRoute,
+} as any)
+const ProtectedDocumentsIndexRoute = ProtectedDocumentsIndexRouteImport.update({
+  id: '/documents/',
+  path: '/documents/',
+  getParentRoute: () => ProtectedRoute,
+} as any)
+const ProtectedDocumentManagerIndexRoute =
+  ProtectedDocumentManagerIndexRouteImport.update({
+    id: '/document-manager/',
+    path: '/document-manager/',
     getParentRoute: () => ProtectedRoute,
   } as any)
 const ProtectedDashboardIndexRoute = ProtectedDashboardIndexRouteImport.update({
@@ -523,6 +561,12 @@ const ProtectedSettingsAccountRoute =
     id: '/account',
     path: '/account',
     getParentRoute: () => ProtectedSettingsRouteRoute,
+  } as any)
+const ProtectedHelpCenterLayoutRoute =
+  ProtectedHelpCenterLayoutRouteImport.update({
+    id: '/help-center/_layout',
+    path: '/help-center',
+    getParentRoute: () => ProtectedRoute,
   } as any)
 const ProtectedDashboardUserWiseRoute =
   ProtectedDashboardUserWiseRouteImport.update({
@@ -1937,6 +1981,7 @@ export interface FileRoutesByFullPath {
   '/sign-in': typeof guestSignInRoute
   '/charts': typeof ProtectedChartsRoute
   '/dashboard': typeof ProtectedDashboardRouteWithChildren
+  '/new-tab': typeof ProtectedNewTabRoute
   '/401': typeof errors401LazyRoute
   '/403': typeof errors403LazyRoute
   '/404': typeof errors404LazyRoute
@@ -1950,6 +1995,7 @@ export interface FileRoutesByFullPath {
   '/change-password': typeof ProtectedauthChangePasswordRoute
   '/administration': typeof ProtectedAdministrationLayoutRouteWithChildren
   '/dashboard/user-wise': typeof ProtectedDashboardUserWiseRoute
+  '/help-center': typeof ProtectedHelpCenterLayoutRoute
   '/settings/account': typeof ProtectedSettingsAccountRoute
   '/settings/appearance': typeof ProtectedSettingsAppearanceRoute
   '/settings/display': typeof ProtectedSettingsDisplayRoute
@@ -1963,12 +2009,17 @@ export interface FileRoutesByFullPath {
   '/apps/': typeof ProtectedAppsIndexRoute
   '/chats/': typeof ProtectedChatsIndexRoute
   '/dashboard/': typeof ProtectedDashboardIndexRoute
+  '/document-manager/': typeof ProtectedDocumentManagerIndexRoute
+  '/documents/': typeof ProtectedDocumentsIndexRoute
+  '/faq-user/': typeof ProtectedFaqUserIndexRoute
+  '/faqs/': typeof ProtectedFaqsIndexRoute
   '/help-center/': typeof ProtectedHelpCenterIndexRoute
   '/masters/': typeof ProtectedMastersIndexRoute
   '/notifications/': typeof ProtectedNotificationsIndexRoute
   '/reports/': typeof ProtectedReportsIndexRoute
   '/settings/': typeof ProtectedSettingsIndexRoute
   '/tasks/': typeof ProtectedTasksIndexRoute
+  '/tickets/': typeof ProtectedTicketsIndexRoute
   '/transactions/': typeof ProtectedTransactionsIndexRoute
   '/user-fiscal-year': typeof ProtectedauthUserFiscalYearLayoutRouteWithChildren
   '/masters/accounts': typeof ProtectedMastersAccountsLayoutRouteWithChildren
@@ -2194,6 +2245,7 @@ export interface FileRoutesByTo {
   '/restrict': typeof guestRestrictRoute
   '/sign-in': typeof guestSignInRoute
   '/charts': typeof ProtectedChartsRoute
+  '/new-tab': typeof ProtectedNewTabRoute
   '/401': typeof errors401LazyRoute
   '/403': typeof errors403LazyRoute
   '/404': typeof errors404LazyRoute
@@ -2207,6 +2259,7 @@ export interface FileRoutesByTo {
   '/change-password': typeof ProtectedauthChangePasswordRoute
   '/administration': typeof ProtectedAdministrationLayoutRouteWithChildren
   '/dashboard/user-wise': typeof ProtectedDashboardUserWiseRoute
+  '/help-center': typeof ProtectedHelpCenterIndexRoute
   '/settings/account': typeof ProtectedSettingsAccountRoute
   '/settings/appearance': typeof ProtectedSettingsAppearanceRoute
   '/settings/display': typeof ProtectedSettingsDisplayRoute
@@ -2220,12 +2273,16 @@ export interface FileRoutesByTo {
   '/apps': typeof ProtectedAppsIndexRoute
   '/chats': typeof ProtectedChatsIndexRoute
   '/dashboard': typeof ProtectedDashboardIndexRoute
-  '/help-center': typeof ProtectedHelpCenterIndexRoute
+  '/document-manager': typeof ProtectedDocumentManagerIndexRoute
+  '/documents': typeof ProtectedDocumentsIndexRoute
+  '/faq-user': typeof ProtectedFaqUserIndexRoute
+  '/faqs': typeof ProtectedFaqsIndexRoute
   '/masters': typeof ProtectedMastersIndexRoute
   '/notifications': typeof ProtectedNotificationsIndexRoute
   '/reports': typeof ProtectedReportsIndexRoute
   '/settings': typeof ProtectedSettingsIndexRoute
   '/tasks': typeof ProtectedTasksIndexRoute
+  '/tickets': typeof ProtectedTicketsIndexRoute
   '/masters/statutory': typeof ProtectedMastersStatutoryLayoutRoute
   '/reports/freight': typeof ProtectedReportsFreightLayoutRouteWithChildren
   '/profile': typeof ProtectedauthProfileIndexRoute
@@ -2412,6 +2469,7 @@ export interface FileRoutesById {
   '/(guest)/sign-in': typeof guestSignInRoute
   '/_protected/charts': typeof ProtectedChartsRoute
   '/_protected/dashboard': typeof ProtectedDashboardRouteWithChildren
+  '/_protected/new-tab': typeof ProtectedNewTabRoute
   '/(errors)/401': typeof errors401LazyRoute
   '/(errors)/403': typeof errors403LazyRoute
   '/(errors)/404': typeof errors404LazyRoute
@@ -2425,6 +2483,7 @@ export interface FileRoutesById {
   '/_protected/(auth)/change-password': typeof ProtectedauthChangePasswordRoute
   '/_protected/administration/_layout': typeof ProtectedAdministrationLayoutRouteWithChildren
   '/_protected/dashboard/user-wise': typeof ProtectedDashboardUserWiseRoute
+  '/_protected/help-center/_layout': typeof ProtectedHelpCenterLayoutRoute
   '/_protected/settings/account': typeof ProtectedSettingsAccountRoute
   '/_protected/settings/appearance': typeof ProtectedSettingsAppearanceRoute
   '/_protected/settings/display': typeof ProtectedSettingsDisplayRoute
@@ -2438,12 +2497,17 @@ export interface FileRoutesById {
   '/_protected/apps/': typeof ProtectedAppsIndexRoute
   '/_protected/chats/': typeof ProtectedChatsIndexRoute
   '/_protected/dashboard/': typeof ProtectedDashboardIndexRoute
+  '/_protected/document-manager/': typeof ProtectedDocumentManagerIndexRoute
+  '/_protected/documents/': typeof ProtectedDocumentsIndexRoute
+  '/_protected/faq-user/': typeof ProtectedFaqUserIndexRoute
+  '/_protected/faqs/': typeof ProtectedFaqsIndexRoute
   '/_protected/help-center/': typeof ProtectedHelpCenterIndexRoute
   '/_protected/masters/': typeof ProtectedMastersIndexRoute
   '/_protected/notifications/': typeof ProtectedNotificationsIndexRoute
   '/_protected/reports/': typeof ProtectedReportsIndexRoute
   '/_protected/settings/': typeof ProtectedSettingsIndexRoute
   '/_protected/tasks/': typeof ProtectedTasksIndexRoute
+  '/_protected/tickets/': typeof ProtectedTicketsIndexRoute
   '/_protected/transactions/': typeof ProtectedTransactionsIndexRoute
   '/_protected/(auth)/user-fiscal-year/_layout': typeof ProtectedauthUserFiscalYearLayoutRouteWithChildren
   '/_protected/masters/accounts/_layout': typeof ProtectedMastersAccountsLayoutRouteWithChildren
@@ -2673,6 +2737,7 @@ export interface FileRouteTypes {
     | '/sign-in'
     | '/charts'
     | '/dashboard'
+    | '/new-tab'
     | '/401'
     | '/403'
     | '/404'
@@ -2686,6 +2751,7 @@ export interface FileRouteTypes {
     | '/change-password'
     | '/administration'
     | '/dashboard/user-wise'
+    | '/help-center'
     | '/settings/account'
     | '/settings/appearance'
     | '/settings/display'
@@ -2699,12 +2765,17 @@ export interface FileRouteTypes {
     | '/apps/'
     | '/chats/'
     | '/dashboard/'
+    | '/document-manager/'
+    | '/documents/'
+    | '/faq-user/'
+    | '/faqs/'
     | '/help-center/'
     | '/masters/'
     | '/notifications/'
     | '/reports/'
     | '/settings/'
     | '/tasks/'
+    | '/tickets/'
     | '/transactions/'
     | '/user-fiscal-year'
     | '/masters/accounts'
@@ -2930,6 +3001,7 @@ export interface FileRouteTypes {
     | '/restrict'
     | '/sign-in'
     | '/charts'
+    | '/new-tab'
     | '/401'
     | '/403'
     | '/404'
@@ -2943,6 +3015,7 @@ export interface FileRouteTypes {
     | '/change-password'
     | '/administration'
     | '/dashboard/user-wise'
+    | '/help-center'
     | '/settings/account'
     | '/settings/appearance'
     | '/settings/display'
@@ -2956,12 +3029,16 @@ export interface FileRouteTypes {
     | '/apps'
     | '/chats'
     | '/dashboard'
-    | '/help-center'
+    | '/document-manager'
+    | '/documents'
+    | '/faq-user'
+    | '/faqs'
     | '/masters'
     | '/notifications'
     | '/reports'
     | '/settings'
     | '/tasks'
+    | '/tickets'
     | '/masters/statutory'
     | '/reports/freight'
     | '/profile'
@@ -3147,6 +3224,7 @@ export interface FileRouteTypes {
     | '/(guest)/sign-in'
     | '/_protected/charts'
     | '/_protected/dashboard'
+    | '/_protected/new-tab'
     | '/(errors)/401'
     | '/(errors)/403'
     | '/(errors)/404'
@@ -3160,6 +3238,7 @@ export interface FileRouteTypes {
     | '/_protected/(auth)/change-password'
     | '/_protected/administration/_layout'
     | '/_protected/dashboard/user-wise'
+    | '/_protected/help-center/_layout'
     | '/_protected/settings/account'
     | '/_protected/settings/appearance'
     | '/_protected/settings/display'
@@ -3173,12 +3252,17 @@ export interface FileRouteTypes {
     | '/_protected/apps/'
     | '/_protected/chats/'
     | '/_protected/dashboard/'
+    | '/_protected/document-manager/'
+    | '/_protected/documents/'
+    | '/_protected/faq-user/'
+    | '/_protected/faqs/'
     | '/_protected/help-center/'
     | '/_protected/masters/'
     | '/_protected/notifications/'
     | '/_protected/reports/'
     | '/_protected/settings/'
     | '/_protected/tasks/'
+    | '/_protected/tickets/'
     | '/_protected/transactions/'
     | '/_protected/(auth)/user-fiscal-year/_layout'
     | '/_protected/masters/accounts/_layout'
@@ -3502,6 +3586,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof errors401LazyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_protected/new-tab': {
+      id: '/_protected/new-tab'
+      path: '/new-tab'
+      fullPath: '/new-tab'
+      preLoaderRoute: typeof ProtectedNewTabRouteImport
+      parentRoute: typeof ProtectedRoute
+    }
     '/_protected/dashboard': {
       id: '/_protected/dashboard'
       path: '/dashboard'
@@ -3565,6 +3656,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProtectedTransactionsIndexRouteImport
       parentRoute: typeof ProtectedRoute
     }
+    '/_protected/tickets/': {
+      id: '/_protected/tickets/'
+      path: '/tickets'
+      fullPath: '/tickets/'
+      preLoaderRoute: typeof ProtectedTicketsIndexRouteImport
+      parentRoute: typeof ProtectedRoute
+    }
     '/_protected/tasks/': {
       id: '/_protected/tasks/'
       path: '/tasks'
@@ -3605,6 +3703,34 @@ declare module '@tanstack/react-router' {
       path: '/help-center'
       fullPath: '/help-center/'
       preLoaderRoute: typeof ProtectedHelpCenterIndexRouteImport
+      parentRoute: typeof ProtectedRoute
+    }
+    '/_protected/faqs/': {
+      id: '/_protected/faqs/'
+      path: '/faqs'
+      fullPath: '/faqs/'
+      preLoaderRoute: typeof ProtectedFaqsIndexRouteImport
+      parentRoute: typeof ProtectedRoute
+    }
+    '/_protected/faq-user/': {
+      id: '/_protected/faq-user/'
+      path: '/faq-user'
+      fullPath: '/faq-user/'
+      preLoaderRoute: typeof ProtectedFaqUserIndexRouteImport
+      parentRoute: typeof ProtectedRoute
+    }
+    '/_protected/documents/': {
+      id: '/_protected/documents/'
+      path: '/documents'
+      fullPath: '/documents/'
+      preLoaderRoute: typeof ProtectedDocumentsIndexRouteImport
+      parentRoute: typeof ProtectedRoute
+    }
+    '/_protected/document-manager/': {
+      id: '/_protected/document-manager/'
+      path: '/document-manager'
+      fullPath: '/document-manager/'
+      preLoaderRoute: typeof ProtectedDocumentManagerIndexRouteImport
       parentRoute: typeof ProtectedRoute
     }
     '/_protected/dashboard/': {
@@ -3697,6 +3823,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/settings/account'
       preLoaderRoute: typeof ProtectedSettingsAccountRouteImport
       parentRoute: typeof ProtectedSettingsRouteRoute
+    }
+    '/_protected/help-center/_layout': {
+      id: '/_protected/help-center/_layout'
+      path: '/help-center'
+      fullPath: '/help-center'
+      preLoaderRoute: typeof ProtectedHelpCenterLayoutRouteImport
+      parentRoute: typeof ProtectedRoute
     }
     '/_protected/dashboard/user-wise': {
       id: '/_protected/dashboard/user-wise'
@@ -6397,9 +6530,11 @@ interface ProtectedRouteChildren {
   ProtectedSettingsRouteRoute: typeof ProtectedSettingsRouteRouteWithChildren
   ProtectedChartsRoute: typeof ProtectedChartsRoute
   ProtectedDashboardRoute: typeof ProtectedDashboardRouteWithChildren
+  ProtectedNewTabRoute: typeof ProtectedNewTabRoute
   ProtectedForbiddenLazyRoute: typeof ProtectedForbiddenLazyRoute
   ProtectedauthChangePasswordRoute: typeof ProtectedauthChangePasswordRoute
   ProtectedAdministrationLayoutRoute: typeof ProtectedAdministrationLayoutRouteWithChildren
+  ProtectedHelpCenterLayoutRoute: typeof ProtectedHelpCenterLayoutRoute
   ProtectedTransactionsProviderRoute: typeof ProtectedTransactionsProviderRouteWithChildren
   ProtectedErrors401LazyRoute: typeof ProtectedErrors401LazyRoute
   ProtectedErrors403LazyRoute: typeof ProtectedErrors403LazyRoute
@@ -6408,11 +6543,16 @@ interface ProtectedRouteChildren {
   ProtectedErrors503LazyRoute: typeof ProtectedErrors503LazyRoute
   ProtectedAppsIndexRoute: typeof ProtectedAppsIndexRoute
   ProtectedChatsIndexRoute: typeof ProtectedChatsIndexRoute
+  ProtectedDocumentManagerIndexRoute: typeof ProtectedDocumentManagerIndexRoute
+  ProtectedDocumentsIndexRoute: typeof ProtectedDocumentsIndexRoute
+  ProtectedFaqUserIndexRoute: typeof ProtectedFaqUserIndexRoute
+  ProtectedFaqsIndexRoute: typeof ProtectedFaqsIndexRoute
   ProtectedHelpCenterIndexRoute: typeof ProtectedHelpCenterIndexRoute
   ProtectedMastersIndexRoute: typeof ProtectedMastersIndexRoute
   ProtectedNotificationsIndexRoute: typeof ProtectedNotificationsIndexRoute
   ProtectedReportsIndexRoute: typeof ProtectedReportsIndexRoute
   ProtectedTasksIndexRoute: typeof ProtectedTasksIndexRoute
+  ProtectedTicketsIndexRoute: typeof ProtectedTicketsIndexRoute
   ProtectedTransactionsIndexRoute: typeof ProtectedTransactionsIndexRoute
   ProtectedauthUserFiscalYearLayoutRoute: typeof ProtectedauthUserFiscalYearLayoutRouteWithChildren
   ProtectedMastersAccountsLayoutRoute: typeof ProtectedMastersAccountsLayoutRouteWithChildren
@@ -6442,10 +6582,12 @@ const ProtectedRouteChildren: ProtectedRouteChildren = {
   ProtectedSettingsRouteRoute: ProtectedSettingsRouteRouteWithChildren,
   ProtectedChartsRoute: ProtectedChartsRoute,
   ProtectedDashboardRoute: ProtectedDashboardRouteWithChildren,
+  ProtectedNewTabRoute: ProtectedNewTabRoute,
   ProtectedForbiddenLazyRoute: ProtectedForbiddenLazyRoute,
   ProtectedauthChangePasswordRoute: ProtectedauthChangePasswordRoute,
   ProtectedAdministrationLayoutRoute:
     ProtectedAdministrationLayoutRouteWithChildren,
+  ProtectedHelpCenterLayoutRoute: ProtectedHelpCenterLayoutRoute,
   ProtectedTransactionsProviderRoute:
     ProtectedTransactionsProviderRouteWithChildren,
   ProtectedErrors401LazyRoute: ProtectedErrors401LazyRoute,
@@ -6455,11 +6597,16 @@ const ProtectedRouteChildren: ProtectedRouteChildren = {
   ProtectedErrors503LazyRoute: ProtectedErrors503LazyRoute,
   ProtectedAppsIndexRoute: ProtectedAppsIndexRoute,
   ProtectedChatsIndexRoute: ProtectedChatsIndexRoute,
+  ProtectedDocumentManagerIndexRoute: ProtectedDocumentManagerIndexRoute,
+  ProtectedDocumentsIndexRoute: ProtectedDocumentsIndexRoute,
+  ProtectedFaqUserIndexRoute: ProtectedFaqUserIndexRoute,
+  ProtectedFaqsIndexRoute: ProtectedFaqsIndexRoute,
   ProtectedHelpCenterIndexRoute: ProtectedHelpCenterIndexRoute,
   ProtectedMastersIndexRoute: ProtectedMastersIndexRoute,
   ProtectedNotificationsIndexRoute: ProtectedNotificationsIndexRoute,
   ProtectedReportsIndexRoute: ProtectedReportsIndexRoute,
   ProtectedTasksIndexRoute: ProtectedTasksIndexRoute,
+  ProtectedTicketsIndexRoute: ProtectedTicketsIndexRoute,
   ProtectedTransactionsIndexRoute: ProtectedTransactionsIndexRoute,
   ProtectedauthUserFiscalYearLayoutRoute:
     ProtectedauthUserFiscalYearLayoutRouteWithChildren,

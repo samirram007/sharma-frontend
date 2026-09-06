@@ -77,7 +77,11 @@ export default PartyLedgerForm
 const CurrentBalance = () => {
   const form = useFormContext<ReceiptNoteForm>()
   const ledgerId = form.watch('partyLedger.id')
-  const { data: currentBalance, isLoading, isError } = useQuery({
+  const {
+    data: currentBalance,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ['currentBalance', ledgerId],
     queryFn: () => fetchLedgerBalanceService(ledgerId!),
     enabled: !!ledgerId,

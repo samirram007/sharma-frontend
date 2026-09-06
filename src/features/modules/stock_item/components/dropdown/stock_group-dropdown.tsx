@@ -24,7 +24,7 @@ const StockGroupDropdown = (props: Props) => {
   const isEdit = form.getValues('isEdit')
   const { data: stockGroupList, isLoading } = useQuery({
     queryKey: ['stock_groups'],
-    queryFn: fetchStockGroupService,
+    queryFn: () => fetchStockGroupService(),
   })
 
   // const stockGroupId = form.watch('stockGroupId') as string | number | undefined;; // Watch form value for reactivity

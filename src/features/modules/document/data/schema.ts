@@ -1,14 +1,31 @@
 import { z } from 'zod'
 
 /**
- * A node in the document tree (folder or file) as returned by the
+ * A node in the document tree (folder, file, or shortcut) as returned by the
  * DocumentManager module (`/document-manager/*` endpoints).
  */
 export const documentNodeSchema = z.object({
+  /** Shortcut link target (kind === 'shortcut' only). */
+  target: z
+    .object({
+      id: z.number(),
+      name: z.string(),
+      kind: z.enum(['folder', 'file']),
+      parentId: z.number().nullable(),
+      extension: z.string().nullable(),
+      mimeType: z.string().nullable(),
+      sizeBytes: z.number().nullable(),
+    })
+    .nullable()
+    .optional(),
   id: z.number().int().positive(),
   name: z.string(),
-  /** 'folder' | 'file' */
-  kind: z.union([z.literal('folder'), z.literal('file')]),
+  /** 'folder' | 'file' | 'shortcut' */
+  kind: z.union([
+    z.literal('folder'),
+    z.literal('file'),
+    z.literal('shortcut'),
+  ]),
   /** 'private' | 'protected' | 'public' */
   visibility: z.string(),
   parentId: z.number().nullable(),
@@ -38,6 +55,8 @@ export const documentNodeSchema = z.object({
       z.object({
         targetType: z.string(),
         targetId: z.number(),
+        /** Granted actions: view/write/copy/move/delete/share. */
+        permissions: z.array(z.string()).default(['view']),
       }),
     )
     .default([]),
@@ -52,6 +71,7 @@ export const browseResponseSchema = z.object({
   breadcrumb: z.array(documentNodeSchema),
   folders: z.array(documentNodeSchema),
   files: z.array(documentNodeSchema),
+  shortcuts: z.array(documentNodeSchema).default([]),
 })
 
 export type BrowseResponse = z.infer<typeof browseResponseSchema>

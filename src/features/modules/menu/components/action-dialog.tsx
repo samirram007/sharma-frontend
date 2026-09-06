@@ -83,7 +83,7 @@ export function ActionDialog({ currentRow, open, onOpenChange }: Props) {
         onOpenChange(state)
       }}
     >
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-2xl lg:max-w-3xl">
         <DialogHeader className="text-left border-b-2 pb-2">
           <DialogTitle>
             {isEdit ? 'Edit Menu Entry' : 'Add New Menu Entry'}
@@ -129,7 +129,7 @@ export function ActionDialog({ currentRow, open, onOpenChange }: Props) {
                   form={form}
                   name="status"
                   label="Status"
-                  options={[
+                  items={[
                     { label: 'Active', value: 'active' },
                     { label: 'Inactive', value: 'inactive' },
                   ]}

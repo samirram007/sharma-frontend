@@ -2,6 +2,8 @@ import { z } from 'zod'
 import { useEffect, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { toast } from 'sonner'
+import { IconCamera } from '@tabler/icons-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -15,12 +17,20 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useAuth } from '@/features/auth/contexts/AuthContext'
+import BackgroundSettings from './background-settings'
 import { useLocalStorage } from '@/hooks/use-local-storage'
 import { updateUserService } from '@/features/modules/user/data/api'
 import { useChangePasswordMutation } from '@/features/auth/data/queryOptions'
+import {
+  appearance,
+  useAvatarUrl,
+} from '@/features/modules/document/components/appearance-store'
+import { ProfilePhotoDialog } from '@/features/modules/document/components/profile-photo-dialog'
+import { documentUrl } from '@/features/modules/document/data/api'
+import type { DocumentNode } from '@/features/modules/document/data/schema'
 
 const profileFormSchema = z.object({
   name: z
@@ -56,6 +66,8 @@ const securityFormSchema = z.object({
 type ProfileFormValues = z.infer<typeof profileFormSchema>
 type SecurityFormValues = z.infer<typeof securityFormSchema>
 
+export type ProfileTab = 'overview' | 'background' | 'security' | 'activity'
+
 const defaultValues: Partial<ProfileFormValues> = {
   name: '',
   username: '',
@@ -64,9 +76,17 @@ const defaultValues: Partial<ProfileFormValues> = {
   userType: '',
 }
 
-export default function ProfileForm() {
+export default function ProfileForm({
+  defaultTab = 'overview',
+}: {
+  /** Deep-linked tab (from /profile?tab=...); defaults to Overview. */
+  defaultTab?: ProfileTab
+}) {
   const { user, userFiscalYear, permissions, fetchProfile } = useAuth()
   const [isSaving, setIsSaving] = useState(false)
+  // Profile photo lives in the appearance store (documents preview URL).
+  const avatarUrl = useAvatarUrl()
+  const [photoDialogOpen, setPhotoDialogOpen] = useState(false)
   const [visitCount, setVisitCount] = useLocalStorage<number>(
     'profile_page_visit_count',
     0,
@@ -234,9 +254,10 @@ export default function ProfileForm() {
   ]
 
   return (
-    <Tabs defaultValue="overview" className="space-y-4">
-      <TabsList className="grid w-full grid-cols-3 md:w-[420px]">
+    <Tabs defaultValue={defaultTab} className="space-y-4">
+      <TabsList className="grid w-full grid-cols-4 md:w-[520px]">
         <TabsTrigger value="overview">Overview</TabsTrigger>
+        <TabsTrigger value="background">Background</TabsTrigger>
         <TabsTrigger value="security">Security</TabsTrigger>
         <TabsTrigger value="activity">Activity</TabsTrigger>
       </TabsList>
@@ -247,11 +268,27 @@ export default function ProfileForm() {
             <div className="rounded-2xl border border-slate-200 bg-gradient-to-br from-white via-slate-50/70 to-white p-4 shadow-sm md:p-6">
               <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div className="flex items-center gap-4">
-                  <Avatar className="h-14 w-14 border border-slate-200 shadow-sm">
-                    <AvatarFallback className="bg-slate-100 text-slate-700">
-                      {initials}
-                    </AvatarFallback>
-                  </Avatar>
+                  <div className="group relative">
+                    <Avatar className="h-14 w-14 border border-slate-200 shadow-sm">
+                      {avatarUrl && (
+                        <AvatarImage
+                          src={avatarUrl}
+                          alt={user?.name ?? 'Profile'}
+                        />
+                      )}
+                      <AvatarFallback className="bg-slate-100 text-slate-700">
+                        {initials}
+                      </AvatarFallback>
+                    </Avatar>
+                    <button
+                      type="button"
+                      title="Update profile photo"
+                      className="absolute -bottom-1 -right-1 rounded-full border border-slate-200 bg-white p-1 shadow-sm transition hover:bg-slate-50"
+                      onClick={() => setPhotoDialogOpen(true)}
+                    >
+                      <IconCamera className="h-3.5 w-3.5 text-slate-600" />
+                    </button>
+                  </div>
                   <div>
                     <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">
                       Profile Overview
@@ -268,6 +305,28 @@ export default function ProfileForm() {
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPhotoDialogOpen(true)}
+                  >
+                    <IconCamera className="h-4 w-4" />
+                    Update photo
+                  </Button>
+                  {avatarUrl && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        appearance.setAvatar(null)
+                        toast.success('Profile photo removed.')
+                      }}
+                    >
+                      Remove
+                    </Button>
+                  )}
                   <Badge variant="secondary" className="rounded-full px-3 py-1">
                     {user?.status ?? 'unknown'}
                   </Badge>
@@ -433,6 +492,22 @@ export default function ProfileForm() {
             </div>
           </form>
         </Form>
+
+        {/* Pick a photo from the documents system (files only, no upload). */}
+        <ProfilePhotoDialog
+          open={photoDialogOpen}
+          onOpenChange={setPhotoDialogOpen}
+          currentPhotoUrl={avatarUrl}
+          onConfirm={(node: DocumentNode) => {
+            appearance.setAvatar(documentUrl(node.id, 'preview', 'fetch'))
+            setPhotoDialogOpen(false)
+            toast.success(`Profile photo set to "${node.name}".`)
+          }}
+        />
+      </TabsContent>
+
+      <TabsContent value="background" className="space-y-5">
+        <BackgroundSettings />
       </TabsContent>
 
       <TabsContent value="security" className="space-y-5">

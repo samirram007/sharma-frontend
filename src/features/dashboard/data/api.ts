@@ -57,6 +57,16 @@ export interface UserWiseDatum {
   total_amount: number
 }
 
+export interface MonthlyTrendDatum {
+  month: string // YYYY-MM
+  deliveryNoteCount: number
+  receiptNoteCount: number
+  freightCount: number
+  freightAmount: number
+  paymentCount: number
+  paymentAmount: number
+}
+
 function num(value: unknown): number {
   const n = Number(value)
   return Number.isFinite(n) ? n : 0
@@ -162,6 +172,27 @@ export async function fetchUserWiseDashboard(): Promise<UserWiseDatum[]> {
       receipt_notes: num(row.receipt_notes),
       freights: num(row.freights),
       total_amount: num(row.total_amount),
+    }
+  })
+}
+
+export async function fetchMonthlyTrendDashboard(): Promise<
+  MonthlyTrendDatum[]
+> {
+  const envelope = (await getData(`${API_PATH}/monthly_trend`)) as {
+    data?: unknown[]
+  }
+  return (envelope?.data ?? []).map((item) => {
+    const row = (item ?? {}) as Record<string, unknown>
+
+    return {
+      month: String(row.month ?? ''),
+      deliveryNoteCount: num(row.deliveryNoteCount),
+      receiptNoteCount: num(row.receiptNoteCount),
+      freightCount: num(row.freightCount),
+      freightAmount: num(row.freightAmount),
+      paymentCount: num(row.paymentCount),
+      paymentAmount: num(row.paymentAmount),
     }
   })
 }

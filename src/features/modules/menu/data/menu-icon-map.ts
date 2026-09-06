@@ -24,6 +24,7 @@ import {
   MoreHorizontal,
   Notebook,
   NotebookTabs,
+  Boxes,
   Package,
   PackageOpen,
   PiggyBank,
@@ -66,6 +67,7 @@ import {
   IconPalette,
   IconUserCheck,
   IconChecklist,
+  IconBuildingFactory,
 } from '@tabler/icons-react'
 import type { ElementType } from 'react'
 
@@ -96,6 +98,7 @@ const iconMap: Record<string, ElementType> = {
   PiggyBank,
   Receipt,
   ReceiptText,
+  Boxes,
   Package,
   PackageOpen,
   Truck,
@@ -119,6 +122,7 @@ const iconMap: Record<string, ElementType> = {
   MoreHorizontal,
   Globe,
   Archive,
+  Packages: Boxes,
 
   // ── Tabler icons (for names matching tabler conventions) ────────────────
   BuildingWarehouse: IconBuildingWarehouse,
@@ -144,6 +148,7 @@ const iconMap: Record<string, ElementType> = {
   Notification: IconNotification,
   BrowserCheck: IconBrowserCheck,
   PaintBucket: IconPalette,
+  BuildingFactory: IconBuildingFactory,
 }
 
 /**

@@ -39,13 +39,10 @@ type BatchSelectionProps = {
   form: UseFormReturn<StockJournalGodownEntryForm>
   stockItem: StockItem | null
   godownId: number | null
-  /** 0-based godown row index — only the first row auto-opens the picker and autofocuses. */
-  rowIndex?: number
 }
 const BatchSelection = (props: BatchSelectionProps) => {
-  const { form, stockItem, godownId, rowIndex = 0 } = props
+  const { form, stockItem, godownId } = props
   const [open, setOpen] = React.useState(false)
-  const autoOpenedRef = React.useRef(false)
   const triggerRef = React.useRef<HTMLButtonElement>(null)
   const searchInputRef = React.useRef<HTMLInputElement>(null)
   const selectedId = form.watch('batchNo')?.toString()
@@ -69,32 +66,22 @@ const BatchSelection = (props: BatchSelectionProps) => {
   )
 
   const frameworks =
-    batches.data?.map((batch: BatchData) => ({
-      label: batch.batchNo!,
-      value: batch.batchNo!,
-      stockInHand: batch.stockInHand,
-      stockUnitLabel: stockItem?.stockUnit
-        ? capitalizeAllWords(stockItem.stockUnit.code!)
-        : '',
-      className: 'min-w-full hover:bg-blue-300',
-      stockInHandFormatted: batch.stockInHand?.toFixed(noOfDecimalPlaces),
-    })) || []
-
-  // Auto-open the picker ONCE, when the first batch data arrives (first
-  // godown row only). Opening on every remount (e.g. after the batch query
-  // resolves and the loading placeholder unmounts) left focus on the trigger
-  // with an already-open popover, so the first Enter just closed it.
-  React.useEffect(() => {
-    if (
-      rowIndex === 0 &&
-      !autoOpenedRef.current &&
-      !batches.isPending &&
-      frameworks.length > 0
-    ) {
-      autoOpenedRef.current = true
-      setOpen(true)
-    }
-  }, [batches.isPending, frameworks.length, rowIndex])
+    batches.data?.map((batch: BatchData) => {
+      // An empty batch no leaves the CommandItem with an empty value,
+      // which cmdk can't reach with the up/down arrow keys. Fall back
+      // to a displayable placeholder so keyboard navigation still works.
+      const batchNo = batch.batchNo?.trim() || 'Unknown'
+      return {
+        label: batchNo,
+        value: batchNo,
+        stockInHand: batch.stockInHand,
+        stockUnitLabel: stockItem?.stockUnit
+          ? capitalizeAllWords(stockItem.stockUnit.code!)
+          : '',
+        className: 'min-w-full hover:bg-blue-300',
+        stockInHandFormatted: batch.stockInHand?.toFixed(noOfDecimalPlaces),
+      }
+    }) || []
 
   const handleSelect = (value: string) => {
     form.setValue(`batchNo`, String(value))

@@ -1,7 +1,8 @@
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { Link } from '@tanstack/react-router'
-import { Wrench, Home, LogIn } from 'lucide-react'
+import { Wrench } from 'lucide-react'
+import { ErrorActions } from './error-actions'
+import { ErrorDetails } from './error-details'
 import { useAuthSafe } from './use-auth-safe'
 
 interface MaintenanceErrorProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -22,7 +23,7 @@ export default function MaintenanceError({
         className,
       )}
     >
-      <div className="mx-auto flex w-full max-w-lg flex-col items-center px-6 text-center">
+      <div className="mx-auto flex w-full max-w-2xl flex-col items-center px-6 text-center">
         {/* Animated wrench icon */}
         <div className="relative mb-8">
           <div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-orange-500/10 ring-1 ring-orange-500/20">
@@ -41,46 +42,43 @@ export default function MaintenanceError({
         </h2>
 
         {isAuthenticated && user ? (
-          <p className="mb-8 max-w-md text-sm leading-relaxed text-muted-foreground sm:text-base">
+          <p className="mb-3 max-w-xl text-sm leading-relaxed text-muted-foreground sm:text-base">
             Hi <span className="font-medium text-foreground">{user.name}</span>,
-            the system is currently under scheduled maintenance. We&apos;ll be
-            back online shortly. Thank you for your patience.
+            the system is temporarily offline for scheduled maintenance.
+            We&apos;re making improvements behind the scenes and will be back
+            online shortly. Thank you for your patience.
           </p>
         ) : (
-          <p className="mb-8 max-w-md text-sm leading-relaxed text-muted-foreground sm:text-base">
-            The system is currently under scheduled maintenance. We&apos;ll be
-            back online shortly. Thank you for your patience.
+          <p className="mb-3 max-w-xl text-sm leading-relaxed text-muted-foreground sm:text-base">
+            The system is temporarily offline for scheduled maintenance.
+            We&apos;re making improvements behind the scenes and will be back
+            online shortly. Thank you for your patience.
           </p>
         )}
 
-        {!minimal && (
-          <div className="flex flex-col gap-3 sm:flex-row">
+        <ErrorDetails code="503">
+          <li>
+            No action is needed on your side — check back in a few minutes.
+          </li>
+          <li>Your data is safe; nothing has been lost.</li>
+          <li>
+            If maintenance lasts longer than expected, contact your
+            administrator.
+          </li>
+        </ErrorDetails>
+
+        <ErrorActions
+          extra={
             <Button
               variant="outline"
-              size="lg"
-              onClick={() => window.location.reload()}
               className="gap-2"
+              onClick={() => window.location.reload()}
             >
               <Wrench className="h-4 w-4" />
               Try Again
             </Button>
-            {isAuthenticated ? (
-              <Button asChild variant="default" size="lg" className="gap-2">
-                <Link to="/">
-                  <Home className="h-4 w-4" />
-                  Back to Dashboard
-                </Link>
-              </Button>
-            ) : (
-              <Button asChild variant="default" size="lg" className="gap-2">
-                <Link to="/sign-in">
-                  <LogIn className="h-4 w-4" />
-                  Sign In
-                </Link>
-              </Button>
-            )}
-          </div>
-        )}
+          }
+        />
       </div>
     </div>
   )

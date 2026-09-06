@@ -90,7 +90,9 @@ describe('documentUrl transport contract', () => {
 describe('document client calls', () => {
   it('uploadDocumentService posts to /document-manager/upload (not /api/api/…)', async () => {
     const { uploadDocumentService } = await loadApiModule()
-    const requests = useCapturingAdapter((await import('@/utils/axios-client')).default)
+    const requests = useCapturingAdapter(
+      (await import('@/utils/axios-client')).default,
+    )
 
     const file = new File(['hello'], 'report.pdf', { type: 'application/pdf' })
     await uploadDocumentService(file, { parentId: 3, visibility: 'private' })
@@ -106,7 +108,9 @@ describe('document client calls', () => {
 
   it('downloadNodeService gets the single-prefixed download URL', async () => {
     const { downloadNodeService } = await loadApiModule()
-    const requests = useCapturingAdapter((await import('@/utils/axios-client')).default)
+    const requests = useCapturingAdapter(
+      (await import('@/utils/axios-client')).default,
+    )
 
     await downloadNodeService(7, 'report.pdf')
 
@@ -130,9 +134,9 @@ describe('source guard: API_BASE_URL is never embedded in axiosClient calls', ()
     await loadApiModule() // still pin the env contract while scanning
 
     const source = readFileSync(resolve(THIS_DIR, 'api.ts'), 'utf8')
-    const callLines = source.split('\n').filter((line) =>
-      /axiosClient\.(get|post|put|patch|delete)\(/.test(line),
-    )
+    const callLines = source
+      .split('\n')
+      .filter((line) => /axiosClient\.(get|post|put|patch|delete)\(/.test(line))
     // If the call sites disappear entirely, the scan is checking nothing.
     expect(callLines.length).toBeGreaterThan(0)
 

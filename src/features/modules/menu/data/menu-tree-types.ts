@@ -8,6 +8,7 @@ export interface MenuTreeItem {
   menuName: string
   route: string | null
   icon: string | null
+  description: string | null
   isGroup: boolean
   isTopMenu: boolean
   sortOrder: number

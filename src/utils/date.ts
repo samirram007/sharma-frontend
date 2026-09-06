@@ -1,7 +1,26 @@
-/**
- * Normalize a Date to the start of its local day (midnight).
- * Useful for date comparisons where timezone offsets could cause
- * mismatches between local-time and UTC-midnight Date objects.
- */
-export const startOfDay = (d: Date): Date =>
-  new Date(d.getFullYear(), d.getMonth(), d.getDate())
+export function startOfDay(date: Date): Date {
+  const copy = new Date(date)
+  copy.setHours(0, 0, 0, 0)
+  return copy
+}
+
+export function formatDistanceToNow(dateString: string): string {
+  const date = new Date(dateString)
+  if (Number.isNaN(date.getTime())) return dateString ?? '—'
+
+  const diff = Date.now() - date.getTime()
+  const minutes = Math.floor(diff / 1000 / 60)
+  if (minutes < 1) return 'just now'
+  if (minutes < 60) return `${minutes}m ago`
+
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) return `${hours}h ago`
+
+  const days = Math.floor(hours / 24)
+  if (days < 30) return `${days}d ago`
+
+  const months = Math.floor(days / 30)
+  if (months < 12) return `${months}mo ago`
+
+  return `${Math.floor(months / 12)}y ago`
+}
