@@ -7,7 +7,9 @@ export const userSchema = z.object({
   email: z.string().nullish(),
   username: z.string().nullish(),
   userType: z.string().nullish(),
-  status: ActiveInactiveStatusSchema.default('active'),
+  // .catch() coerces null/undefined/invalid values (e.g. rows created before
+  // the status column existed) to 'active' instead of failing the whole list parse.
+  status: ActiveInactiveStatusSchema.catch('active'),
   avatar: z.string().nullish(),
 
   roleIds: z.array(z.number().int().positive()).nullish(),

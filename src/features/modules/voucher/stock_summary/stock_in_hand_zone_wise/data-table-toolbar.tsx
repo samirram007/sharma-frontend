@@ -4,7 +4,7 @@ import { Cross2Icon } from '@radix-ui/react-icons'
 import type { Table } from '@tanstack/react-table'
 
 import { IconFilter } from '@tabler/icons-react'
-import ReportingPeriod from '@/features/global/components/reporting-period'
+
 import { useMemo } from 'react'
 import { DataTableFacetedFilter } from '@/features/global/components/data-table/data-table-faceted-filter'
 
@@ -61,7 +61,7 @@ export function DataTableToolbar<TData>({
           className="hidden h-8 w-[150px] lg:w-[250px]"
         />
 
-        <ReportingPeriod disableHotkey />
+        
 
         <div className="flex flex-row items-center gap-2">
           <div>

@@ -6,8 +6,6 @@ import { Suspense } from 'react'
 import { AppSidebar } from './components/app-sidebar'
 import Footer from './components/footer'
 import HeaderComponent from './components/HeaderComponent'
-import ReportingPeriod from '@/features/global/components/reporting-period'
-import RouteBreadcrumbs from './components/route-breadcrumbs'
 import { ForbiddenGate } from './components/forbidden-gate'
 
 import { GlobalContextProvider } from '@/features/global/contexts/global-context'
@@ -71,23 +69,19 @@ const ProtectedLayout = () => {
             {/* <!-- ===== Page Wrapper Start ===== --> */}
             <div className="max-w-screen w-full relative flex  h-screen overflow-hidden ">
               <AppSidebar />
-              <div className="relative flex flex-1 flex-col overflow-y-auto overflow-x-hidden">
+              <div className="relative  flex flex-1 flex-col overflow-y-auto overflow-x-hidden p-2">
+              {/* <div className="relative grid grid-rows-[auto_auto_1fr_auto]  overflow-y-auto overflow-x-hidden"> */}
                 <HeaderComponent />
-                <div className="px-2 pb-2 pt-2">
-                  <div className="rounded-md border border-slate-200/70 bg-white/70 px-3 py-1.5 text-xs shadow-sm backdrop-blur-sm dark:border-white/[0.07] dark:bg-card">
-                    <RouteBreadcrumbs />
-                  </div>
-                </div>
-                <main className="flex-1">
+                
+                {/* <main className="flex-1"> */}
+                <div className="flex-1 pt-2">
                   <Suspense fallback={<Toaster />}>
                     {/* Renders the matched route — or the 403 content on the
                     same URL when a route guard blocked the navigation. */}
                     <ForbiddenGate />
                   </Suspense>
-                </main>
+                </div>
                 <Footer />
-                {/* Global hotkey: Alt+P to open period modal */}
-                <ReportingPeriod hideTrigger />
               </div>
             </div>
             {/* <!-- ===== Page Wrapper End ===== --> */}

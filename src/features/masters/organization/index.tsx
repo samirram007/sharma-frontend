@@ -1,6 +1,5 @@
 import {
   IconBuilding,
-  IconBuildingCommunity,
   IconCalendarStats,
   IconCurrencyRupee,
   IconMap,
@@ -21,7 +20,7 @@ export default function Organization() {
           {sideBarOpen && (
             <SidebarInner
               title="Organization"
-              description="Manage company profile, branches, fiscal years, currencies, countries and states."
+              description="Manage company profile, fiscal years, currencies, countries and states."
               items={sidebarNavItems}
             />
           )}
@@ -41,13 +40,6 @@ const sidebarNavItems = [
     description: 'Core company profile and registration details.',
     icon: <IconBuilding size={22} stroke={1.9} />,
     href: '/masters/organization/company',
-  },
-  {
-    title: 'Branch',
-    visible: true,
-    description: 'Manage branch offices and operating locations.',
-    icon: <IconBuildingCommunity size={22} stroke={1.9} />,
-    href: '/masters/organization/branch',
   },
   {
     title: 'Fiscal Year',

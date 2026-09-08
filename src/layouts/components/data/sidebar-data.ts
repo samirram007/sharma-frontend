@@ -236,12 +236,6 @@ export const sidebarData: SidebarData = {
               requiredFeature: 'COMPANY_MENU_VIEW',
             },
             {
-              title: 'Branch',
-              url: '/masters/organization/branch',
-              visible: false,
-              icon: Building2,
-            },
-            {
               title: 'Fiscal Year',
               url: '/masters/organization/fiscal_year',
               visible: true,

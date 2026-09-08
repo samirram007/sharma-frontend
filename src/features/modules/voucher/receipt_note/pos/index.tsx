@@ -37,7 +37,7 @@ const Pos = ({ currentRow }: ReceiptNoteProps) => {
       <div
         ref={areaRef}
         className="voucher-entry w-full grid grid-rows-[1fr_100px] 
-         h-[calc(100dvh-170px)]  "
+         h-[calc(100dvh-240px)] bg-white dark:bg-gray-900 rounded-md   border border-gray-300 shadow-md "
       >
         <Form {...mainForm}>
           <div className="max-h-full grid grid-rows-[200px_1fr] overflow-hidden">

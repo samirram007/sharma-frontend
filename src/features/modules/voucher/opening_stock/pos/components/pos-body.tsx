@@ -172,11 +172,11 @@ const PosBody = ({ mainForm, scrollRef }: PosBodyProps) => {
   }, [mainForm, stockJournalForm])
 
   return (
-    <div className="flex min-h-0 w-full flex-col">
+    <div className="flex min-h-0 w-full flex-col overflow-hidden">
       {/* Scrollable entry grid */}
       <div
         ref={scrollRef}
-        className="min-h-0 w-full flex-1 overflow-y-scroll px-2"
+        className="min-h-0 w-full flex-1 overflow-y-auto overflow-x-hidden px-2 scroll-smooth"
       >
         <div className="grid w-full grid-cols-1 items-start gap-2 px-2">
           <Form {...stockJournalForm}>
@@ -185,8 +185,8 @@ const PosBody = ({ mainForm, scrollRef }: PosBodyProps) => {
         </div>
       </div>
 
-      {/* Pinned summary bar — always visible above the footer */}
-      <div className="shrink-0 border-t-2 border-gray-300 bg-gray-100/80 px-2 py-2 dark:border-gray-700 dark:bg-gray-900/50">
+      {/* Summary bar always visible at bottom of body */}
+      <div className="shrink-0 border-t-2 border-gray-300 bg-white/92 backdrop-blur-sm px-2 py-2 dark:border-gray-700 dark:bg-gray-900/95">
         <div className={`${SUMMARY_GRID_COLS} grid items-center gap-0 text-sm`}>
           <div className="flex items-center gap-1.5 px-2 font-semibold text-muted-foreground">
             <IconCalculator className="h-4 w-4" />

@@ -56,7 +56,6 @@ export function GridTable({ columns, data }: DataTableProps) {
       columnFilters,
     },
     filterFns: {
-      // Custom filter functions can be added here if needed
       fuzzy: (row, columnId, value) => {
         const columnValue = row.getValue(columnId)
         return columnValue && typeof columnValue === 'string'
@@ -85,7 +84,7 @@ export function GridTable({ columns, data }: DataTableProps) {
         placeHolder={`Filter ${keyName} `}
         filteredRows={data}
       />
-      <div className="rounded-md border">
+      <div className="rounded-md border border-border">
         <ReportHeader />
         <ReportView table={table} />
         <ReportFooter table={table} />
@@ -95,22 +94,23 @@ export function GridTable({ columns, data }: DataTableProps) {
     </div>
   )
 }
+
 const ReportHeader = () => {
   return (
-    <div className=" grid grid-cols-[1fr_2fr] border-amber-950! bg-gray-100  text-center font-bold  ">
-      <div className="text-accent-foreground border-2 text-left pl-2 font-stretch-ultra-expanded  h-full flex items-center">
+    <div className="grid grid-cols-[1fr_2fr] border border-border text-center font-bold bg-muted dark:bg-secondary/40">
+      <div className="text-foreground border-2 text-left pl-2 font-stretch-ultra-expanded h-full flex items-center">
         PARTICULARS
       </div>
-      <div className="grid grid-cols-4 border-2 border-l-0">
-        <div className="">
-          <div className="text-accent-foreground  border-b-2">Opening</div>
+      <div className="grid grid-cols-4 border-2 border-l-0 border-border">
+        <div>
+          <div className="text-foreground border-b-2">Opening</div>
           <div className="grid grid-cols-2">
             <div>Qty</div>
             <div className="border-l-2">Val</div>
           </div>
         </div>
         <div>
-          <div className="text-accent-foreground border-b-2 border-l-2   ">
+          <div className="text-foreground border-b-2 border-l-2">
             Inward
           </div>
           <div className="grid grid-cols-2">
@@ -119,7 +119,7 @@ const ReportHeader = () => {
           </div>
         </div>
         <div>
-          <div className="text-accent-foreground border-b-2 border-l-2">
+          <div className="text-foreground border-b-2 border-l-2">
             Outward
           </div>
           <div className="grid grid-cols-2">
@@ -128,45 +128,44 @@ const ReportHeader = () => {
           </div>
         </div>
         <div>
-          <div className="text-accent-foreground border-b-2 border-l-2">
+          <div className="text-foreground border-b-2 border-l-2">
             Closing
           </div>
           <div className="grid grid-cols-2">
             <div className="border-l-2">Qty</div>
             <div className="border-l-2">Val</div>
           </div>
-        </div>{' '}
+        </div>
       </div>
     </div>
   )
 }
 
 const ReportView = ({ table }: { table: any }) => {
-  // console.log("TData", table.getRowModel().rows.map((row: any) => row.original));
-
   return (
-    <div className="w-full min-h-full  grid grid-rows-[auto_1fr]">
-      <div className="border-2 min-h-full">
+    <div className="w-full min-h-full grid grid-rows-[auto_1fr]">
+      <div className="border-2 border-border min-h-full">
         {table.getRowModel().rows.map((zone: any, index: number) => (
           <div key={index} className="grid grid-rows-1 gap-0">
             <div
               className={cn(
-                'grid grid-cols-[1fr_2fr] text-center bg-gray-300 shadow-md  font-semibold',
+                'grid grid-cols-[1fr_2fr] text-center font-semibold border-b border-border/50',
+                index % 2 === 0 ? 'bg-muted/30 dark:bg-secondary/20' : 'bg-card dark:bg-secondary/10',
               )}
             >
-              <div className=" text-left pl-2">
+              <div className="text-left pl-2 text-foreground">
                 <Link
                   to={'/reports/stock_summary/stock-in-hand-godown-wise'}
-                  className="inline-block mr-2   hover:text-blue-700"
+                  className="inline-block mr-2 hover:text-primary dark:hover:text-primary-foreground"
                 >
                   {zone.original.zoneName
                     ? `Zone: ${zone.original.zoneName}`
                     : 'Zone: -'}
                 </Link>
               </div>
-              <div className="grid grid-cols-4 ">
+              <div className="grid grid-cols-4">
                 <div className="grid grid-cols-2">
-                  <div className="text-right pr-2">
+                  <div className="text-right pr-2 text-muted-foreground">
                     {zone.original.openingQuantity === 0
                       ? '-'
                       : formatQty(
@@ -177,7 +176,7 @@ const ReportView = ({ table }: { table: any }) => {
                             ?.unitCode,
                         )}
                   </div>
-                  <div>
+                  <div className="text-muted-foreground">
                     {zone.original.openingAmount === 0
                       ? '-'
                       : zone.original.openingAmount?.toFixed(2)}
@@ -185,7 +184,7 @@ const ReportView = ({ table }: { table: any }) => {
                 </div>
 
                 <div className="grid grid-cols-2">
-                  <div className="text-right pr-2">
+                  <div className="text-right pr-2 text-muted-foreground">
                     {zone.original.inwardQuantity === 0
                       ? '-'
                       : formatQty(
@@ -196,7 +195,7 @@ const ReportView = ({ table }: { table: any }) => {
                             ?.unitCode,
                         )}
                   </div>
-                  <div>
+                  <div className="text-muted-foreground">
                     {zone.original.inwardAmount === 0
                       ? '-'
                       : zone.original.inwardAmount?.toFixed(2)}
@@ -204,7 +203,7 @@ const ReportView = ({ table }: { table: any }) => {
                 </div>
 
                 <div className="grid grid-cols-2">
-                  <div className="text-right pr-2">
+                  <div className="text-right pr-2 text-muted-foreground">
                     {zone.original.outwardQuantity === 0
                       ? '-'
                       : formatQty(
@@ -215,7 +214,7 @@ const ReportView = ({ table }: { table: any }) => {
                             ?.unitCode,
                         )}
                   </div>
-                  <div>
+                  <div className="text-muted-foreground">
                     {zone.original.outwardAmount === 0
                       ? '-'
                       : zone.original.outwardAmount?.toFixed(2)}
@@ -224,20 +223,24 @@ const ReportView = ({ table }: { table: any }) => {
 
                 <div className="grid grid-cols-2">
                   <div className="text-right pr-2">
-                    {zone.original.closingQuantity === 0
-                      ? '-'
-                      : formatQty(
-                          zone.original.closingQuantity,
-                          zone.original.godownDetails[0]?.itemDetails[0]
-                            ?.noOfDecimalPlaces,
-                          zone.original.godownDetails[0]?.itemDetails[0]
-                            ?.unitCode,
-                        )}
+                    <span className="font-semibold text-foreground">
+                      {zone.original.closingQuantity === 0
+                        ? '-'
+                        : formatQty(
+                            zone.original.closingQuantity,
+                            zone.original.godownDetails[0]?.itemDetails[0]
+                              ?.noOfDecimalPlaces,
+                            zone.original.godownDetails[0]?.itemDetails[0]
+                              ?.unitCode,
+                          )}
+                    </span>
                   </div>
                   <div>
-                    {zone.original.closingAmount === 0
-                      ? '-'
-                      : zone.original.closingAmount?.toFixed(2)}
+                    <span className="font-semibold text-foreground">
+                      {zone.original.closingAmount === 0
+                        ? '-'
+                        : zone.original.closingAmount?.toFixed(2)}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -247,30 +250,31 @@ const ReportView = ({ table }: { table: any }) => {
                 (godown: StockInHandGodownWiseSchema, godownIndex: number) => (
                   <div
                     key={godownIndex}
-                    className="text-sm italic text-gray-600    "
+                    className="text-sm italic text-muted-foreground"
                   >
                     <div>
                       <div
                         className={cn(
-                          'grid grid-cols-[1fr_2fr] text-center bg-gray-200',
-                          !godown.godownId ? 'font-semibold text-red-400' : '',
+                          'grid grid-cols-[1fr_2fr] text-center border-b border-border/30',
+                          index % 2 === 0 ? 'bg-muted/30 dark:bg-secondary/20' : 'bg-card dark:bg-secondary/10',
+                          !godown.godownId ? 'font-semibold text-destructive' : '',
                         )}
                       >
-                        <div className=" text-left pl-8 font-semibold">
+                        <div className="text-left pl-8 font-semibold">
                           <Link
                             to={
                               '/reports/stock_summary/stock-in-hand-item-wise'
                             }
-                            className="inline-block mr-2   hover:text-blue-700"
+                            className="inline-block mr-2 hover:text-primary dark:hover:text-primary-foreground"
                           >
                             {godown.godownId
                               ? `Godown: ${godown.godownName}`
                               : `${godown.godownName}`}
                           </Link>
                         </div>
-                        <div className="grid grid-cols-4 font-bold  ">
+                        <div className="grid grid-cols-4">
                           <div className="grid grid-cols-2">
-                            <div className="text-right pr-2">
+                            <div className="text-right pr-2 text-muted-foreground">
                               {godown.openingQuantity === 0
                                 ? '-'
                                 : formatQty(
@@ -279,7 +283,7 @@ const ReportView = ({ table }: { table: any }) => {
                                     godown.itemDetails?.[0]?.unitCode,
                                   )}
                             </div>
-                            <div>
+                            <div className="text-muted-foreground">
                               {godown.openingAmount === 0
                                 ? '-'
                                 : godown.openingAmount?.toFixed(2)}
@@ -287,7 +291,7 @@ const ReportView = ({ table }: { table: any }) => {
                           </div>
 
                           <div className="grid grid-cols-2">
-                            <div className="text-right pr-2">
+                            <div className="text-right pr-2 text-muted-foreground">
                               {godown.inwardQuantity === 0
                                 ? '-'
                                 : formatQty(
@@ -296,7 +300,7 @@ const ReportView = ({ table }: { table: any }) => {
                                     godown.itemDetails?.[0]?.unitCode,
                                   )}
                             </div>
-                            <div>
+                            <div className="text-muted-foreground">
                               {godown.inwardAmount === 0
                                 ? '-'
                                 : godown.inwardAmount?.toFixed(2)}
@@ -304,7 +308,7 @@ const ReportView = ({ table }: { table: any }) => {
                           </div>
 
                           <div className="grid grid-cols-2">
-                            <div className="text-right pr-2">
+                            <div className="text-right pr-2 text-muted-foreground">
                               {godown.outwardQuantity === 0
                                 ? '-'
                                 : formatQty(
@@ -313,7 +317,7 @@ const ReportView = ({ table }: { table: any }) => {
                                     godown.itemDetails?.[0]?.unitCode,
                                   )}
                             </div>
-                            <div>
+                            <div className="text-muted-foreground">
                               {godown.outwardAmount === 0
                                 ? '-'
                                 : godown.outwardAmount?.toFixed(2)}
@@ -321,18 +325,22 @@ const ReportView = ({ table }: { table: any }) => {
                           </div>
                           <div className="grid grid-cols-2">
                             <div className="text-right pr-2">
-                              {godown.closingQuantity === 0
-                                ? '-'
-                                : formatQty(
-                                    godown.closingQuantity,
-                                    godown.itemDetails?.[0]?.noOfDecimalPlaces,
-                                    godown.itemDetails?.[0]?.unitCode,
-                                  )}
+                              <span className="font-semibold text-foreground">
+                                {godown.closingQuantity === 0
+                                  ? '-'
+                                  : formatQty(
+                                      godown.closingQuantity,
+                                      godown.itemDetails?.[0]?.noOfDecimalPlaces,
+                                      godown.itemDetails?.[0]?.unitCode,
+                                    )}
+                              </span>
                             </div>
                             <div>
-                              {godown.closingAmount === 0
-                                ? '-'
-                                : godown.closingAmount?.toFixed(2)}
+                              <span className="font-semibold text-foreground">
+                                {godown.closingAmount === 0
+                                  ? '-'
+                                  : godown.closingAmount?.toFixed(2)}
+                              </span>
                             </div>
                           </div>
                         </div>
@@ -341,27 +349,27 @@ const ReportView = ({ table }: { table: any }) => {
                         {godown.itemDetails.map((item, itemIndex) => (
                           <div
                             key={itemIndex}
-                            className="text-sm text-gray-500  "
+                            className="text-sm text-muted-foreground"
                           >
                             <div
                               className={cn(
-                                'grid grid-cols-[1fr_2fr] text-center ',
-                                index % 2 === 0 ? 'bg-white' : 'bg-gray-100',
+                                'grid grid-cols-[1fr_2fr] text-center border-b border-border/20',
+                                index % 2 === 0 ? 'bg-muted/30 dark:bg-secondary/20' : 'bg-card dark:bg-secondary/10',
                               )}
                             >
-                              <div className=" text-left pl-16 italic">
+                              <div className="text-left pl-16 italic">
                                 <Link
                                   to={
                                     '/reports/stock_summary/stock-in-hand-item-wise'
                                   }
-                                  className="inline-block mr-2   hover:text-blue-700"
+                                  className="inline-block mr-2 hover:text-primary dark:hover:text-primary-foreground"
                                 >
                                   {`Item: ${item.itemName}`}
                                 </Link>
                               </div>
-                              <div className="grid grid-cols-4 ">
+                              <div className="grid grid-cols-4">
                                 <div className="grid grid-cols-2">
-                                  <div className="text-right pr-2">
+                                  <div className="text-right pr-2 text-muted-foreground">
                                     {item.openingQuantity === 0
                                       ? '-'
                                       : formatQty(
@@ -378,7 +386,7 @@ const ReportView = ({ table }: { table: any }) => {
                                 </div>
 
                                 <div className="grid grid-cols-2">
-                                  <div className="text-right pr-2">
+                                  <div className="text-right pr-2 text-muted-foreground">
                                     {item.inwardQuantity === 0
                                       ? '-'
                                       : formatQty(
@@ -395,7 +403,7 @@ const ReportView = ({ table }: { table: any }) => {
                                 </div>
 
                                 <div className="grid grid-cols-2">
-                                  <div className="text-right pr-2">
+                                  <div className="text-right pr-2 text-muted-foreground">
                                     {item.outwardQuantity === 0
                                       ? '-'
                                       : formatQty(
@@ -412,18 +420,22 @@ const ReportView = ({ table }: { table: any }) => {
                                 </div>
                                 <div className="grid grid-cols-2">
                                   <div className="text-right pr-2">
-                                    {item.closingQuantity === 0
-                                      ? '-'
-                                      : formatQty(
-                                          item.closingQuantity,
-                                          item.noOfDecimalPlaces,
-                                          item.unitCode,
-                                        )}
+                                    <span className="font-semibold text-foreground">
+                                      {item.closingQuantity === 0
+                                        ? '-'
+                                        : formatQty(
+                                            item.closingQuantity,
+                                            item.noOfDecimalPlaces,
+                                            item.unitCode,
+                                          )}
+                                    </span>
                                   </div>
                                   <div>
-                                    {item.closingAmount === 0
-                                      ? '-'
-                                      : item.closingAmount?.toFixed(2)}
+                                    <span className="font-semibold text-foreground">
+                                      {item.closingAmount === 0
+                                        ? '-'
+                                        : item.closingAmount?.toFixed(2)}
+                                    </span>
                                   </div>
                                 </div>
                               </div>
@@ -495,17 +507,17 @@ const ReportFooter = ({ table }: { table: any }) => {
   }, [])
   return (
     <>
-      <div className=" grid grid-cols-[1fr_2fr] border-amber-950! bg-gray-100  text-center font-bold  ">
-        <div className="text-accent-foreground border-2 text-right flex items-center pr-2 h-full justify-between">
+      <div className="grid grid-cols-[1fr_2fr] border border-border text-center font-bold bg-muted dark:bg-secondary/40">
+        <div className="text-foreground border-2 text-right flex items-center pr-2 h-full justify-between">
           <div className="pl-4 italic text-sm font-mono">
             Item count: {table.getRowModel().rows.length}
           </div>
           <div>Total:</div>
         </div>
-        <div className="grid grid-cols-4 border-b-2 border-l-0">
-          <div className="">
+        <div className="grid grid-cols-4 border-b-2 border-l-0 border-border">
+          <div>
             <div className="grid grid-cols-2">
-              <div className=" text-right pr-2">
+              <div className="text-right pr-2 text-muted-foreground">
                 {total.openingQuantity === 0
                   ? '-'
                   : formatQty(
@@ -514,7 +526,7 @@ const ReportFooter = ({ table }: { table: any }) => {
                       unitCode,
                     )}{' '}
               </div>
-              <div className="border-l-2">
+              <div className="border-l-2 text-muted-foreground">
                 {total.openingAmount === 0
                   ? '-'
                   : formatQtyFixed(total.openingAmount)}
@@ -523,7 +535,7 @@ const ReportFooter = ({ table }: { table: any }) => {
           </div>
           <div>
             <div className="grid grid-cols-2">
-              <div className="border-l-2  text-right pr-2">
+              <div className="border-l-2 text-right pr-2 text-muted-foreground">
                 {total.inwardQuantity === 0
                   ? '-'
                   : formatQty(
@@ -532,7 +544,7 @@ const ReportFooter = ({ table }: { table: any }) => {
                       unitCode,
                     )}
               </div>
-              <div className="border-l-2">
+              <div className="border-l-2 text-muted-foreground">
                 {total.inwardAmount === 0
                   ? '-'
                   : formatQtyFixed(total.inwardAmount)}
@@ -541,7 +553,7 @@ const ReportFooter = ({ table }: { table: any }) => {
           </div>
           <div>
             <div className="grid grid-cols-2">
-              <div className="border-l-2  text-right pr-2">
+              <div className="border-l-2 text-right pr-2 text-muted-foreground">
                 {total.outwardQuantity === 0
                   ? '-'
                   : formatQty(
@@ -550,7 +562,7 @@ const ReportFooter = ({ table }: { table: any }) => {
                       unitCode,
                     )}
               </div>
-              <div className="border-l-2">
+              <div className="border-l-2 text-muted-foreground">
                 {total.outwardAmount === 0
                   ? '-'
                   : formatQtyFixed(total.outwardAmount)}
@@ -560,21 +572,25 @@ const ReportFooter = ({ table }: { table: any }) => {
           <div>
             <div className="grid grid-cols-2">
               <div className="border-l-2 text-right pr-2">
-                {total.closingQuantity === 0
-                  ? '-'
-                  : formatQty(
-                      total.closingQuantity,
-                      noOfDecimalPlaces,
-                      unitCode,
-                    )}
+                <span className="font-semibold text-foreground">
+                  {total.closingQuantity === 0
+                    ? '-'
+                    : formatQty(
+                        total.closingQuantity,
+                        noOfDecimalPlaces,
+                        unitCode,
+                      )}
+                </span>
               </div>
-              <div className="border-l-2">
-                {total.closingAmount === 0
-                  ? '-'
-                  : formatQtyFixed(total.closingAmount)}
+              <div>
+                <span className="font-semibold text-foreground">
+                  {total.closingAmount === 0
+                    ? '-'
+                    : formatQtyFixed(total.closingAmount)}
+                </span>
               </div>
             </div>
-          </div>{' '}
+          </div>
         </div>
       </div>
       <FormulaBar

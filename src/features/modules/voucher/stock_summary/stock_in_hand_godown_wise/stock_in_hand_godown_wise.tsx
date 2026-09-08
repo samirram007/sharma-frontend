@@ -15,7 +15,7 @@ export default function StockInHandGodownWise({
   return (
     <>
       {stockInHandGodownWiseListSchema.length === 0 ? (
-        <div className="text-center text-gray-500">No data available.</div>
+        <div className="text-center text-muted-foreground">No data available.</div>
       ) : (
         <ReportView data={stockInHandGodownWiseListSchema} />
       )}
@@ -25,28 +25,28 @@ export default function StockInHandGodownWise({
 
 const ReportView = ({ data }: { data: StockInHandGodownWiseListSchema }) => {
   return (
-    <div className="w-full min-h-full  grid grid-rows-[auto_1fr]">
+    <div className="w-full min-h-full grid grid-rows-[auto_1fr]">
       <ReportHeader />
-      <div className="border-2 min-h-full">
+      <div className="border-2 border-border min-h-full">
         {data.map((item, index) => (
           <div key={index} className="grid grid-rows-1 gap-0">
             <div
               className={cn(
-                'grid grid-cols-[1fr_2fr] text-center  font-semibold',
-                index % 2 === 0 ? 'bg-white' : 'bg-gray-100',
+                'grid grid-cols-[1fr_2fr] text-center font-semibold border-b border-border/50',
+                index % 2 === 0 ? 'bg-muted/30 dark:bg-secondary/20' : 'bg-card dark:bg-secondary/10',
               )}
             >
-              <div className=" text-left pl-2">
+              <div className="text-left pl-2 text-foreground">
                 <Link
                   to={'/reports/stock_summary/stock-in-hand-godown-wise'}
-                  className="inline-block mr-2   hover:text-blue-700"
+                  className="inline-block mr-2 hover:text-primary dark:hover:text-primary-foreground"
                 >
                   {item.godownName}
                 </Link>
               </div>
-              <div className="grid grid-cols-4 ">
+              <div className="grid grid-cols-4">
                 <div className="grid grid-cols-2">
-                  <div className="text-right pr-2">
+                  <div className="text-right pr-2 text-muted-foreground">
                     {item.openingQuantity === 0
                       ? '-'
                       : formatQty(
@@ -55,7 +55,7 @@ const ReportView = ({ data }: { data: StockInHandGodownWiseListSchema }) => {
                           item.itemDetails[0].unitCode,
                         )}
                   </div>
-                  <div>
+                  <div className="text-muted-foreground">
                     {item.openingAmount === 0
                       ? '-'
                       : item.openingAmount?.toFixed(2)}
@@ -63,7 +63,7 @@ const ReportView = ({ data }: { data: StockInHandGodownWiseListSchema }) => {
                 </div>
 
                 <div className="grid grid-cols-2">
-                  <div className="text-right pr-2">
+                  <div className="text-right pr-2 text-muted-foreground">
                     {item.inwardQuantity === 0
                       ? '-'
                       : formatQty(
@@ -72,7 +72,7 @@ const ReportView = ({ data }: { data: StockInHandGodownWiseListSchema }) => {
                           item.itemDetails[0].unitCode,
                         )}
                   </div>
-                  <div>
+                  <div className="text-muted-foreground">
                     {item.inwardAmount === 0
                       ? '-'
                       : item.inwardAmount?.toFixed(2)}
@@ -80,7 +80,7 @@ const ReportView = ({ data }: { data: StockInHandGodownWiseListSchema }) => {
                 </div>
 
                 <div className="grid grid-cols-2">
-                  <div className="text-right pr-2">
+                  <div className="text-right pr-2 text-muted-foreground">
                     {item.outwardQuantity === 0
                       ? '-'
                       : formatQty(
@@ -89,7 +89,7 @@ const ReportView = ({ data }: { data: StockInHandGodownWiseListSchema }) => {
                           item.itemDetails[0].unitCode,
                         )}
                   </div>
-                  <div>
+                  <div className="text-muted-foreground">
                     {item.outwardAmount === 0
                       ? '-'
                       : item.outwardAmount?.toFixed(2)}
@@ -98,18 +98,22 @@ const ReportView = ({ data }: { data: StockInHandGodownWiseListSchema }) => {
 
                 <div className="grid grid-cols-2">
                   <div className="text-right pr-2">
-                    {item.closingQuantity === 0
-                      ? '-'
-                      : formatQty(
-                          item.closingQuantity,
-                          item.itemDetails[0].noOfDecimalPlaces,
-                          item.itemDetails[0].unitCode,
-                        )}
+                    <span className="font-semibold text-foreground">
+                      {item.closingQuantity === 0
+                        ? '-'
+                        : formatQty(
+                            item.closingQuantity,
+                            item.itemDetails[0].noOfDecimalPlaces,
+                            item.itemDetails[0].unitCode,
+                          )}
+                    </span>
                   </div>
                   <div>
-                    {item.closingAmount === 0
-                      ? '-'
-                      : item.closingAmount?.toFixed(2)}
+                    <span className="font-semibold text-foreground">
+                      {item.closingAmount === 0
+                        ? '-'
+                        : item.closingAmount?.toFixed(2)}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -118,28 +122,28 @@ const ReportView = ({ data }: { data: StockInHandGodownWiseListSchema }) => {
               {item.itemDetails.map((item, itemIndex) => (
                 <div
                   key={itemIndex}
-                  className="text-sm italic text-gray-600    "
+                  className="text-sm italic text-muted-foreground"
                 >
                   <div
                     className={cn(
-                      'grid grid-cols-[1fr_2fr] text-center ',
-                      index % 2 === 0 ? 'bg-white' : 'bg-gray-100',
-                      !item.itemId ? 'font-semibold text-red-400' : '',
+                      'grid grid-cols-[1fr_2fr] text-center border-b border-border/30',
+                      index % 2 === 0 ? 'bg-muted/30 dark:bg-secondary/20' : 'bg-card dark:bg-secondary/10',
+                      !item.itemId ? 'font-semibold text-destructive' : '',
                     )}
                   >
-                    <div className=" text-left pl-8 font-semibold">
+                    <div className="text-left pl-8 font-semibold">
                       <Link
                         to={'/reports/stock_summary/stock-in-hand-item-wise'}
-                        className="inline-block mr-2   hover:text-blue-700"
+                        className="inline-block mr-2 hover:text-primary dark:hover:text-primary-foreground"
                       >
                         {item.itemId
                           ? `Item: ${item.itemName}`
                           : `${item.itemName}`}
                       </Link>
                     </div>
-                    <div className="grid grid-cols-4 ">
+                    <div className="grid grid-cols-4">
                       <div className="grid grid-cols-2">
-                        <div className="text-right pr-2">
+                        <div className="text-right pr-2 text-muted-foreground">
                           {item.openingQuantity === 0
                             ? '-'
                             : formatQty(
@@ -148,7 +152,7 @@ const ReportView = ({ data }: { data: StockInHandGodownWiseListSchema }) => {
                                 item.unitCode,
                               )}
                         </div>
-                        <div>
+                        <div className="text-muted-foreground">
                           {item.openingAmount === 0
                             ? '-'
                             : item.openingAmount?.toFixed(2)}
@@ -156,7 +160,7 @@ const ReportView = ({ data }: { data: StockInHandGodownWiseListSchema }) => {
                       </div>
 
                       <div className="grid grid-cols-2">
-                        <div className="text-right pr-2">
+                        <div className="text-right pr-2 text-muted-foreground">
                           {item.inwardQuantity === 0
                             ? '-'
                             : formatQty(
@@ -165,7 +169,7 @@ const ReportView = ({ data }: { data: StockInHandGodownWiseListSchema }) => {
                                 item.unitCode,
                               )}
                         </div>
-                        <div>
+                        <div className="text-muted-foreground">
                           {item.inwardAmount === 0
                             ? '-'
                             : item.inwardAmount?.toFixed(2)}
@@ -173,7 +177,7 @@ const ReportView = ({ data }: { data: StockInHandGodownWiseListSchema }) => {
                       </div>
 
                       <div className="grid grid-cols-2">
-                        <div className="text-right pr-2">
+                        <div className="text-right pr-2 text-muted-foreground">
                           {item.outwardQuantity === 0
                             ? '-'
                             : formatQty(
@@ -182,7 +186,7 @@ const ReportView = ({ data }: { data: StockInHandGodownWiseListSchema }) => {
                                 item.unitCode,
                               )}
                         </div>
-                        <div>
+                        <div className="text-muted-foreground">
                           {item.outwardAmount === 0
                             ? '-'
                             : item.outwardAmount?.toFixed(2)}
@@ -190,18 +194,22 @@ const ReportView = ({ data }: { data: StockInHandGodownWiseListSchema }) => {
                       </div>
                       <div className="grid grid-cols-2">
                         <div className="text-right pr-2">
-                          {item.closingQuantity === 0
-                            ? '-'
-                            : formatQty(
-                                item.closingQuantity,
-                                item.noOfDecimalPlaces,
-                                item.unitCode,
-                              )}
+                          <span className="font-semibold text-foreground">
+                            {item.closingQuantity === 0
+                              ? '-'
+                              : formatQty(
+                                  item.closingQuantity,
+                                  item.noOfDecimalPlaces,
+                                  item.unitCode,
+                                )}
+                          </span>
                         </div>
                         <div>
-                          {item.closingAmount === 0
-                            ? '-'
-                            : item.closingAmount?.toFixed(2)}
+                          <span className="font-semibold text-foreground">
+                            {item.closingAmount === 0
+                              ? '-'
+                              : item.closingAmount?.toFixed(2)}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -219,20 +227,20 @@ const ReportView = ({ data }: { data: StockInHandGodownWiseListSchema }) => {
 
 const ReportHeader = () => {
   return (
-    <div className=" grid grid-cols-[1fr_2fr] border-amber-950! bg-gray-100  text-center font-bold  ">
-      <div className="text-accent-foreground border-2 text-left pl-2 font-stretch-ultra-expanded  h-full flex items-center">
+    <div className="grid grid-cols-[1fr_2fr] border border-border text-center font-bold bg-muted dark:bg-secondary/40">
+      <div className="text-foreground border-2 text-left pl-2 font-stretch-ultra-expanded h-full flex items-center">
         PARTICULARS
       </div>
-      <div className="grid grid-cols-4 border-2 border-l-0">
-        <div className="">
-          <div className="text-accent-foreground  border-b-2">Opening</div>
+      <div className="grid grid-cols-4 border-2 border-l-0 border-border">
+        <div>
+          <div className="text-foreground border-b-2">Opening</div>
           <div className="grid grid-cols-2">
             <div>Qty</div>
             <div className="border-l-2">Val</div>
           </div>
         </div>
         <div>
-          <div className="text-accent-foreground border-b-2 border-l-2   ">
+          <div className="text-foreground border-b-2 border-l-2">
             Inward
           </div>
           <div className="grid grid-cols-2">
@@ -242,7 +250,7 @@ const ReportHeader = () => {
         </div>
 
         <div>
-          <div className="text-accent-foreground border-b-2 border-l-2">
+          <div className="text-foreground border-b-2 border-l-2">
             Outward
           </div>
           <div className="grid grid-cols-2">
@@ -251,7 +259,7 @@ const ReportHeader = () => {
           </div>
         </div>
         <div>
-          <div className="text-accent-foreground border-b-2 border-l-2">
+          <div className="text-foreground border-b-2 border-l-2">
             Closing
           </div>
           <div className="grid grid-cols-2">
@@ -313,17 +321,17 @@ const ReportFooter = ({ data }: { data: StockInHandGodownWiseListSchema }) => {
 
   return (
     <>
-      <div className=" grid grid-cols-[1fr_2fr] border-amber-950! bg-gray-100  text-center font-bold  ">
-        <div className="text-accent-foreground border-2 text-right flex items-center pr-2 h-full justify-between">
+      <div className="grid grid-cols-[1fr_2fr] border border-border text-center font-bold bg-muted dark:bg-secondary/40">
+        <div className="text-foreground border-2 text-right flex items-center pr-2 h-full justify-between">
           <div className="pl-4 italic text-sm font-mono">
             Item count: {data.length}
           </div>
           <div>Total:</div>
         </div>
-        <div className="grid grid-cols-4 border-b-2 border-l-0">
-          <div className="">
+        <div className="grid grid-cols-4 border-b-2 border-l-0 border-border">
+          <div>
             <div className="grid grid-cols-2">
-              <div className=" text-right pr-2">
+              <div className="text-right pr-2 text-muted-foreground">
                 {total.openingQuantity === 0
                   ? '-'
                   : formatQty(
@@ -332,7 +340,7 @@ const ReportFooter = ({ data }: { data: StockInHandGodownWiseListSchema }) => {
                       unitCode,
                     )}{' '}
               </div>
-              <div className="border-l-2">
+              <div className="border-l-2 text-muted-foreground">
                 {total.openingAmount === 0
                   ? '-'
                   : formatQtyFixed(total.openingAmount)}
@@ -341,7 +349,7 @@ const ReportFooter = ({ data }: { data: StockInHandGodownWiseListSchema }) => {
           </div>
           <div>
             <div className="grid grid-cols-2">
-              <div className="border-l-2  text-right pr-2">
+              <div className="border-l-2 text-right pr-2 text-muted-foreground">
                 {total.inwardQuantity === 0
                   ? '-'
                   : formatQty(
@@ -350,7 +358,7 @@ const ReportFooter = ({ data }: { data: StockInHandGodownWiseListSchema }) => {
                       unitCode,
                     )}
               </div>
-              <div className="border-l-2">
+              <div className="border-l-2 text-muted-foreground">
                 {total.inwardAmount === 0
                   ? '-'
                   : formatQtyFixed(total.inwardAmount)}
@@ -360,7 +368,7 @@ const ReportFooter = ({ data }: { data: StockInHandGodownWiseListSchema }) => {
 
           <div>
             <div className="grid grid-cols-2">
-              <div className="border-l-2  text-right pr-2">
+              <div className="border-l-2 text-right pr-2 text-muted-foreground">
                 {total.outwardQuantity === 0
                   ? '-'
                   : formatQty(
@@ -369,7 +377,7 @@ const ReportFooter = ({ data }: { data: StockInHandGodownWiseListSchema }) => {
                       unitCode,
                     )}
               </div>
-              <div className="border-l-2">
+              <div className="border-l-2 text-muted-foreground">
                 {total.outwardAmount === 0
                   ? '-'
                   : formatQtyFixed(total.outwardAmount)}
@@ -379,18 +387,22 @@ const ReportFooter = ({ data }: { data: StockInHandGodownWiseListSchema }) => {
           <div>
             <div className="grid grid-cols-2">
               <div className="border-l-2 text-right pr-2">
-                {total.closingQuantity === 0
-                  ? '-'
-                  : formatQty(
-                      total.closingQuantity,
-                      noOfDecimalPlaces,
-                      unitCode,
-                    )}
+                <span className="font-semibold text-foreground">
+                  {total.closingQuantity === 0
+                    ? '-'
+                    : formatQty(
+                        total.closingQuantity,
+                        noOfDecimalPlaces,
+                        unitCode,
+                      )}
+                </span>
               </div>
-              <div className="border-l-2">
-                {total.closingAmount === 0
-                  ? '-'
-                  : formatQtyFixed(total.closingAmount)}
+              <div>
+                <span className="font-semibold text-foreground">
+                  {total.closingAmount === 0
+                    ? '-'
+                    : formatQtyFixed(total.closingAmount)}
+                </span>
               </div>
             </div>
           </div>

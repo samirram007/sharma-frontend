@@ -17,16 +17,16 @@ const PosHeader = ({ mainForm: form }: PosHeaderProps) => {
     : ''
 
   return (
-    <div className="grid grid-rows-1">
-      <div className="grid grid-cols-[350px_1fr]">
+    <div className="grid grid-rows-1 p-2">
+      <div className="grid grid-cols-[350px_1fr] border-0">
         <div className="space-y-0">
           <div className="grid grid-cols-[170px_200px] gap-2">
-            <div className="bg-yellow-600 text-gray-100 px-2 py-0.5 shadow-md text-sm">
+            <div className="bg-emerald-600 dark:bg-emerald-700 text-white px-2 py-0.5 shadow-md text-sm">
               Conversion Journal
             </div>
             <div>
               no:
-              <span className="uppercase font-bold text-lg text-teal-800 underline underline-offset-2 decoration-1 pl-2 space-r-1">
+              <span className="uppercase font-bold text-lg text-emerald-800 dark:text-emerald-200 underline underline-offset-2 decoration-1 pl-2 space-r-1">
                 {form.getValues('voucherNo') ?? 'new'}
               </span>
             </div>

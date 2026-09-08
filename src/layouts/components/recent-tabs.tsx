@@ -124,6 +124,8 @@ function iconNameFor(href: string, icons: Map<string, string | null>): string {
  * - Right-clicking a tab opens a context menu to pin it (it jumps to the
  *   front, right after the pinned Dashboard) or unpin it. Pinned tabs lead
  *   the strip but may still overflow like any other tab.
+ * - Ctrl+Q (Cmd+Q on macOS) closes the active tab, exactly like clicking
+ *   its ×; the pinned Dashboard tab is exempt.
  * - Nested URLs (e.g. a voucher record at
  *   '/transactions/vouchers/delivery_note/7045') stay on their menu page's
  *   tab: the deepest tab whose route covers the path stays highlighted and
@@ -332,6 +334,27 @@ export function RecentTabs() {
     })
   }, [location.pathname, user, menuTree, allowedRoutes, tabVisible, activeHref])
 
+  // Ctrl+Q / Cmd+Q closes the active tab — the keyboard twin of the tab's ×
+  // button. The handler is registered once; refs keep it acting on the
+  // current tab state (the close logic itself is recreated every render).
+  const activeHrefRef = useRef(activeHref)
+  activeHrefRef.current = activeHref
+  const closeTabRef = useRef<((href: string) => void) | null>(null)
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.repeat || event.altKey || event.shiftKey) return
+      if (!(event.ctrlKey || event.metaKey)) return
+      if (event.key.toLowerCase() !== 'q') return
+      // The pinned Dashboard tab never closes (it has no × either).
+      const href = activeHrefRef.current
+      if (!href || href === DEFAULT_TAB.href) return
+      event.preventDefault()
+      closeTabRef.current?.(href)
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [])
+
   if (recents.length === 0) return null
 
   /**
@@ -435,6 +458,7 @@ export function RecentTabs() {
       closeTimers.current.set(href, timer)
     }
   }
+  closeTabRef.current = closeTab
 
   const registerTabEl = useCallback(
     (href: string, el: HTMLDivElement | null) => {

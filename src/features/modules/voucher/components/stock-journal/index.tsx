@@ -36,9 +36,9 @@ const StockJournal = ({ stockJournalForm }: StockJournalProps) => {
         <FormInputField type="text" form={stockJournalForm} name="type" />
       </div>
       <div
-        className="border-inside-all 
+        className="sticky top-0 z-10 dark:border-b-2
                     grid grid-rows-1 grid-cols-[1fr_280px_130px_70px_70px_180px_120px] 
-                    bg-gray-300 text-center border-border"
+                    bg-gray-300 dark:bg-gray-900 text-center border-border"
       >
         <div className="border-r-0!  ">Particulars</div>
 
@@ -121,16 +121,13 @@ const StockJournalEntriesSection = ({
   }
 
   useEffect(() => {
-    // Wait for the POS context to settle before creating the first row: each
-    // voucher page sets movementType (and conversion also
-    // firstRowMovementType) in its own effect, which runs AFTER this mount
-    // effect. Appending with the still-empty context left the first row with
-    // movementType '' — its In/Out toggle was unhighlighted and the godown
-    // rows rendered the wrong batch column.
+    // Only auto-add the first row once, when the POS context has settled and
+    // no row has been added yet. Guarding on fields.length avoids the
+    // StrictMode double-mount from appending a duplicate first row.
     if (fields.length === 0 && (movementType || firstRowMovementType)) {
       handleOnClickAddEntry()
     }
-  }, [movementType, firstRowMovementType])
+  }, [movementType, firstRowMovementType, fields.length])
 
   return (
     <div className="">

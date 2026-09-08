@@ -1,13 +1,11 @@
-import { Link } from '@tanstack/react-router'
-
 import { useEffect, useState } from 'react'
-import type { StockInHandListSchema } from '../../stock_summary/data/schema'
+import { FreightGodownWiseListSchema, type GodownDetailSchema } from './data/schema'
 import { cn } from '@/lib/utils'
 import { ExportDropdown, ExportOverlay } from '../shared/export-controls'
 import { useExportJob } from '../shared/export-job'
 
 const EXPORT_COLUMNS = [
-  { header: 'Particulars', accessor: 'itemName' },
+  { header: 'Godown', accessor: 'godownName' },
   { header: 'Opening Qty', accessor: 'openingQuantity' },
   { header: 'Opening Value', accessor: 'openingAmount' },
   { header: 'Inward Qty', accessor: 'inwardQuantity' },
@@ -26,9 +24,9 @@ const qtyText = (quantity: number | null | undefined, item: any) =>
 const valueText = (amount: number | null | undefined) =>
   !amount ? '-' : `₹${amount.toFixed(2)}`
 
-const toExportRows = (rows: Array<StockInHandListSchema[number]>) =>
+const toExportRows = (rows: GodownDetailSchema[]) =>
   rows.map((item) => ({
-    itemName: item.itemName ?? '',
+    godownName: item.godownName ?? '',
     openingQuantity: qtyText(item.openingQuantity, item),
     openingAmount: valueText(item.openingAmount),
     inwardQuantity: qtyText(item.inwardQuantity, item),
@@ -39,25 +37,25 @@ const toExportRows = (rows: Array<StockInHandListSchema[number]>) =>
     closingAmount: valueText(item.closingAmount),
   }))
 
-interface StockInHandProps {
-  data: StockInHandListSchema
+interface FreightGodownWiseProps {
+  data: FreightGodownWiseListSchema
 }
 
 export default function FreightGodownWise({
-  data: stockInHandListSchema,
-}: StockInHandProps) {
+  data: freightGodownWiseList,
+}: FreightGodownWiseProps) {
   return (
     <>
-      {stockInHandListSchema.length === 0 ? (
+      {freightGodownWiseList.length === 0 ? (
         <div className="text-center text-gray-500">No data available.</div>
       ) : (
-        <ReportView data={stockInHandListSchema} />
+        <ReportView data={freightGodownWiseList} />
       )}
     </>
   )
 }
 
-const ReportView = ({ data }: StockInHandProps) => {
+const ReportView = ({ data }: FreightGodownWiseProps) => {
   const {
     exportJob,
     eta,
@@ -65,7 +63,7 @@ const ReportView = ({ data }: StockInHandProps) => {
     runExport,
     handleRunInBackground,
     cancelExport,
-  } = useExportJob<StockInHandListSchema[number]>({
+  } = useExportJob<GodownDetailSchema>({
     getPageRows: () => data,
     getFilteredRows: () => data,
     generate: async (action, rows) => {
@@ -97,7 +95,10 @@ const ReportView = ({ data }: StockInHandProps) => {
   return (
     <div className="w-full min-h-full grid grid-rows-[auto_auto_1fr]">
       <ReportHeader />
-      <div className="flex items-center justify-end px-2 py-1 border-b">
+      <div className="flex items-center justify-end px-2 py-1 border-b gap-2">
+        <div className="text-xs text-muted-foreground">
+          Delivery initiated from {' '}<span className="font-semibold text-foreground">Godown</span>
+        </div>
         {data.length > 0 && (
           <ExportDropdown
             job={exportJob}
@@ -117,20 +118,19 @@ const ReportView = ({ data }: StockInHandProps) => {
             )}
           >
             <div className="text-left pl-2 font-semibold truncate flex items-center">
-              <Link
-                to={'/reports/stock_summary/stock-in-hand-item-wise'}
+              <span
                 className="inline-block mr-2 text-gray-700 hover:text-blue-700 truncate"
-                title={item.itemName}
+                title={item.godownName}
               >
-                {item.itemName}
-              </Link>
+                {item.godownName}
+              </span>
             </div>
             <div className="grid grid-cols-4">
               <div className="grid grid-cols-[1.2fr_1fr]">
                 <div className="text-right pr-2 py-0.5 border-r-2">
                   {item.openingQuantity === 0
                     ? '-'
-                    : `${item.openingQuantity?.toFixed(item.noOfDecimalPlaces)} ${item.unitCode}`}
+                    : `${item.openingQuantity?.toFixed(item.noOfDecimalPlaces ?? 2)} ${item.unitCode ?? ''}`}
                 </div>
                 <div className="py-0.5">
                   {item.openingAmount === 0
@@ -143,7 +143,7 @@ const ReportView = ({ data }: StockInHandProps) => {
                 <div className="text-right pr-2 py-0.5 border-r-2">
                   {item.inwardQuantity === 0
                     ? '-'
-                    : `${item.inwardQuantity?.toFixed(item.noOfDecimalPlaces)} ${item.unitCode}`}
+                    : `${item.inwardQuantity?.toFixed(item.noOfDecimalPlaces ?? 2)} ${item.unitCode ?? ''}`}
                 </div>
                 <div className="py-0.5">
                   {item.inwardAmount === 0
@@ -156,7 +156,7 @@ const ReportView = ({ data }: StockInHandProps) => {
                 <div className="text-right pr-2 py-0.5 border-r-2">
                   {item.outwardQuantity === 0
                     ? '-'
-                    : `${item.outwardQuantity?.toFixed(item.noOfDecimalPlaces)} ${item.unitCode}`}
+                    : `${item.outwardQuantity?.toFixed(item.noOfDecimalPlaces ?? 2)} ${item.unitCode ?? ''}`}
                 </div>
                 <div className="py-0.5">
                   {item.outwardAmount === 0
@@ -169,7 +169,7 @@ const ReportView = ({ data }: StockInHandProps) => {
                 <div className="text-right pr-2 py-0.5 border-r-2">
                   {item.closingQuantity === 0
                     ? '-'
-                    : `${item.closingQuantity?.toFixed(item.noOfDecimalPlaces)} ${item.unitCode}`}
+                    : `${item.closingQuantity?.toFixed(item.noOfDecimalPlaces ?? 2)} ${item.unitCode ?? ''}`}
                 </div>
                 <div className="py-0.5">
                   {item.closingAmount === 0
@@ -241,7 +241,7 @@ const ReportHeader = () => {
   )
 }
 
-const ReportFooter = ({ data }: StockInHandProps) => {
+const ReportFooter = ({ data }: FreightGodownWiseProps) => {
   const [unitCode, setUnitCode] = useState<string>('')
   const [noOfDecimalPlaces, setNoOfDecimalPlaces] = useState<number>(0)
 
@@ -271,17 +271,19 @@ const ReportFooter = ({ data }: StockInHandProps) => {
 
   useEffect(() => {
     const uniqueUnitCode = new Set<string>()
-    const noOfDecimalPlaces = new Set<number>()
+    const decimalPlaces = new Set<number>()
     data.forEach((item) => {
       if (item.unitCode) {
         uniqueUnitCode.add(item.unitCode)
-        noOfDecimalPlaces.add(item.noOfDecimalPlaces)
+      }
+      if (item.noOfDecimalPlaces != null && item.noOfDecimalPlaces !== undefined) {
+        decimalPlaces.add(item.noOfDecimalPlaces)
       }
     })
     const uniqueUnitCodeArray = Array.from(uniqueUnitCode)
     if (uniqueUnitCodeArray.length === 1) {
       setUnitCode('' + uniqueUnitCodeArray.join(', '))
-      setNoOfDecimalPlaces(Array.from(noOfDecimalPlaces)[0])
+      setNoOfDecimalPlaces(Array.from(decimalPlaces)[0])
     } else {
       setUnitCode('~')
       setNoOfDecimalPlaces(2)
@@ -290,9 +292,8 @@ const ReportFooter = ({ data }: StockInHandProps) => {
 
   return (
     <div className="grid grid-cols-[1.5fr_2.5fr] bg-gray-100 text-center font-bold">
-      <div className="text-accent-foreground border-2 text-right flex items-center pr-2 h-full justify-between">
-        <div className="pl-4 italic text-sm font-mono">
-          Item count: {data.length}
+      <div className="text-accent-foreground border-2 text-right flex items-center pr-2 h-full justify-between">          <div className="pl-4 italic text-sm font-mono">
+          Godown count: {data.length}
         </div>
         <div>Total:</div>
       </div>

@@ -3,7 +3,6 @@ import { Search } from '@/components/search'
 import { ThemeSwitch } from '@/components/theme-switch'
 import { NotificationBell } from '@/features/modules/app-notification/components/notification-bell'
 import React from 'react'
-import FiscalYearSelector from './fiscal-year-selector'
 import { Header } from './header'
 import { TopNav } from './top-nav'
 import { resolveTopNavLinks } from '../links/top-nav-links'
@@ -13,6 +12,9 @@ import { topMenuTreeQueryOptions } from '@/features/modules/menu/data/services'
 import { useMemo } from 'react'
 import { collectMenuRoutes } from '@/features/modules/menu/data/menu-route-guard'
 import { RecentTabs } from './recent-tabs'
+import RouteBreadcrumbs from './route-breadcrumbs'
+import DocumentsButton from './documents-button'
+import ReportingPeriodShort from './reporting-period-short'
 // import { GodownItemSearch } from './godown-item-search';
 
 const HeaderComponent: React.FC<{}> = () => {
@@ -49,20 +51,36 @@ const HeaderComponent: React.FC<{}> = () => {
   )
 
   return (
-    <div className="mx-2 mt-2 max-w-full rounded-xl border border-white/60 bg-white/70 shadow-sm backdrop-blur-md dark:border-white/8 dark:bg-card dark:shadow-black/40 dark:backdrop-blur-md">
-      <Header className="rounded-t-xl bg-transparent">
-        <TopNav links={links} allowedRoutes={allowedRoutes} />
-        <div className="ml-auto flex min-w-0 items-center gap-2 lg:gap-4">
-          {/* <GodownItemSearch className='hidden lg:flex' placeholder='Search items...' /> */}
-          <Search className="hidden sm:flex" />
-          <NotificationBell />
-          <div className="hidden sm:block h-6 w-px bg-slate-300/50 dark:bg-slate-700/50" />
-          <ThemeSwitch />
-          <FiscalYearSelector visible={true} />
-          <ProfileDropdown />
+
+
+    <div className="sticky top-0 z-10 ">
+
+      <div className="    max-w-full rounded-xl border border-white/60 bg-white/70 shadow-sm backdrop-blur-md dark:border-white/8 dark:bg-card dark:shadow-black/40 dark:backdrop-blur-md">
+        <Header className="rounded-t-xl bg-transparent  border-b-2 border-white/60 dark:border-white/8">
+          <TopNav links={links} allowedRoutes={allowedRoutes} />
+          <div className="ml-auto flex min-w-0 items-center gap-2 lg:gap-4">
+            {/* <GodownItemSearch className='hidden lg:flex' placeholder='Search items...' /> */}
+            <Search className="hidden sm:flex" />
+            <ReportingPeriodShort className="hidden sm:inline-flex" />
+            <NotificationBell />
+            <DocumentsButton />
+            <div className="hidden md:block h-6 w-px bg-slate-300/50 dark:bg-slate-700/50" />
+            <ThemeSwitch />
+            <div className="  flex">
+              <ProfileDropdown />
+            </div>
+            <div className="flex items-center gap-2 md:hidden">
+              <ReportingPeriodShort className="inline-flex" />
+            </div>
+          </div>
+        </Header>
+        <RecentTabs />
+        <div className="px-2 pb-2 pt-2">
+          <div className="rounded-md border border-slate-200/70 bg-white/70 px-3 py-1.5 text-xs shadow-sm backdrop-blur-sm dark:border-white/[0.07] dark:bg-card">
+            <RouteBreadcrumbs />
+          </div>
         </div>
-      </Header>
-      <RecentTabs />
+      </div>
     </div>
   )
 }

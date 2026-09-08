@@ -5,6 +5,7 @@ import { useAuth } from '@/features/auth/contexts/AuthContext'
 import { findMenuTitleByRoute } from '@/layouts/lib/recent-pages'
 import { IconClock } from '@tabler/icons-react'
 import FooterCalculator from './footer-calculator'
+import FiscalYearSelector from './fiscal-year-selector'
 
 /** Pretty label for an arbitrary path segment. */
 const toTitle = (value: string) =>
@@ -46,7 +47,7 @@ export default function Footer() {
   return (
     <footer
       data-testid="app-footer"
-      className="relative z-10 mt-1 flex min-h-11 flex-wrap items-center justify-between gap-x-4 gap-y-1 rounded-lg border border-white/60 bg-white/60 px-3 py-1.5 text-xs text-slate-600 shadow-sm backdrop-blur-md dark:border-white/8 dark:bg-card dark:text-slate-400"
+      className="sticky mb-2! bottom-0 left-0 right-0 z-10 mt-1 flex min-h-11 flex-wrap items-center justify-between gap-x-4 gap-y-1 rounded-lg border border-white/60 bg-white/60 px-3 py-1.5 text-xs text-slate-600 shadow-sm backdrop-blur-md dark:border-white/8 dark:bg-card dark:text-slate-400"
     >
       {/* Brand / environment */}
       <div className="flex min-w-0 items-center gap-2">
@@ -69,8 +70,9 @@ export default function Footer() {
         </span>
       </div>
 
-      {/* Current page context */}
+      {/* Current page context + fiscal year */}
       <div className="hidden min-w-0 items-center gap-2 sm:flex">
+        <FiscalYearSelector visible={true} />
         <span className="h-4 w-px bg-slate-300/60 dark:bg-slate-700/60" />
         <div className="flex min-w-0 items-baseline gap-2">
           <span className="truncate font-semibold text-slate-700 dark:text-slate-200">

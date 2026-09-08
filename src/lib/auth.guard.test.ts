@@ -1,9 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { requirePermission } from '@/lib/auth'
-import {
-  getForbiddenRoute,
-  clearForbiddenRoute,
-} from '@/lib/forbidden-details'
+import { getForbiddenRoute, clearForbiddenRoute } from '@/lib/forbidden-details'
 
 const makeContext = (permissions: string[]) =>
   ({ auth: { permissions } }) as never
@@ -26,9 +23,7 @@ describe('requirePermission route guard', () => {
 
   it('blocks when the user has no permissions at all', async () => {
     const guard = requirePermission('FREIGHT_MENU_VIEW')
-    await expect(
-      guard({ context: makeContext([]) }),
-    ).resolves.toBeUndefined()
+    await expect(guard({ context: makeContext([]) })).resolves.toBeUndefined()
     expect(getForbiddenRoute()).toMatchObject({
       permissionCodes: ['FREIGHT_MENU_VIEW'],
     })

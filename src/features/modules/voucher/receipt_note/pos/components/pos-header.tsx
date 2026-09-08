@@ -22,11 +22,11 @@ const PosHeader = ({ mainForm: form }: PosHeaderProps) => {
     : ''
 
   return (
-    <div className="grid grid-rows-1   ">
+    <div className="grid grid-rows-1 p-2   ">
       <div className="grid grid-cols-[350px_1fr_100px]   border-0">
         <div className="space-y-0">
           <div className="grid grid-cols-[120px_200px] gap-2 ">
-            <div className="bg-red-400 text-gray-100 px-2 shadow-md  ">
+            <div className="bg-emerald-500 dark:bg-emerald-700 text-white px-2 shadow-md  ">
               Receipt Note
             </div>
             <div>
@@ -36,7 +36,7 @@ const PosHeader = ({ mainForm: form }: PosHeaderProps) => {
               </span>
             </div>
           </div>
-          <div className="grid grid-cols-[300px_300px] gap-6 pt-2">
+          <div className="grid grid-cols-[300px_300px] gap-6 pt-0 ">
             <div className="grid grid-cols-1">
               <FormInputField
                 form={form}

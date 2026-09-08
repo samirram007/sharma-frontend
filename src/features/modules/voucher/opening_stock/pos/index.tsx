@@ -284,21 +284,18 @@ const Pos = ({ currentRow }: OpeningStockProps) => {
           )}
         </div>
       )}
-      {/* h-[calc(100dvh-122px)] = fills the viewport below the fixed app
-          header + breadcrumbs (measured 122px). grid-rows-1 so the single
-          fieldset child fills the whole height (was grid-rows-[1fr_100px]
-          which left a dead 100px second row). */}
+      {/* Fixed header + scrollable body + fixed footer within the entry area. */}
       <div
         ref={areaRef}
-        className="voucher-entry w-full grid grid-rows-1
-             h-[calc(100dvh-122px)]"
+        className="voucher-entry w-full bg-white dark:bg-slate-800 h-[calc(100dvh-240px)] flex flex-col overflow-hidden"
       >
         <Form {...mainForm}>
           <fieldset
             disabled={readOnly}
-            className="flex h-full min-w-0 flex-col overflow-hidden"
+            className="flex min-h-0 w-full flex-col overflow-hidden border-0 p-0 m-0"
           >
-            <div className="grid min-h-0 flex-1 grid-rows-[auto_minmax(0,1fr)] overflow-hidden">
+            {/* Fixed header */}
+            <div className="shrink-0">
               <PosHeader
                 mainForm={mainForm}
                 isFetchingClosing={!readOnly ? isFetchingClosing : false}
@@ -310,9 +307,20 @@ const Pos = ({ currentRow }: OpeningStockProps) => {
                 closingInfo={!readOnly ? closingInfo : null}
                 onClearClosing={!readOnly ? handleClearClosing : undefined}
               />
-              <PosBody mainForm={mainForm} scrollRef={bodyScrollRef} />
             </div>
-            <PosFooter mainForm={mainForm} readOnly={readOnly} />
+
+            {/* Scrollable body — fills remaining space */}
+            <div
+              ref={bodyScrollRef}
+              className="flex min-h-0 w-full flex-1 flex-col overflow-hidden"
+            >
+              <PosBody mainForm={mainForm} />
+            </div>
+
+            {/* Fixed footer */}
+            <div className="shrink-0">
+              <PosFooter mainForm={mainForm} readOnly={readOnly} />
+            </div>
           </fieldset>
         </Form>
       </div>

@@ -54,7 +54,9 @@ const VoucherHeader = () => {
       <div className="grid grid-cols-[350px_1fr_200px] border-amber-300 border-0">
         <div className="space-y-0">
           <div className="grid grid-cols-[120px_200px] gap-2">
-            <div className="bg-red-400 text-gray-100 px-2">Receipt Note</div>
+            <div className="bg-emerald-500 dark:bg-emerald-700 text-white px-2">
+              Receipt Note
+            </div>
             <div>No: {methods.getValues('voucherNo') ?? 'new'} </div>
           </div>
           <div className="grid grid-cols-[250px_300px] gap-6 pt-2">
@@ -118,7 +120,7 @@ const VoucherHeader = () => {
 
 const BodyComponent = () => {
   return (
-    <div className="bg-violet-400/20 h-[25rem]">
+    <div className="bg-violet-500/10 dark:bg-violet-500/20 h-[25rem]">
       {/* <StockJournalEntries /> */}
       <StockJournalComponent />
       {/* <pre>
@@ -131,13 +133,13 @@ const BodyComponent = () => {
 
 const FooterComponent = () => {
   return (
-    <div className="bg-red-300/20 grid grid-cols-[1fr_1fr]">
+    <div className="bg-red-500/10 dark:bg-red-500/20 grid grid-cols-[1fr_1fr]">
       <div className="grid ">
         <div>
           <div className="text-sm">Narration:</div>
           <div
             contentEditable
-            className="narration caret-accent caret-underscore caret-unde justify-self-end bg-black text-gray-100 w-full h-full text-sm  font-semibold  "
+            className="narration caret-accent caret-underscore caret-unde justify-self-end bg-slate-900 dark:bg-black text-gray-100 dark:text-gray-200 w-full h-full text-sm  font-semibold  "
           ></div>
         </div>
         <div className="narration"></div>

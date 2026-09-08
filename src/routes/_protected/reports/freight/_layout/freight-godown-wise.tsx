@@ -1,4 +1,4 @@
-import { stockSummaryQueryOptions } from '@/features/modules/voucher/stock_summary/data/queryOptions'
+import { freightGodownWiseQueryOptions } from '@/features/modules/voucher/freight/godown-wise/data/queryOptions'
 
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
@@ -11,15 +11,15 @@ export const Route = createFileRoute(
 )({
   loader: ({ context }) =>
     context.queryClient.ensureQueryData(
-      stockSummaryQueryOptions('stock_in_hand'),
+      freightGodownWiseQueryOptions(),
     ),
   component: () => {
-    const { data: stocksummary } = useSuspenseQuery(
-      stockSummaryQueryOptions('stock_in_hand'),
+    const { data: freightGodownWise } = useSuspenseQuery(
+      freightGodownWiseQueryOptions(),
     )
 
-    return <FreightGodownWise data={stocksummary?.data} />
+    return <FreightGodownWise data={freightGodownWise?.data} />
   },
-  errorComponent: () => <div>Error loading stock summary data.</div>,
+  errorComponent: () => <div>Error loading freight godown wise data.</div>,
   pendingComponent: () => <Loader className="animate-spin" />,
 })

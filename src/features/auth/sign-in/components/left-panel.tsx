@@ -1,6 +1,6 @@
 export function LeftPanel() {
   return (
-    <section className="flex items-center px-6 py-10 sm:px-10 lg:px-16 xl:px-20">
+    <section className="hidden lg:flex  items-center px-6 py-10 sm:px-10 lg:px-16 xl:px-20">
       <div className="w-full max-w-2xl text-slate-100">
         <p className="mb-4 inline-flex items-center rounded-full border border-cyan-300/40 bg-cyan-400/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-cyan-200">
           Secure Access Portal

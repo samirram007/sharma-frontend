@@ -25,8 +25,6 @@ import {
 } from '@/components/ui/popover'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-
-import ReportingPeriod from '@/features/global/components/reporting-period'
 import { formatQtyFixed } from '@/utils/format-num'
 import { date_format } from '@/utils/removeEmptyStrings'
 import type { TransporterItemWiseItem } from './data/schema'
@@ -678,7 +676,7 @@ export function DataTableToolbar({
           className="h-8 w-[150px] lg:w-[250px]"
         />
 
-        <ReportingPeriod disableHotkey />
+        
 
         <div className="flex flex-row items-center gap-2">
           <div>

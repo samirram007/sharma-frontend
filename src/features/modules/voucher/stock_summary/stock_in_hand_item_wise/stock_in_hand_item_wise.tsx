@@ -15,7 +15,7 @@ export default function StockInHandItemWise({
   return (
     <>
       {stockInHandItemWiseListSchema.length === 0 ? (
-        <div className="text-center text-gray-500">No data available.</div>
+        <div className="text-center text-muted-foreground">No data available.</div>
       ) : (
         <ReportView data={stockInHandItemWiseListSchema} />
       )}
@@ -33,13 +33,13 @@ const ReportView = ({ data }: { data: StockInHandItemWiseListSchema }) => {
             <div
               className={cn(
                 'grid grid-cols-[1fr_2fr] text-center  font-semibold',
-                index % 2 === 0 ? 'bg-white' : 'bg-gray-100',
+                index % 2 === 0 ? 'bg-card' : 'bg-muted/50',
               )}
             >
               <div className=" text-left pl-2">
                 <Link
                   to={'/reports/stock_summary/stock-in-hand'}
-                  className="inline-block mr-2   hover:text-blue-700"
+                  className="inline-block mr-2   hover:text-primary dark:hover:text-blue-400"
                 >
                   {item.itemName}
                 </Link>
@@ -118,19 +118,19 @@ const ReportView = ({ data }: { data: StockInHandItemWiseListSchema }) => {
               {item.godownDetails.map((godown, godownIndex) => (
                 <div
                   key={godownIndex}
-                  className="text-sm italic text-gray-600    "
+                  className="text-sm italic text-muted-foreground"
                 >
                   <div
                     className={cn(
                       'grid grid-cols-[1fr_2fr] text-center ',
-                      index % 2 === 0 ? 'bg-white' : 'bg-gray-100',
-                      !godown.godownId ? 'font-semibold text-red-400' : '',
+                      index % 2 === 0 ? 'bg-card' : 'bg-muted/50',
+                      !godown.godownId ? 'font-semibold text-red-400 dark:text-red-500' : '',
                     )}
                   >
                     <div className=" text-left pl-8 font-semibold">
                       <Link
                         to={'/reports/stock_summary/stock-in-hand-godown-wise'}
-                        className="inline-block mr-2   hover:text-blue-700"
+                        className="inline-block mr-2   hover:text-primary dark:hover:text-blue-400"
                       >
                         {godown.godownId
                           ? `Storage: ${godown.godownName}`
@@ -219,20 +219,20 @@ const ReportView = ({ data }: { data: StockInHandItemWiseListSchema }) => {
 
 const ReportHeader = () => {
   return (
-    <div className=" grid grid-cols-[1fr_2fr] border-amber-950! bg-gray-100  text-center font-bold  ">
-      <div className="text-accent-foreground border-2 text-left pl-2 font-stretch-ultra-expanded  h-full flex items-center">
+    <div className="grid grid-cols-[1fr_2fr] border border-border text-center font-bold bg-muted dark:bg-secondary/40">
+      <div className="text-foreground border-2 text-left pl-2 font-stretch-ultra-expanded h-full flex items-center">
         PARTICULARS
       </div>
-      <div className="grid grid-cols-4 border-2 border-l-0">
-        <div className="">
-          <div className="text-accent-foreground  border-b-2">Opening</div>
+      <div className="grid grid-cols-4 border-2 border-l-0 border-border">
+        <div>
+          <div className="text-foreground border-b-2">Opening</div>
           <div className="grid grid-cols-2">
             <div>Qty</div>
             <div className="border-l-2">Val</div>
           </div>
         </div>
         <div>
-          <div className="text-accent-foreground border-b-2 border-l-2   ">
+          <div className="text-foreground border-b-2 border-l-2">
             Inward
           </div>
           <div className="grid grid-cols-2">
@@ -242,7 +242,7 @@ const ReportHeader = () => {
         </div>
 
         <div>
-          <div className="text-accent-foreground border-b-2 border-l-2">
+          <div className="text-foreground border-b-2 border-l-2">
             Outward
           </div>
           <div className="grid grid-cols-2">
@@ -251,7 +251,7 @@ const ReportHeader = () => {
           </div>
         </div>
         <div>
-          <div className="text-accent-foreground border-b-2 border-l-2">
+          <div className="text-foreground border-b-2 border-l-2">
             Closing
           </div>
           <div className="grid grid-cols-2">
@@ -313,14 +313,14 @@ const ReportFooter = ({ data }: { data: StockInHandItemWiseListSchema }) => {
 
   return (
     <>
-      <div className=" grid grid-cols-[1fr_2fr] border-amber-950! bg-gray-100  text-center font-bold  ">
-        <div className="text-accent-foreground border-2 text-right flex items-center pr-2 h-full justify-between">
+      <div className="grid grid-cols-[1fr_2fr] border border-border text-center font-bold bg-muted dark:bg-secondary/40">
+        <div className="text-foreground border-2 text-right flex items-center pr-2 h-full justify-between">
           <div className="pl-4 italic text-sm font-mono">
             Item count: {data.length}
           </div>
           <div>Total:</div>
         </div>
-        <div className="grid grid-cols-4 border-b-2 border-l-0">
+        <div className="grid grid-cols-4 border-b-2 border-l-0 border-border">
           <div className="">
             <div className="grid grid-cols-2">
               <div className=" text-right pr-2">

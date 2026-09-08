@@ -5,8 +5,6 @@ import type { Table } from '@tanstack/react-table'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
-import ReportingPeriod from '@/features/global/components/reporting-period'
-
 import { DataTableFacetedFilter } from '@/features/global/components/data-table/data-table-faceted-filter'
 import { buildDispatchLabel } from '../shared/utils'
 import { ExportDropdown, ExportOverlay } from '../shared/export-controls'
@@ -237,7 +235,7 @@ export function DataTableToolbar<TData>({
           className="h-8 w-[150px] lg:w-[250px]"
         />
 
-        <ReportingPeriod disableHotkey />
+        
 
         <div className="flex flex-row items-center gap-2">
           <div>

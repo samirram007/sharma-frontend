@@ -1075,9 +1075,72 @@ const Pos = ({ currentRow }: PurchaseOrderProps) => {
                 </div>
               </Form>
             ) : (
-              <div className="flex h-full items-center justify-center text-slate-400 text-sm">
-                Please select both Supplier and Purchase Account to add item
-                entries.
+              <div className="flex flex-col items-center justify-center py-8 text-center">
+                <svg
+                  className="w-12 h-12 mb-3 text-amber-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20 10 10 0 000-20z"
+                  />
+                </svg>
+                <h3 className="text-base font-semibold text-slate-700 mb-1">
+                  Complete the Required Fields
+                </h3>
+                <p className="text-slate-500 mb-4">
+                  Please select both{' '}
+                  <span className="font-medium">Supplier</span> and{' '}
+                  <span className="font-medium">Purchase Account</span> to add
+                  item entries.
+                </p>
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <svg
+                      className="w-5 h-5 text-blue-500"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 00-3-3v8a3 3 0 003 3h10a3 3 0 003-3v-8z"
+                      />
+                    </svg>
+                    <span className="text-sm text-slate-600">Supplier:</span>
+                    <span className="text-sm text-slate-400">
+                      Select supplier from dropdown
+                    </span>
+                  </div>
+                  <span className="text-slate-300">|</span>
+                  <div className="flex items-center gap-2">
+                    <svg
+                      className="w-5 h-5 text-purple-500"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      />
+                    </svg>
+                    <span className="text-sm text-slate-600">
+                      Purchase A/c:
+                    </span>
+                    <span className="text-sm text-slate-400">
+                      Select purchase account from dropdown
+                    </span>
+                  </div>
+                </div>
               </div>
             )}
           </div>

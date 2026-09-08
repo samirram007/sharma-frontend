@@ -21,17 +21,19 @@ const PosHeader = ({ mainForm: form }: PosHeaderProps) => {
     : ''
 
   return (
-    <div className="grid grid-rows-1   ">
+    <div className="grid grid-rows-1 p-2 px-4  ">
       <div className="grid grid-cols-[350px_1fr_100px]   border-0">
         <div className="space-y-0">
-          <div className="grid grid-cols-[120px_200px] gap-2 ">
-            <div className="bg-green-600 text-gray-100 px-2 shadow-md  ">
+          <div className="grid grid-cols-[120px_1fr] gap-2 ">
+            <div className="bg-emerald-600 dark:bg-emerald-700 text-white px-2 shadow-md  ">
               Delivery Note
             </div>
-            <div>
-              no:
-              <span className=" uppercase font-bold text-lg text-teal-800 underline underline-offset-2 decoration-1 pl-2 space-r-1">
-                {form.getValues('voucherNo') ?? 'new'}
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-500 dark:text-gray-400">
+                no:
+              </span>
+              <span className=" uppercase font-bold text-lg text-gray-800 dark:text-gray-200">
+                {form.getValues('voucherNo') ?? 'NEW'}
               </span>
             </div>
           </div>

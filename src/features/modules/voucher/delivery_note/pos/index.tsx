@@ -31,13 +31,12 @@ const Pos = ({ currentRow }: DeliveryNoteProps) => {
     <>
       <div
         className="voucher-entry w-full 
-            grid grid-rows-[1fr_120px] 
-         h-[calc(100dvh-170px)]  "
+            grid grid-rows-[1fr_100px] 
+         h-[calc(100dvh-240px)] bg-white dark:bg-gray-900 rounded-md border border-gray-300 shadow-md "
       >
         <Form {...mainForm}>
-          <div className="max-h-full grid grid-rows-[150px_1fr] overflow-hidden">
+          <div className="max-h-full grid grid-rows-[200px_1fr] overflow-hidden">
             <PosHeader mainForm={mainForm} />
-
             <PosBody mainForm={mainForm} />
           </div>
 

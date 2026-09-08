@@ -55,8 +55,6 @@ import {
 } from '@/components/ui/dropdown-menu'
 import type { SortingState } from '@tanstack/react-table'
 import { toNum, formatFixed } from '@/utils/format-num'
-import ReportingPeriod from '@/features/global/components/reporting-period'
-
 interface ReceiptNoteReportProps {
   data: ReceiptNoteReportList
   paginationMeta?: PaginationMeta
@@ -389,7 +387,7 @@ export default function ReceiptNoteReport({
           </p>
         </div>
         {/* IMP: dont remove this component, it is used to set the reporting period for the report */}
-        <ReportingPeriod disableHotkey />
+        
       </div>
 
       <div className="mb-4 flex items-center gap-2 rounded-lg border border-slate-200/70 bg-white/80 px-3 py-2 shadow-sm dark:border-white/[0.07] dark:bg-white/5">

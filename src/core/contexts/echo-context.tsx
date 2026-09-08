@@ -56,12 +56,26 @@ export function EchoProvider({ children }: { children: ReactNode }) {
   // channel-auth failure that indicates endpoint drift (404 / network error).
   // (The WS app-key warning has its own once-guard.)
   const probeFiredRef = useRef(false)
+  // Guard: only create a new Echo instance once per user session. Without
+  // this, every AuthProvider re-render (e.g. menuTree arriving after profile)
+  // would tear down + re-create the WS connection, and presence-channel
+  // subscription callbacks would re-fire, triggering infinite update loops
+  // in consumers that call setState inside Echo subscription handlers.
+  const echoCreatedRef = useRef(false)
 
   useEffect(() => {
     if (!isAuthenticated || !user?.id) {
       setEcho(null)
+      echoCreatedRef.current = false
       return
     }
+
+    // If we already created an Echo instance for this session, skip
+    // re-creation — the existing instance is still valid.
+    if (echoCreatedRef.current) {
+      return
+    }
+    echoCreatedRef.current = true
 
     // Define Pusher on window for laravel-echo
     window.Pusher = Pusher
@@ -133,6 +147,7 @@ export function EchoProvider({ children }: { children: ReactNode }) {
     return () => {
       instance.disconnect()
       setEcho(null)
+      echoCreatedRef.current = false
     }
   }, [isAuthenticated, user?.id])
 

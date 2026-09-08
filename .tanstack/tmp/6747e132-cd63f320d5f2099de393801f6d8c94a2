@@ -141,6 +141,7 @@ import { Route as ProtectedMastersPayrollLayoutCost_centerIndexRouteImport } fro
 import { Route as ProtectedMastersPayrollLayoutCost_categoryIndexRouteImport } from './routes/_protected/masters/payroll/_layout/cost_category/index'
 import { Route as ProtectedMastersPayrollLayoutCost_allocation_ruleIndexRouteImport } from './routes/_protected/masters/payroll/_layout/cost_allocation_rule/index'
 import { Route as ProtectedMastersPayrollLayoutBankIndexRouteImport } from './routes/_protected/masters/payroll/_layout/bank/index'
+import { Route as ProtectedMastersOrganizationLayoutBranchIndexRouteImport } from './routes/_protected/masters/organization/_layout/branch/index'
 import { Route as ProtectedMastersInventoryLayoutUnique_quantity_codeIndexRouteImport } from './routes/_protected/masters/inventory/_layout/unique_quantity_code/index'
 import { Route as ProtectedMastersInventoryLayoutStock_unitIndexRouteImport } from './routes/_protected/masters/inventory/_layout/stock_unit/index'
 import { Route as ProtectedMastersInventoryLayoutStock_groupIndexRouteImport } from './routes/_protected/masters/inventory/_layout/stock_group/index'
@@ -162,6 +163,7 @@ import { Route as ProtectedMastersOrganizationLayoutFiscal_yearLayoutRouteImport
 import { Route as ProtectedMastersOrganizationLayoutCurrencyLayoutRouteImport } from './routes/_protected/masters/organization/_layout/currency/_layout'
 import { Route as ProtectedMastersOrganizationLayoutCountryLayoutRouteImport } from './routes/_protected/masters/organization/_layout/country/_layout'
 import { Route as ProtectedMastersOrganizationLayoutCompanyLayoutRouteImport } from './routes/_protected/masters/organization/_layout/company/_layout'
+import { Route as ProtectedMastersOrganizationLayoutBranchLayoutRouteImport } from './routes/_protected/masters/organization/_layout/branch/_layout'
 import { Route as ProtectedMastersMiscellaneousLayoutDelivery_vehiclesIdRouteImport } from './routes/_protected/masters/miscellaneous/_layout/delivery_vehicles.$id'
 import { Route as ProtectedMastersInventoryLayoutStorage_unitLayoutRouteImport } from './routes/_protected/masters/inventory/_layout/storage_unit/_layout'
 import { Route as ProtectedMastersInventoryLayoutStock_itemLayoutRouteImport } from './routes/_protected/masters/inventory/_layout/stock_item/_layout'
@@ -1157,6 +1159,12 @@ const ProtectedMastersPayrollLayoutBankIndexRoute =
     path: '/bank/',
     getParentRoute: () => ProtectedMastersPayrollLayoutRoute,
   } as any)
+const ProtectedMastersOrganizationLayoutBranchIndexRoute =
+  ProtectedMastersOrganizationLayoutBranchIndexRouteImport.update({
+    id: '/branch/',
+    path: '/branch/',
+    getParentRoute: () => ProtectedMastersOrganizationLayoutRoute,
+  } as any)
 const ProtectedMastersInventoryLayoutUnique_quantity_codeIndexRoute =
   ProtectedMastersInventoryLayoutUnique_quantity_codeIndexRouteImport.update({
     id: '/unique_quantity_code/',
@@ -1281,6 +1289,12 @@ const ProtectedMastersOrganizationLayoutCompanyLayoutRoute =
   ProtectedMastersOrganizationLayoutCompanyLayoutRouteImport.update({
     id: '/company/_layout',
     path: '/company',
+    getParentRoute: () => ProtectedMastersOrganizationLayoutRoute,
+  } as any)
+const ProtectedMastersOrganizationLayoutBranchLayoutRoute =
+  ProtectedMastersOrganizationLayoutBranchLayoutRouteImport.update({
+    id: '/branch/_layout',
+    path: '/branch',
     getParentRoute: () => ProtectedMastersOrganizationLayoutRoute,
   } as any)
 const ProtectedMastersMiscellaneousLayoutDelivery_vehiclesIdRoute =
@@ -2088,6 +2102,7 @@ export interface FileRoutesByFullPath {
   '/masters/inventory/stock_item': typeof ProtectedMastersInventoryLayoutStock_itemLayoutRouteWithChildren
   '/masters/inventory/storage_unit': typeof ProtectedMastersInventoryLayoutStorage_unitLayoutRouteWithChildren
   '/masters/miscellaneous/delivery_vehicles/$id': typeof ProtectedMastersMiscellaneousLayoutDelivery_vehiclesIdRoute
+  '/masters/organization/branch': typeof ProtectedMastersOrganizationLayoutBranchLayoutRoute
   '/masters/organization/company': typeof ProtectedMastersOrganizationLayoutCompanyLayoutRouteWithChildren
   '/masters/organization/country': typeof ProtectedMastersOrganizationLayoutCountryLayoutRouteWithChildren
   '/masters/organization/currency': typeof ProtectedMastersOrganizationLayoutCurrencyLayoutRouteWithChildren
@@ -2109,6 +2124,7 @@ export interface FileRoutesByFullPath {
   '/masters/inventory/stock_group/': typeof ProtectedMastersInventoryLayoutStock_groupIndexRoute
   '/masters/inventory/stock_unit/': typeof ProtectedMastersInventoryLayoutStock_unitIndexRoute
   '/masters/inventory/unique_quantity_code/': typeof ProtectedMastersInventoryLayoutUnique_quantity_codeIndexRoute
+  '/masters/organization/branch/': typeof ProtectedMastersOrganizationLayoutBranchIndexRoute
   '/masters/payroll/bank/': typeof ProtectedMastersPayrollLayoutBankIndexRoute
   '/masters/payroll/cost_allocation_rule/': typeof ProtectedMastersPayrollLayoutCost_allocation_ruleIndexRoute
   '/masters/payroll/cost_category/': typeof ProtectedMastersPayrollLayoutCost_categoryIndexRoute
@@ -2327,6 +2343,7 @@ export interface FileRoutesByTo {
   '/reports/stock_summary': typeof ProtectedReportsStock_summaryLayoutIndexRoute
   '/administration/user/$id': typeof ProtectedAdministrationLayoutUserLayoutIdRoute
   '/masters/miscellaneous/delivery_vehicles/$id': typeof ProtectedMastersMiscellaneousLayoutDelivery_vehiclesIdRoute
+  '/masters/organization/branch': typeof ProtectedMastersOrganizationLayoutBranchIndexRoute
   '/administration/role': typeof ProtectedAdministrationLayoutRoleLayoutIndexRoute
   '/administration/user': typeof ProtectedAdministrationLayoutUserLayoutIndexRoute
   '/masters/accounts/account_nature': typeof ProtectedMastersAccountsLayoutAccount_natureIndexRoute
@@ -2574,6 +2591,7 @@ export interface FileRoutesById {
   '/_protected/masters/inventory/_layout/stock_item/_layout': typeof ProtectedMastersInventoryLayoutStock_itemLayoutRouteWithChildren
   '/_protected/masters/inventory/_layout/storage_unit/_layout': typeof ProtectedMastersInventoryLayoutStorage_unitLayoutRouteWithChildren
   '/_protected/masters/miscellaneous/_layout/delivery_vehicles/$id': typeof ProtectedMastersMiscellaneousLayoutDelivery_vehiclesIdRoute
+  '/_protected/masters/organization/_layout/branch/_layout': typeof ProtectedMastersOrganizationLayoutBranchLayoutRoute
   '/_protected/masters/organization/_layout/company/_layout': typeof ProtectedMastersOrganizationLayoutCompanyLayoutRouteWithChildren
   '/_protected/masters/organization/_layout/country/_layout': typeof ProtectedMastersOrganizationLayoutCountryLayoutRouteWithChildren
   '/_protected/masters/organization/_layout/currency/_layout': typeof ProtectedMastersOrganizationLayoutCurrencyLayoutRouteWithChildren
@@ -2595,6 +2613,7 @@ export interface FileRoutesById {
   '/_protected/masters/inventory/_layout/stock_group/': typeof ProtectedMastersInventoryLayoutStock_groupIndexRoute
   '/_protected/masters/inventory/_layout/stock_unit/': typeof ProtectedMastersInventoryLayoutStock_unitIndexRoute
   '/_protected/masters/inventory/_layout/unique_quantity_code/': typeof ProtectedMastersInventoryLayoutUnique_quantity_codeIndexRoute
+  '/_protected/masters/organization/_layout/branch/': typeof ProtectedMastersOrganizationLayoutBranchIndexRoute
   '/_protected/masters/payroll/_layout/bank/': typeof ProtectedMastersPayrollLayoutBankIndexRoute
   '/_protected/masters/payroll/_layout/cost_allocation_rule/': typeof ProtectedMastersPayrollLayoutCost_allocation_ruleIndexRoute
   '/_protected/masters/payroll/_layout/cost_category/': typeof ProtectedMastersPayrollLayoutCost_categoryIndexRoute
@@ -2841,6 +2860,7 @@ export interface FileRouteTypes {
     | '/masters/inventory/stock_item'
     | '/masters/inventory/storage_unit'
     | '/masters/miscellaneous/delivery_vehicles/$id'
+    | '/masters/organization/branch'
     | '/masters/organization/company'
     | '/masters/organization/country'
     | '/masters/organization/currency'
@@ -2862,6 +2882,7 @@ export interface FileRouteTypes {
     | '/masters/inventory/stock_group/'
     | '/masters/inventory/stock_unit/'
     | '/masters/inventory/unique_quantity_code/'
+    | '/masters/organization/branch/'
     | '/masters/payroll/bank/'
     | '/masters/payroll/cost_allocation_rule/'
     | '/masters/payroll/cost_category/'
@@ -3080,6 +3101,7 @@ export interface FileRouteTypes {
     | '/reports/stock_summary'
     | '/administration/user/$id'
     | '/masters/miscellaneous/delivery_vehicles/$id'
+    | '/masters/organization/branch'
     | '/administration/role'
     | '/administration/user'
     | '/masters/accounts/account_nature'
@@ -3326,6 +3348,7 @@ export interface FileRouteTypes {
     | '/_protected/masters/inventory/_layout/stock_item/_layout'
     | '/_protected/masters/inventory/_layout/storage_unit/_layout'
     | '/_protected/masters/miscellaneous/_layout/delivery_vehicles/$id'
+    | '/_protected/masters/organization/_layout/branch/_layout'
     | '/_protected/masters/organization/_layout/company/_layout'
     | '/_protected/masters/organization/_layout/country/_layout'
     | '/_protected/masters/organization/_layout/currency/_layout'
@@ -3347,6 +3370,7 @@ export interface FileRouteTypes {
     | '/_protected/masters/inventory/_layout/stock_group/'
     | '/_protected/masters/inventory/_layout/stock_unit/'
     | '/_protected/masters/inventory/_layout/unique_quantity_code/'
+    | '/_protected/masters/organization/_layout/branch/'
     | '/_protected/masters/payroll/_layout/bank/'
     | '/_protected/masters/payroll/_layout/cost_allocation_rule/'
     | '/_protected/masters/payroll/_layout/cost_category/'
@@ -4504,6 +4528,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProtectedMastersPayrollLayoutBankIndexRouteImport
       parentRoute: typeof ProtectedMastersPayrollLayoutRoute
     }
+    '/_protected/masters/organization/_layout/branch/': {
+      id: '/_protected/masters/organization/_layout/branch/'
+      path: '/branch'
+      fullPath: '/masters/organization/branch/'
+      preLoaderRoute: typeof ProtectedMastersOrganizationLayoutBranchIndexRouteImport
+      parentRoute: typeof ProtectedMastersOrganizationLayoutRoute
+    }
     '/_protected/masters/inventory/_layout/unique_quantity_code/': {
       id: '/_protected/masters/inventory/_layout/unique_quantity_code/'
       path: '/unique_quantity_code'
@@ -4649,6 +4680,13 @@ declare module '@tanstack/react-router' {
       path: '/company'
       fullPath: '/masters/organization/company'
       preLoaderRoute: typeof ProtectedMastersOrganizationLayoutCompanyLayoutRouteImport
+      parentRoute: typeof ProtectedMastersOrganizationLayoutRoute
+    }
+    '/_protected/masters/organization/_layout/branch/_layout': {
+      id: '/_protected/masters/organization/_layout/branch/_layout'
+      path: '/branch'
+      fullPath: '/masters/organization/branch'
+      preLoaderRoute: typeof ProtectedMastersOrganizationLayoutBranchLayoutRouteImport
       parentRoute: typeof ProtectedMastersOrganizationLayoutRoute
     }
     '/_protected/masters/miscellaneous/_layout/delivery_vehicles/$id': {
@@ -6106,17 +6144,21 @@ const ProtectedMastersOrganizationLayoutStateLayoutRouteWithChildren =
 
 interface ProtectedMastersOrganizationLayoutRouteChildren {
   ProtectedMastersOrganizationLayoutIndexRoute: typeof ProtectedMastersOrganizationLayoutIndexRoute
+  ProtectedMastersOrganizationLayoutBranchLayoutRoute: typeof ProtectedMastersOrganizationLayoutBranchLayoutRoute
   ProtectedMastersOrganizationLayoutCompanyLayoutRoute: typeof ProtectedMastersOrganizationLayoutCompanyLayoutRouteWithChildren
   ProtectedMastersOrganizationLayoutCountryLayoutRoute: typeof ProtectedMastersOrganizationLayoutCountryLayoutRouteWithChildren
   ProtectedMastersOrganizationLayoutCurrencyLayoutRoute: typeof ProtectedMastersOrganizationLayoutCurrencyLayoutRouteWithChildren
   ProtectedMastersOrganizationLayoutFiscal_yearLayoutRoute: typeof ProtectedMastersOrganizationLayoutFiscal_yearLayoutRouteWithChildren
   ProtectedMastersOrganizationLayoutStateLayoutRoute: typeof ProtectedMastersOrganizationLayoutStateLayoutRouteWithChildren
+  ProtectedMastersOrganizationLayoutBranchIndexRoute: typeof ProtectedMastersOrganizationLayoutBranchIndexRoute
 }
 
 const ProtectedMastersOrganizationLayoutRouteChildren: ProtectedMastersOrganizationLayoutRouteChildren =
   {
     ProtectedMastersOrganizationLayoutIndexRoute:
       ProtectedMastersOrganizationLayoutIndexRoute,
+    ProtectedMastersOrganizationLayoutBranchLayoutRoute:
+      ProtectedMastersOrganizationLayoutBranchLayoutRoute,
     ProtectedMastersOrganizationLayoutCompanyLayoutRoute:
       ProtectedMastersOrganizationLayoutCompanyLayoutRouteWithChildren,
     ProtectedMastersOrganizationLayoutCountryLayoutRoute:
@@ -6127,6 +6169,8 @@ const ProtectedMastersOrganizationLayoutRouteChildren: ProtectedMastersOrganizat
       ProtectedMastersOrganizationLayoutFiscal_yearLayoutRouteWithChildren,
     ProtectedMastersOrganizationLayoutStateLayoutRoute:
       ProtectedMastersOrganizationLayoutStateLayoutRouteWithChildren,
+    ProtectedMastersOrganizationLayoutBranchIndexRoute:
+      ProtectedMastersOrganizationLayoutBranchIndexRoute,
   }
 
 const ProtectedMastersOrganizationLayoutRouteWithChildren =

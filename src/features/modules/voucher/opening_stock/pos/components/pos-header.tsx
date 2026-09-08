@@ -30,7 +30,7 @@ const PosHeader = ({
     : ''
 
   return (
-    <div className="grid grid-rows-1">
+    <div className="grid grid-rows-1 p-2 shadow-sm border-b border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
       <div className="grid grid-cols-[350px_1fr]">
         <div className="space-y-0">
           <div className="grid grid-cols-[170px_200px] gap-2">

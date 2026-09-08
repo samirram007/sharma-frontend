@@ -20,7 +20,6 @@ import { cn } from '@/lib/utils'
 import { reportLinks } from '@/layouts/links/report-links'
 import { useLayoutEffect, useMemo } from 'react'
 
-import ReportingPeriod from '@/features/global/components/reporting-period'
 
 export default function StockSummary() {
   const location = useLocation()
@@ -71,12 +70,9 @@ export default function StockSummary() {
           {/* {currentReport} */}
           {reportPeriodVisible.includes(currentReport) && (
             <p className="text-slate-600 dark:text-slate-300">
-              <ReportingPeriod disableHotkey />
+              reporting period is now in the global topbar
             </p>
           )}
-          {/* <p className='text-muted-foreground pt-4 text-sm'>
-                        <ReportingPeriod disableHotkey />
-                    </p> */}
         </div>
         <PrimaryButtons />
       </div>

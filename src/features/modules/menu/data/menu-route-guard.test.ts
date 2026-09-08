@@ -140,7 +140,10 @@ describe('matchMostSpecificRoute', () => {
       '/transactions/vouchers/receipt_note',
     ]
     expect(
-      matchMostSpecificRoute('/transactions/vouchers/delivery_note/4833', routes),
+      matchMostSpecificRoute(
+        '/transactions/vouchers/delivery_note/4833',
+        routes,
+      ),
     ).toBe('/transactions/vouchers/delivery_note')
   })
 
@@ -170,7 +173,10 @@ describe('matchMostSpecificRoute', () => {
       '/transactions/vouchers/delivery_note',
     ]
     expect(
-      matchMostSpecificRoute('/transactions/vouchers/delivery_note/4833', routes),
+      matchMostSpecificRoute(
+        '/transactions/vouchers/delivery_note/4833',
+        routes,
+      ),
     ).toBe('/transactions/vouchers/delivery_note')
   })
 })

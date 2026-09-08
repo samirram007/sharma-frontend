@@ -44,7 +44,7 @@ src/
   routes/            — TanStack Router file-based routes (routeTree.gen.ts is AUTO-GENERATED)
   features/          — Domain modules (feature-first)
     auth/            — AuthContext, login/sign-up/otp/forgot-password, profile, change-password
-    modules/         — ~50 domain modules mirroring API entities (stock_item, godown, voucher, …)
+    modules/         — ~50 domain modules mirroring API entities (stock_item, godown, voucher, faq, ticket, …)
     masters/         — Grouped management pages (accounts, inventory, party, payroll, statutory, …)
     transactions/    — Transactions index + opening-balance
     reports/         — Balance sheet, P&L, receipt_note_report, day_book, running-balance, …
@@ -145,7 +145,8 @@ Two coexisting patterns:
 - **POS / transactions** — `features/modules/voucher/` hosts every voucher type (purchase, sales, receipt, payment, contra, journal, opening_stock, physical_stock, transfer_voucher, freight, day_book, …) sharing `contexts/pos-context.tsx`, `pos-header/body/footer`, `special/save-dialog`, and `components/stock-journal*` grids; shared schema in `data-schema/voucher-schema.ts` (+ `movement-type.ts`).
 - **Dashboard** — recharts widgets with per-widget queries (`/dashboard/summary`, `*_wise`).
 - **Enums** — `features/enums/` + `GET /api/enums/{enumName}`.
-- **Tests** — Vitest (globals, jsdom; config in `vite.config.js` `test` block). Existing: `utils/date.test.ts`, `voucher/data-schema/movement-type.test.ts`, and per-voucher payload tests under `features/modules/voucher/{contra,payment,purchase,purchase_order}/test/`.
+- **Tests** — Vitest (globals, jsdom; config in `vite.config.js` `test` block). Existing: `utils/date.test.ts`, `voucher/data-schema/movement-type.test.ts`, per-voucher payload tests under `features/modules/voucher/{contra,payment,purchase,purchase_order}/test/`, `menu/data/menu-route-guard.test.ts`, and `lib/auth.guard.test.ts` (route-guard logic).
+- **FAQ / Help Center** — `features/modules/faq/` renders the knowledge base seeded by the backend `FaqSeeder` (`GET /api/faqs`, filterable by `category`: general/masters/inventory/transactions/reports/administration — per-category color maps in `data/data.ts`). CRUD UI (action-dialog, delete-dialog, grid-table) is permission-gated like other modules.
 
 ## Conventions
 

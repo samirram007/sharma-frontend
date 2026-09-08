@@ -15,8 +15,6 @@ import type { FreightQueryParams } from './data/api'
 import type { PaginationMeta } from './data/schema'
 
 import { Main } from '@/layouts/components/main'
-import ReportingPeriod from '@/features/global/components/reporting-period'
-
 interface FreightProps {
   data: DeliveryNoteList
   isLoading?: boolean
@@ -138,7 +136,7 @@ export default function Freight({
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <ReportingPeriod disableHotkey />
+          
         </div>
       </div>
 

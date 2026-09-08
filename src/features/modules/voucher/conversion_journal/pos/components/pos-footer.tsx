@@ -37,7 +37,7 @@ const PosFooter = ({ mainForm }: PosFooterProps) => {
   return (
     <div
       ref={footerRef}
-      className="bg-yellow-600/20 grid grid-cols-[1fr_1fr] px-8"
+      className="bg-emerald-50 dark:bg-emerald-900/30 grid grid-cols-[1fr_1fr] px-8 border-t border-emerald-200 dark:border-emerald-700"
     >
       <div className="grid">
         <NarrationBox

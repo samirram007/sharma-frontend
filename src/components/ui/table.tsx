@@ -6,11 +6,14 @@ function Table({ className, ...props }: React.ComponentProps<'table'>) {
   return (
     <div
       data-slot="table-container"
-      className="relative w-full overflow-x-auto"
+      className="relative w-full overflow-x-auto rounded-md border bg-background shadow-xs"
     >
       <table
         data-slot="table"
-        className={cn('w-full caption-bottom text-sm', className)}
+        className={cn(
+          'w-full caption-bottom text-sm border-collapse',
+          className,
+        )}
         {...props}
       />
     </div>
@@ -55,7 +58,7 @@ function TableRow({ className, ...props }: React.ComponentProps<'tr'>) {
     <tr
       data-slot="table-row"
       className={cn(
-        'hover:bg-muted/50 data-[state=selected]:bg-muted border-b transition-colors',
+        'bg-background hover:bg-muted/50 data-[state=selected]:bg-muted border-b transition-colors dark:bg-background dark:hover:bg-muted/30',
         className,
       )}
       {...props}
@@ -68,7 +71,7 @@ function TableHead({ className, ...props }: React.ComponentProps<'th'>) {
     <th
       data-slot="table-head"
       className={cn(
-        'text-foreground h-10 px-2 text-left align-middle font-medium whitespace-nowrap min-w-0 overflow-hidden text-ellipsis [&:has([role=checkbox])]:pr-0 *:[[role=checkbox]]:translate-y-0.5',
+        'text-foreground h-10 px-2 text-left align-middle font-medium whitespace-nowrap min-w-0 overflow-hidden text-ellipsis [&:has([role=checkbox])]:pr-0 *:[[role=checkbox]]:translate-y-0.5 bg-muted/50 dark:bg-muted/30',
         className,
       )}
       {...props}

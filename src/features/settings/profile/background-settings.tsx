@@ -35,12 +35,12 @@ export default function BackgroundSettings() {
   return (
     <div className="space-y-5">
       {/* Image controls */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm md:p-6">
+      <div className="rounded-2xl border border-border bg-card p-4 shadow-sm md:p-6">
         <div className="mb-4">
-          <h3 className="text-base font-semibold text-slate-900">
+          <h3 className="text-base font-semibold text-foreground">
             Background image
           </h3>
-          <p className="mt-1 text-sm text-slate-600">
+          <p className="mt-1 text-sm text-muted-foreground">
             Pick an image from your documents or upload a new one. The change
             applies live across the workspace.
           </p>
@@ -48,7 +48,7 @@ export default function BackgroundSettings() {
 
         {/* Preview */}
         <div
-          className="relative mb-4 flex h-36 items-center justify-center overflow-hidden rounded-xl border border-slate-200"
+          className="relative mb-4 flex h-36 items-center justify-center overflow-hidden rounded-xl border border-border bg-muted/30"
           style={{
             backgroundColor: color ?? undefined,
             backgroundImage: url ? `url(${url})` : undefined,
@@ -57,7 +57,7 @@ export default function BackgroundSettings() {
           }}
         >
           {!url && (
-            <p className="rounded-md bg-white/80 px-3 py-1 text-sm text-slate-500">
+            <p className="rounded-md bg-card/80 px-3 py-1 text-sm text-muted-foreground">
               No background image set
             </p>
           )}
@@ -86,12 +86,12 @@ export default function BackgroundSettings() {
       </div>
 
       {/* Opacity */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm md:p-6">
+      <div className="rounded-2xl border border-border bg-card p-4 shadow-sm md:p-6">
         <div className="mb-4">
-          <h3 className="text-base font-semibold text-slate-900">
+          <h3 className="text-base font-semibold text-foreground">
             Image opacity
           </h3>
-          <p className="mt-1 text-sm text-slate-600">
+          <p className="mt-1 text-sm text-muted-foreground">
             Fade the background image so content stays readable.
           </p>
         </div>
@@ -108,7 +108,7 @@ export default function BackgroundSettings() {
             className="flex-1"
             aria-label="Background image opacity"
           />
-          <span className="w-12 text-right text-sm tabular-nums text-slate-600">
+          <span className="w-12 text-right text-sm tabular-nums text-muted-foreground">
             {Math.round(opacity * 100)}%
           </span>
         </div>
@@ -127,12 +127,12 @@ export default function BackgroundSettings() {
       </div>
 
       {/* Color */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm md:p-6">
+      <div className="rounded-2xl border border-border bg-card p-4 shadow-sm md:p-6">
         <div className="mb-4">
-          <h3 className="text-base font-semibold text-slate-900">
+          <h3 className="text-base font-semibold text-foreground">
             Background color
           </h3>
-          <p className="mt-1 text-sm text-slate-600">
+          <p className="mt-1 text-sm text-muted-foreground">
             Solid color behind the workspace. Shown instead of the image when no
             image is set.
           </p>
@@ -170,7 +170,7 @@ export default function BackgroundSettings() {
 
           {/* Custom color picker */}
           <label
-            className="relative h-9 w-9 cursor-pointer overflow-hidden rounded-full border border-slate-200 transition hover:scale-105"
+            className="relative h-9 w-9 cursor-pointer overflow-hidden rounded-full border border-border transition hover:scale-105"
             title="Custom color"
           >
             <span

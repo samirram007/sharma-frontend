@@ -1,10 +1,7 @@
 // src/lib/auth.ts
 
 import type { MyRouterContext } from '@/core/contexts/MyRouterContext'
-import {
-  setForbiddenRoute,
-  type ForbiddenDetails,
-} from './forbidden-details'
+import { setForbiddenRoute, type ForbiddenDetails } from './forbidden-details'
 
 /**
  * Shared storage key for the bearer token used across auth modules.

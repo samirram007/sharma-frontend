@@ -265,38 +265,38 @@ export default function ProfileForm({
       <TabsContent value="overview" className="space-y-5">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-            <div className="rounded-2xl border border-slate-200 bg-gradient-to-br from-white via-slate-50/70 to-white p-4 shadow-sm md:p-6">
+            <div className="rounded-2xl border border-border bg-gradient-to-br from-card via-muted/40 to-card p-4 shadow-sm md:p-6">
               <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div className="flex items-center gap-4">
                   <div className="group relative">
-                    <Avatar className="h-14 w-14 border border-slate-200 shadow-sm">
+                    <Avatar className="h-14 w-14 border border-border shadow-sm">
                       {avatarUrl && (
                         <AvatarImage
                           src={avatarUrl}
                           alt={user?.name ?? 'Profile'}
                         />
                       )}
-                      <AvatarFallback className="bg-slate-100 text-slate-700">
+                      <AvatarFallback className="bg-muted text-muted-foreground">
                         {initials}
                       </AvatarFallback>
                     </Avatar>
                     <button
                       type="button"
                       title="Update profile photo"
-                      className="absolute -bottom-1 -right-1 rounded-full border border-slate-200 bg-white p-1 shadow-sm transition hover:bg-slate-50"
+                      className="absolute -bottom-1 -right-1 rounded-full border border-border bg-card p-1 shadow-sm transition hover:bg-accent"
                       onClick={() => setPhotoDialogOpen(true)}
                     >
-                      <IconCamera className="h-3.5 w-3.5 text-slate-600" />
+                      <IconCamera className="h-3.5 w-3.5 text-muted-foreground" />
                     </button>
                   </div>
                   <div>
-                    <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">
+                    <p className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
                       Profile Overview
                     </p>
-                    <p className="text-xl font-semibold text-slate-900">
+                    <p className="text-xl font-semibold text-foreground">
                       {user?.name ?? 'User'}
                     </p>
-                    <p className="text-sm text-slate-600">
+                    <p className="text-sm text-muted-foreground">
                       {form.getValues('email') ||
                         form.getValues('username') ||
                         'No primary contact found'}
@@ -338,47 +338,47 @@ export default function ProfileForm({
             </div>
 
             <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-              <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
-                <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+              <div className="rounded-xl border border-border bg-card p-4 shadow-xs">
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                   Roles
                 </p>
-                <p className="mt-2 text-lg font-semibold text-slate-900">
+                <p className="mt-2 text-lg font-semibold text-foreground">
                   {roleNames.length}
                 </p>
-                <p className="mt-1 text-xs text-slate-600">
+                <p className="mt-1 text-xs text-muted-foreground">
                   {roleNames.slice(0, 2).join(', ') || 'No roles assigned'}
                 </p>
               </div>
-              <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
-                <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+              <div className="rounded-xl border border-border bg-card p-4 shadow-xs">
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                   Permissions
                 </p>
-                <p className="mt-2 text-lg font-semibold text-slate-900">
+                <p className="mt-2 text-lg font-semibold text-foreground">
                   {permissions.length}
                 </p>
-                <p className="mt-1 text-xs text-slate-600">
+                <p className="mt-1 text-xs text-muted-foreground">
                   Feature access mapped from your role.
                 </p>
               </div>
-              <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
-                <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+              <div className="rounded-xl border border-border bg-card p-4 shadow-xs">
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                   Fiscal Year
                 </p>
-                <p className="mt-2 text-sm font-semibold text-slate-900">
+                <p className="mt-2 text-sm font-semibold text-foreground">
                   {fiscalLabel}
                 </p>
-                <p className="mt-1 text-xs text-slate-600">
+                <p className="mt-1 text-xs text-muted-foreground">
                   Current reporting window.
                 </p>
               </div>
             </div>
 
-            <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm md:p-6">
+            <div className="rounded-2xl border border-border bg-card p-4 shadow-sm md:p-6">
               <div className="mb-4">
-                <h3 className="text-base font-semibold text-slate-900">
+                <h3 className="text-base font-semibold text-foreground">
                   Basic Information
                 </h3>
-                <p className="text-sm text-slate-600">
+                <p className="text-sm text-muted-foreground">
                   Keep your user details accurate and easy to identify.
                 </p>
               </div>
@@ -388,15 +388,14 @@ export default function ProfileForm({
                   control={form.control}
                   name="name"
                   render={({ field }) => (
-                    <FormItem className="rounded-xl border border-slate-200/80 bg-slate-50/60 p-3">
-                      <FormLabel className="text-[11px] font-semibold uppercase tracking-wide text-slate-600">
+                    <FormItem className="rounded-xl border border-border/80 bg-muted/40 p-3">
+                      <FormLabel className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
                         Full Name
                       </FormLabel>
                       <FormControl>
                         <Input
                           placeholder="Enter full name"
                           autoComplete="name"
-                          className="bg-white"
                           {...field}
                         />
                       </FormControl>
@@ -412,15 +411,14 @@ export default function ProfileForm({
                   control={form.control}
                   name="username"
                   render={({ field }) => (
-                    <FormItem className="rounded-xl border border-slate-200/80 bg-slate-50/60 p-3">
-                      <FormLabel className="text-[11px] font-semibold uppercase tracking-wide text-slate-600">
+                    <FormItem className="rounded-xl border border-border/80 bg-muted/40 p-3">
+                      <FormLabel className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
                         Username
                       </FormLabel>
                       <FormControl>
                         <Input
                           placeholder="Enter username"
                           autoComplete="username"
-                          className="bg-white"
                           {...field}
                         />
                       </FormControl>
@@ -471,7 +469,7 @@ export default function ProfileForm({
                       <FormDescription>
                         Optional short note for quick context.
                       </FormDescription>
-                      <div className="text-right text-xs text-slate-500">
+                      <div className="text-right text-xs text-muted-foreground">
                         {bioLength}/160
                       </div>
                       <FormMessage />
@@ -511,11 +509,11 @@ export default function ProfileForm({
       </TabsContent>
 
       <TabsContent value="security" className="space-y-5">
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm md:p-6">
-          <h3 className="text-base font-semibold text-slate-900">
+        <div className="rounded-2xl border border-border bg-card p-4 shadow-sm md:p-6">
+          <h3 className="text-base font-semibold text-foreground">
             Change Password
           </h3>
-          <p className="mt-1 text-sm text-slate-600">
+          <p className="mt-1 text-sm text-muted-foreground">
             Use a strong password with at least 6 characters.
           </p>
 
@@ -553,11 +551,11 @@ export default function ProfileForm({
           </Form>
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm md:p-6">
-          <h3 className="text-base font-semibold text-slate-900">
+        <div className="rounded-2xl border border-border bg-card p-4 shadow-sm md:p-6">
+          <h3 className="text-base font-semibold text-foreground">
             Social Login Links
           </h3>
-          <p className="mt-1 text-sm text-slate-600">
+          <p className="mt-1 text-sm text-muted-foreground">
             Link your preferred provider for faster sign-in.
           </p>
 
@@ -566,7 +564,7 @@ export default function ProfileForm({
               <a
                 key={provider.name}
                 href={provider.url}
-                className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-white"
+                className="rounded-xl border border-border bg-muted/50 px-4 py-3 text-sm font-medium text-foreground transition hover:border-border hover:bg-accent"
               >
                 Link {provider.name}
               </a>
@@ -577,54 +575,54 @@ export default function ProfileForm({
 
       <TabsContent value="activity" className="space-y-4">
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-4">
-          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
-            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+          <div className="rounded-xl border border-border bg-card p-4 shadow-xs">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
               Visit Frequency
             </p>
-            <p className="mt-2 text-lg font-semibold text-slate-900">
+            <p className="mt-2 text-lg font-semibold text-foreground">
               {visitCount}
             </p>
-            <p className="mt-1 text-xs text-slate-600">
+            <p className="mt-1 text-xs text-muted-foreground">
               Times this profile page was visited.
             </p>
           </div>
 
-          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
-            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+          <div className="rounded-xl border border-border bg-card p-4 shadow-xs">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
               Last Login
             </p>
-            <p className="mt-2 text-sm font-semibold text-slate-900">
+            <p className="mt-2 text-sm font-semibold text-foreground">
               {lastLoginDate
                 ? lastLoginDate.toLocaleString()
                 : 'Not provided by API'}
             </p>
-            <p className="mt-1 text-xs text-slate-600">
+            <p className="mt-1 text-xs text-muted-foreground">
               Based on server profile payload.
             </p>
           </div>
 
-          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
-            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+          <div className="rounded-xl border border-border bg-card p-4 shadow-xs">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
               Current Duration
             </p>
-            <p className="mt-2 text-lg font-semibold text-slate-900">
+            <p className="mt-2 text-lg font-semibold text-foreground">
               {durationText}
             </p>
-            <p className="mt-1 text-xs text-slate-600">
+            <p className="mt-1 text-xs text-muted-foreground">
               Time spent in this active browser session.
             </p>
           </div>
 
-          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-xs">
-            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+          <div className="rounded-xl border border-border bg-card p-4 shadow-xs">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
               Token Expiry
             </p>
-            <p className="mt-2 text-sm font-semibold text-slate-900">
+            <p className="mt-2 text-sm font-semibold text-foreground">
               {tokenExpiryDate
                 ? tokenExpiryDate.toLocaleString()
                 : 'Server-managed (httpOnly cookie)'}
             </p>
-            <p className="mt-1 text-xs text-slate-600">
+            <p className="mt-1 text-xs text-muted-foreground">
               Client side cannot always read token expiry.
             </p>
           </div>

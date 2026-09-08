@@ -63,6 +63,7 @@ import {
   sharedByMeQueryOptions,
   sharedWithMeQueryOptions,
 } from '@/features/modules/document/data/queryOptions'
+import { useRealtimeDocumentFolder } from '@/features/modules/document/data/useRealtimeDocumentFolder'
 import {
   conflictsService,
   deleteBrokenShortcutService,
@@ -244,6 +245,9 @@ export function DocumentsManager() {
 
   // ── Data ──
   const browse = useDocumentBrowse(folderId)
+  // Realtime: co-sharers' creations/uploads in the open folder refresh
+  // the view without a manual reload (host ↔ client both directions).
+  useRealtimeDocumentFolder(folderId)
   const searchQuery = useDocumentSearch(debouncedSearch)
   // Flat list from others — fetched only while the Shared-with-me view is on.
   const sharedQuery = useQuery({

@@ -8,6 +8,13 @@ import { useEffect, useState } from 'react'
 import { VoucherTypeColorMapping } from '../../day_book/data/data'
 import { lowerCase } from 'lodash'
 
+const rowBgEven = 'bg-muted/30 dark:bg-secondary/20'
+const rowBgOdd = 'bg-card dark:bg-secondary/10'
+const headerFooterBg = 'bg-muted dark:bg-secondary/40'
+const linkHover = 'hover:text-primary dark:hover:text-primary-foreground'
+const noDataText = 'text-muted-foreground dark:text-slate-500'
+const borderColor = 'border-border dark:border-border'
+
 interface StockInHandVoucherWiseProps {
   data: StockInHandVoucherWiseListSchema
 }
@@ -18,7 +25,9 @@ export default function StockInHandVoucherWise({
   return (
     <>
       {StockInHandVoucherWiseListSchema.length === 0 ? (
-        <div className="text-center text-gray-500">No data available.</div>
+        <div className={cn('text-center py-12 text-sm', noDataText)}>
+          No data available.
+        </div>
       ) : (
         <ReportView data={StockInHandVoucherWiseListSchema} />
       )}
@@ -28,28 +37,29 @@ export default function StockInHandVoucherWise({
 
 const ReportView = ({ data }: { data: StockInHandVoucherWiseListSchema }) => {
   return (
-    <div className="w-full h-[72vh]  grid grid-rows-[auto_1fr] ">
+    <div className="w-full h-[72vh] grid grid-rows-[auto_1fr]">
       <ReportHeader />
-      <div className="border-2 border-t-0 overflow-y-auto h-full">
+      <div className={cn('border-2 border-t-0 overflow-y-auto h-full', borderColor)}>
         {data.map((item, index) => (
           <div key={index} className="grid grid-rows-1 gap-0">
+            {/* Item summary row */}
             <div
               className={cn(
-                'grid grid-cols-[1fr_2fr] text-center  font-semibold',
-                index % 2 === 0 ? 'bg-white' : 'bg-gray-100',
+                'grid grid-cols-[1fr_2fr] text-center font-semibold border-b border-border/50',
+                index % 2 === 0 ? 'bg-muted/30 dark:bg-secondary/20' : 'bg-card dark:bg-secondary/10',
               )}
             >
-              <div className=" text-left pl-2">
+              <div className="text-left pl-2 text-foreground">
                 <Link
                   to={'/reports/stock_summary/stock-in-hand'}
-                  className="inline-block mr-2   hover:text-blue-700"
+                  className={cn('inline-block mr-2', linkHover)}
                 >
                   {item.itemName}
                 </Link>
               </div>
-              <div className="grid grid-cols-4 ">
+              <div className="grid grid-cols-4">
                 <div className="grid grid-cols-2">
-                  <div className="text-right pr-2">
+                  <div className="text-right pr-2 text-muted-foreground">
                     {item.openingQuantity === 0
                       ? '-'
                       : formatQty(
@@ -58,7 +68,7 @@ const ReportView = ({ data }: { data: StockInHandVoucherWiseListSchema }) => {
                           item.unitCode,
                         )}
                   </div>
-                  <div>
+                  <div className="text-muted-foreground">
                     {item.openingAmount === 0
                       ? '-'
                       : item.openingAmount?.toFixed(2)}
@@ -66,7 +76,7 @@ const ReportView = ({ data }: { data: StockInHandVoucherWiseListSchema }) => {
                 </div>
 
                 <div className="grid grid-cols-2">
-                  <div className="text-right pr-2">
+                  <div className="text-right pr-2 text-muted-foreground">
                     {item.inwardQuantity === 0
                       ? '-'
                       : formatQty(
@@ -75,7 +85,7 @@ const ReportView = ({ data }: { data: StockInHandVoucherWiseListSchema }) => {
                           item.unitCode,
                         )}
                   </div>
-                  <div>
+                  <div className="text-muted-foreground">
                     {item.inwardAmount === 0
                       ? '-'
                       : item.inwardAmount?.toFixed(2)}
@@ -83,7 +93,7 @@ const ReportView = ({ data }: { data: StockInHandVoucherWiseListSchema }) => {
                 </div>
 
                 <div className="grid grid-cols-2">
-                  <div className="text-right pr-2">
+                  <div className="text-right pr-2 text-muted-foreground">
                     {item.outwardQuantity === 0
                       ? '-'
                       : formatQty(
@@ -92,7 +102,7 @@ const ReportView = ({ data }: { data: StockInHandVoucherWiseListSchema }) => {
                           item.unitCode,
                         )}
                   </div>
-                  <div>
+                  <div className="text-muted-foreground">
                     {item.outwardAmount === 0
                       ? '-'
                       : item.outwardAmount?.toFixed(2)}
@@ -101,54 +111,59 @@ const ReportView = ({ data }: { data: StockInHandVoucherWiseListSchema }) => {
 
                 <div className="grid grid-cols-2">
                   <div className="text-right pr-2">
-                    {item.closingQuantity === 0
-                      ? '-'
-                      : formatQty(
-                          item.closingQuantity,
-                          item.noOfDecimalPlaces,
-                          item.unitCode,
-                        )}
+                    <span className="font-semibold text-foreground">
+                      {item.closingQuantity === 0
+                        ? '-'
+                        : formatQty(
+                            item.closingQuantity,
+                            item.noOfDecimalPlaces,
+                            item.unitCode,
+                          )}
+                    </span>
                   </div>
                   <div>
-                    {item.closingAmount === 0
-                      ? '-'
-                      : item.closingAmount?.toFixed(2)}
+                    <span className="font-semibold text-foreground">
+                      {item.closingAmount === 0
+                        ? '-'
+                        : item.closingAmount?.toFixed(2)}
+                    </span>
                   </div>
                 </div>
               </div>
             </div>
+
+            {/* Voucher detail rows */}
             <div>
               {item.voucherDetails.map((voucher, voucherIndex) => {
                 return (
-                  <div
-                    key={voucherIndex}
-                    className="text-sm italic text-gray-600"
-                  >
+                  <div key={voucherIndex} className="text-sm">
                     <div
                       className={cn(
-                        'grid grid-cols-[1fr_2fr] text-center  hover:bg-gray-200 hover:text-green-500 font-semibold',
-                        index % 2 === 0 ? 'bg-white' : 'bg-gray-100',
-                        !voucher.voucherId ? 'font-semibold text-red-400' : '',
+                        'grid grid-cols-[1fr_2fr] text-center hover:bg-accent/40 hover:text-accent-foreground font-semibold border-b border-border/30',
+                        index % 2 === 0 ? rowBgEven : rowBgOdd,
+                        !voucher.voucherId
+                          ? 'font-semibold text-destructive'
+                          : '',
                       )}
                     >
-                      <div className=" text-left pl-8 font-semibold">
+                      <div className="text-left pl-8 font-semibold">
                         <Link
                           to={
                             '/reports/stock_summary/stock-in-hand-godown-wise'
                           }
-                          className="inline-block mr-2   hover:text-blue-700"
+                          className={cn('inline-block mr-2', linkHover)}
                         >
                           {voucher.voucherId ? (
                             <>
-                              <div className="grid grid-cols-[120px_120px_auto] mr-2 ">
+                              <div className="grid grid-cols-[120px_120px_auto] mr-2">
                                 <div
                                   className={cn(
-                                    'font-mono px-2 h-4 shadow-md rounded-2xl text-xs   text-center',
+                                    'font-mono px-2 h-4 shadow-md rounded-2xl text-xs text-center',
                                     VoucherTypeColorMapping.get(
                                       lowerCase(
                                         voucher.voucherType ?? '',
                                       ).replace(/\s+/g, '_'),
-                                    ),
+                                    ) ?? 'bg-muted text-muted-foreground',
                                   )}
                                 >
                                   {voucher.voucherType} :
@@ -156,19 +171,21 @@ const ReportView = ({ data }: { data: StockInHandVoucherWiseListSchema }) => {
                                 <div>
                                   <VoucherNavigationLink voucher={voucher} />
                                 </div>
-                                <div className="ml-2 text-muted-foreground">
+                                <div className="ml-2 text-xs text-muted-foreground">
                                   Dated: {date_format(voucher.voucherDate)}{' '}
                                 </div>
                               </div>
                             </>
                           ) : (
-                            `${voucher.voucherNo} `
+                            <span className="text-muted-foreground">
+                              {voucher.voucherNo}{' '}
+                            </span>
                           )}
                         </Link>
                       </div>
-                      <div className="grid grid-cols-4 ">
+                      <div className="grid grid-cols-4">
                         <div className="grid grid-cols-2">
-                          <div className="text-right pr-2">
+                          <div className="text-right pr-2 text-muted-foreground">
                             {voucher.openingQuantity === 0
                               ? '-'
                               : formatQty(
@@ -177,7 +194,7 @@ const ReportView = ({ data }: { data: StockInHandVoucherWiseListSchema }) => {
                                   item.unitCode,
                                 )}
                           </div>
-                          <div>
+                          <div className="text-muted-foreground">
                             {voucher.openingAmount === 0
                               ? '-'
                               : voucher.openingAmount?.toFixed(2)}
@@ -185,7 +202,7 @@ const ReportView = ({ data }: { data: StockInHandVoucherWiseListSchema }) => {
                         </div>
 
                         <div className="grid grid-cols-2">
-                          <div className="text-right pr-2">
+                          <div className="text-right pr-2 text-muted-foreground">
                             {voucher.inwardQuantity === 0
                               ? '-'
                               : formatQty(
@@ -194,7 +211,7 @@ const ReportView = ({ data }: { data: StockInHandVoucherWiseListSchema }) => {
                                   item.unitCode,
                                 )}
                           </div>
-                          <div>
+                          <div className="text-muted-foreground">
                             {voucher.inwardAmount === 0
                               ? '-'
                               : voucher.inwardAmount?.toFixed(2)}
@@ -202,7 +219,7 @@ const ReportView = ({ data }: { data: StockInHandVoucherWiseListSchema }) => {
                         </div>
 
                         <div className="grid grid-cols-2">
-                          <div className="text-right pr-2">
+                          <div className="text-right pr-2 text-muted-foreground">
                             {voucher.outwardQuantity === 0
                               ? '-'
                               : formatQty(
@@ -211,7 +228,7 @@ const ReportView = ({ data }: { data: StockInHandVoucherWiseListSchema }) => {
                                   item.unitCode,
                                 )}
                           </div>
-                          <div>
+                          <div className="text-muted-foreground">
                             {voucher.outwardAmount === 0
                               ? '-'
                               : voucher.outwardAmount?.toFixed(2)}
@@ -219,18 +236,22 @@ const ReportView = ({ data }: { data: StockInHandVoucherWiseListSchema }) => {
                         </div>
                         <div className="grid grid-cols-2">
                           <div className="text-right pr-2">
-                            {voucher.closingQuantity === 0
-                              ? '-'
-                              : formatQty(
-                                  voucher.closingQuantity,
-                                  item.noOfDecimalPlaces,
-                                  item.unitCode,
-                                )}
+                            <span className="font-semibold text-foreground">
+                              {voucher.closingQuantity === 0
+                                ? '-'
+                                : formatQty(
+                                    voucher.closingQuantity,
+                                    item.noOfDecimalPlaces,
+                                    item.unitCode,
+                                  )}
+                            </span>
                           </div>
                           <div>
-                            {voucher.closingAmount === 0
-                              ? '-'
-                              : voucher.closingAmount?.toFixed(2)}
+                            <span className="font-semibold text-foreground">
+                              {voucher.closingAmount === 0
+                                ? '-'
+                                : voucher.closingAmount?.toFixed(2)}
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -260,7 +281,13 @@ const VoucherNavigationLink = ({ voucher }: { voucher: any }) => {
   }
 
   return (
-    <div onClick={handleOnclick} className="hover:underline">
+    <div
+      onClick={handleOnclick}
+      className={cn(
+        'cursor-pointer hover:underline',
+        voucher.voucherId ? 'text-foreground' : 'text-muted-foreground',
+      )}
+    >
       {voucher.voucherNo}
     </div>
   )
@@ -268,11 +295,20 @@ const VoucherNavigationLink = ({ voucher }: { voucher: any }) => {
 
 const ReportHeader = () => {
   return (
-    <div className=" grid grid-cols-[1fr_2fr] border-amber-950! bg-gray-100  text-center font-bold  ">
-      <div className="text-accent-foreground border-2 text-left pl-2 font-stretch-ultra-expanded  h-full flex items-center">
+    <div
+      className={cn(
+        'grid grid-cols-[1fr_2fr] border border-border text-center font-bold',
+        headerFooterBg,
+      )}
+    >
+      <div
+        className={cn(
+          'text-accent-foreground border-2 text-left pl-2 font-stretch-ultra-expanded h-full flex items-center',
+        )}
+      >
         PARTICULARS
       </div>
-      <div className="grid grid-cols-4 border-2 border-l-0">
+      <div className={cn('grid grid-cols-4 border-2 border-l-0', borderColor)}>
         <div>
           <div className="text-accent-foreground border-b-2 border-l-2">
             Opening
@@ -364,17 +400,26 @@ const ReportFooter = ({ data }: { data: StockInHandVoucherWiseListSchema }) => {
 
   return (
     <>
-      <div className=" grid grid-cols-[1fr_2fr] border-amber-950! bg-gray-100  text-center font-bold  ">
-        <div className="text-accent-foreground border-2 text-right flex items-center pr-2 h-full justify-between">
-          <div className="pl-4 italic text-sm font-mono">
+      <div
+        className={cn(
+          'grid grid-cols-[1fr_2fr] border border-border text-center font-bold',
+          headerFooterBg,
+        )}
+      >
+        <div
+          className={cn(
+            'text-accent-foreground border-2 text-right flex items-center pr-2 h-full justify-between',
+          )}
+        >
+          <div className="pl-4 italic text-sm font-mono text-muted-foreground">
             count: {data.length}
           </div>
-          <div>Total:</div>
+          <div className="font-semibold text-foreground">Total:</div>
         </div>
-        <div className="grid grid-cols-4 border-b-2 border-l-0">
+        <div className={cn('grid grid-cols-4 border-b-2 border-l-0', borderColor)}>
           <div>
             <div className="grid grid-cols-2">
-              <div className="border-l-2 text-right pr-2">
+              <div className="border-l-2 text-right pr-2 text-muted-foreground">
                 {total.openingQuantity === 0
                   ? '-'
                   : formatQty(
@@ -383,7 +428,7 @@ const ReportFooter = ({ data }: { data: StockInHandVoucherWiseListSchema }) => {
                       unitCode,
                     )}{' '}
               </div>
-              <div className="border-l-2">
+              <div className="border-l-2 text-muted-foreground">
                 {total.openingAmount === 0
                   ? '-'
                   : formatQtyFixed(total.openingAmount)}
@@ -392,7 +437,7 @@ const ReportFooter = ({ data }: { data: StockInHandVoucherWiseListSchema }) => {
           </div>
           <div>
             <div className="grid grid-cols-2">
-              <div className="border-l-2  text-right pr-2">
+              <div className="border-l-2 text-right pr-2 text-muted-foreground">
                 {total.inwardQuantity === 0
                   ? '-'
                   : formatQty(
@@ -401,7 +446,7 @@ const ReportFooter = ({ data }: { data: StockInHandVoucherWiseListSchema }) => {
                       unitCode,
                     )}
               </div>
-              <div className="border-l-2">
+              <div className="border-l-2 text-muted-foreground">
                 {total.inwardAmount === 0
                   ? '-'
                   : formatQtyFixed(total.inwardAmount)}
@@ -411,7 +456,7 @@ const ReportFooter = ({ data }: { data: StockInHandVoucherWiseListSchema }) => {
 
           <div>
             <div className="grid grid-cols-2">
-              <div className="border-l-2  text-right pr-2">
+              <div className="border-l-2 text-right pr-2 text-muted-foreground">
                 {total.outwardQuantity === 0
                   ? '-'
                   : formatQty(
@@ -420,7 +465,7 @@ const ReportFooter = ({ data }: { data: StockInHandVoucherWiseListSchema }) => {
                       unitCode,
                     )}
               </div>
-              <div className="border-l-2">
+              <div className="border-l-2 text-muted-foreground">
                 {total.outwardAmount === 0
                   ? '-'
                   : formatQtyFixed(total.outwardAmount)}
@@ -430,18 +475,22 @@ const ReportFooter = ({ data }: { data: StockInHandVoucherWiseListSchema }) => {
           <div>
             <div className="grid grid-cols-2">
               <div className="border-l-2 text-right pr-2">
-                {total.closingQuantity === 0
-                  ? '-'
-                  : formatQty(
-                      total.closingQuantity,
-                      noOfDecimalPlaces,
-                      unitCode,
-                    )}
+                <span className="font-semibold text-foreground">
+                  {total.closingQuantity === 0
+                    ? '-'
+                    : formatQty(
+                        total.closingQuantity,
+                        noOfDecimalPlaces,
+                        unitCode,
+                      )}
+                </span>
               </div>
-              <div className="border-l-2">
-                {total.closingAmount === 0
-                  ? '-'
-                  : formatQtyFixed(total.closingAmount)}
+              <div>
+                <span className="font-semibold text-foreground">
+                  {total.closingAmount === 0
+                    ? '-'
+                    : formatQtyFixed(total.closingAmount)}
+                </span>
               </div>
             </div>
           </div>
