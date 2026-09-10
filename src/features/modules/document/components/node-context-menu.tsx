@@ -14,24 +14,43 @@ import {
   IconUpload,
   IconUserCircle,
   IconUsersGroup,
+  IconLayoutGrid,
+  IconTableRow,
+  IconList,
+  IconSortAscending,
+  IconSortDescending,
+  IconCheck,
+  IconMarkdown,
+  IconFileText,
 } from '@tabler/icons-react'
 import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuSeparator,
+  ContextMenuSub,
+  ContextMenuSubContent,
+  ContextMenuSubTrigger,
   ContextMenuTrigger,
 } from '@/components/ui/context-menu'
 import { documentUrl, downloadNodeService } from '../data/api'
+import { cn } from '@/lib/utils'
 import { appearance } from './appearance-store'
 import { previewFamily } from './preview-utils'
 import type { ClipboardEntry } from './document-clipboard-store'
 import type { DocumentNode } from '../data/schema'
+import {
+  DOCUMENT_SORT_OPTIONS,
+  type DocumentSort,
+  type DocumentView,
+} from './document-toolbar'
 
 export type { ClipboardEntry }
 
 export interface NodeMenuActions {
   onPreview: (node: DocumentNode) => void
+  /** Open an editable text file (md/txt/csv/json/log) in the text editor. */
+  onEdit?: (node: DocumentNode) => void
   onRename: (node: DocumentNode) => void
   onDelete: (node: DocumentNode) => void
   onShare: (node: DocumentNode) => void
@@ -59,6 +78,8 @@ export function NodeContextMenu({
   children: ReactNode
 }) {
   const isImage = previewFamily(node) === 'image'
+  // Any text-family file opens in the editor; md/txt are the primary ones.
+  const isEditableText = node.kind === 'file' && previewFamily(node) === 'text'
 
   return (
     <ContextMenu>
@@ -72,6 +93,12 @@ export function NodeContextMenu({
               <IconEye className="h-4 w-4" />
               Preview
             </ContextMenuItem>
+            {isEditableText && actions.onEdit && (
+              <ContextMenuItem onSelect={() => actions.onEdit?.(node)}>
+                <IconPencil className="h-4 w-4" />
+                Edit
+              </ContextMenuItem>
+            )}
             <ContextMenuItem
               onSelect={() => void downloadNodeService(node.id, node.name)}
             >
@@ -166,14 +193,28 @@ export function NodeContextMenu({
  */
 export function BackgroundContextMenu({
   onNewFolder,
+  /** Create a new markdown file (New › Markdown file). */
+  onNewMarkdown,
+  /** Create a new plain text file (New › Text file). */
+  onNewTextFile,
   onUpload,
   onPaste,
   canPaste,
   onRefresh,
   onProperties,
+  /** Grid view mode submenu (documents manager only). */
+  view,
+  onViewChange,
+  /** Sort submenu (documents manager only). */
+  sort,
+  onSortChange,
   children,
 }: {
   onNewFolder: () => void
+  /** Create a new markdown file (New › Markdown file). */
+  onNewMarkdown?: () => void
+  /** Create a new plain text file (New › Text file). */
+  onNewTextFile?: () => void
   /** Open the upload dialog (or a file picker in hosts without one). */
   onUpload?: () => void
   onPaste: () => void
@@ -182,16 +223,50 @@ export function BackgroundContextMenu({
   onRefresh?: () => void
   /** Right-clicking empty space shows the properties of the open folder. */
   onProperties?: () => void
+  /** Current grid view — renders the submenu when provided. */
+  view?: DocumentView
+  onViewChange?: (view: DocumentView) => void
+  /** Current sort — renders the submenu when provided. */
+  sort?: DocumentSort
+  onSortChange?: (sort: DocumentSort) => void
   children: ReactNode
 }) {
   return (
     <ContextMenu>
       <ContextMenuTrigger asChild>{children}</ContextMenuTrigger>
       <ContextMenuContent className="w-52">
-        <ContextMenuItem onSelect={onNewFolder}>
-          <IconFolderPlus className="h-4 w-4" />
-          New folder
-        </ContextMenuItem>
+        {(onNewMarkdown || onNewTextFile) && (
+          <ContextMenuSub>
+            <ContextMenuSubTrigger>
+              <IconFolderPlus className="h-4 w-4" />
+              New
+            </ContextMenuSubTrigger>
+            <ContextMenuSubContent className="w-44">
+              <ContextMenuItem onSelect={onNewFolder}>
+                <IconFolderPlus className="h-4 w-4" />
+                Folder
+              </ContextMenuItem>
+              {onNewMarkdown && (
+                <ContextMenuItem onSelect={onNewMarkdown}>
+                  <IconMarkdown className="h-4 w-4" />
+                  Markdown file
+                </ContextMenuItem>
+              )}
+              {onNewTextFile && (
+                <ContextMenuItem onSelect={onNewTextFile}>
+                  <IconFileText className="h-4 w-4" />
+                  Text file
+                </ContextMenuItem>
+              )}
+            </ContextMenuSubContent>
+          </ContextMenuSub>
+        )}
+        {!onNewMarkdown && !onNewTextFile && (
+          <ContextMenuItem onSelect={onNewFolder}>
+            <IconFolderPlus className="h-4 w-4" />
+            New folder
+          </ContextMenuItem>
+        )}
         {onUpload && (
           <ContextMenuItem onSelect={onUpload}>
             <IconUpload className="h-4 w-4" />
@@ -202,6 +277,90 @@ export function BackgroundContextMenu({
           <IconClipboardCopy className="h-4 w-4" />
           Paste
         </ContextMenuItem>
+        {view && onViewChange && (
+          <ContextMenuSub>
+            <ContextMenuSubTrigger>
+              <IconLayoutGrid className="h-4 w-4" />
+              View
+            </ContextMenuSubTrigger>
+            <ContextMenuSubContent className="w-40">
+              {(
+                [
+                  ['cards', 'Cards', IconLayoutGrid],
+                  ['list', 'List', IconTableRow],
+                  ['table', 'Table', IconList],
+                ] as const
+              ).map(([value, label, Icon]) => (
+                <ContextMenuItem
+                  key={value}
+                  onSelect={() => onViewChange(value)}
+                >
+                  <Icon className="h-4 w-4" />
+                  {label}
+                  <IconCheck
+                    className={cn(
+                      'ml-auto h-4 w-4',
+                      view === value ? 'opacity-100' : 'opacity-0',
+                    )}
+                  />
+                </ContextMenuItem>
+              ))}
+            </ContextMenuSubContent>
+          </ContextMenuSub>
+        )}
+        {sort && onSortChange && (
+          <ContextMenuSub>
+            <ContextMenuSubTrigger>
+              {sort.dir === 'desc' ? (
+                <IconSortDescending className="h-4 w-4" />
+              ) : (
+                <IconSortAscending className="h-4 w-4" />
+              )}
+              Sort by
+            </ContextMenuSubTrigger>
+            <ContextMenuSubContent className="w-40">
+              {DOCUMENT_SORT_OPTIONS.map((option) => (
+                <ContextMenuItem
+                  key={option.key}
+                  onSelect={() =>
+                    onSortChange(
+                      option.key === sort.key
+                        ? {
+                            key: option.key,
+                            dir: sort.dir === 'asc' ? 'desc' : 'asc',
+                          }
+                        : { key: option.key, dir: 'asc' },
+                    )
+                  }
+                >
+                  {option.label}
+                  <IconCheck
+                    className={cn(
+                      'ml-auto h-4 w-4',
+                      sort.key === option.key ? 'opacity-100' : 'opacity-0',
+                    )}
+                  />
+                </ContextMenuItem>
+              ))}
+              <ContextMenuSeparator />
+              <ContextMenuItem
+                onSelect={() =>
+                  onSortChange({
+                    key: sort.key,
+                    dir: sort.dir === 'asc' ? 'desc' : 'asc',
+                  })
+                }
+              >
+                {sort.dir === 'asc' ? (
+                  <IconSortDescending className="h-4 w-4" />
+                ) : (
+                  <IconSortAscending className="h-4 w-4" />
+                )}
+                {sort.dir === 'asc' ? 'Descending' : 'Ascending'}
+              </ContextMenuItem>
+            </ContextMenuSubContent>
+          </ContextMenuSub>
+        )}
         {onRefresh && (
           <ContextMenuItem onSelect={onRefresh}>
             <IconRefresh className="h-4 w-4" />

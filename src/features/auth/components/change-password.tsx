@@ -44,7 +44,7 @@ export default function ChangePassword() {
       </div>
       <div>
         <hr className="my-4" />
-        <div className="w-3/12 border p-4 rounded-md">
+        <div className="w-full lg:w-3/12 border p-4 rounded-md">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormInputField

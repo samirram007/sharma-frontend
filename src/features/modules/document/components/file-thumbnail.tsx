@@ -180,3 +180,31 @@ export function FileThumbnail({
     />
   )
 }
+
+/**
+ * Large preview tile for Thumbnails view: images fill the tile with the
+ * real picture; non-image kinds fall back to the FileThumbnail icon glyph.
+ */
+export function PreviewImage({ node }: { node: DocumentNode }) {
+  const [failed, setFailed] = useState(false)
+  useEffect(() => setFailed(false), [node.id])
+
+  const isImage = node.kind === 'file' && isImageMime(node.mimeType)
+  if (isImage && !failed) {
+    return (
+      <img
+        src={documentUrl(node.id, 'preview', 'fetch')}
+        alt={node.name}
+        loading="lazy"
+        draggable={false}
+        onError={() => setFailed(true)}
+        className="h-full w-full object-cover"
+      />
+    )
+  }
+  return (
+    <span className="flex h-full w-full items-center justify-center bg-muted/40">
+      <FileThumbnail node={node} large />
+    </span>
+  )
+}

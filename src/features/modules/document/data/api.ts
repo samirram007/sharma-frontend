@@ -66,6 +66,29 @@ export async function createFolderService(payload: {
 }
 
 /**
+ * Create a text file (md/txt/csv/json/log) with inline content — the
+ * "New › Markdown/Text file" background-menu flow.
+ */
+export async function createTextFileService(payload: {
+  name: string
+  content: string
+  parentId?: number | null
+  visibility?: string
+}) {
+  return await postData(`${API_PATH}/text-files`, payload)
+}
+
+/** Raw text of a text file for the editor. */
+export async function readTextFileService(id: number) {
+  return await getData(`${API_PATH}/nodes/${id}/text`)
+}
+
+/** Save editor content back to a text file. */
+export async function updateTextFileService(id: number, content: string) {
+  return await putData(`${API_PATH}/nodes/${id}/text`, { content })
+}
+
+/**
  * Upload a single file. Uses axios directly (not dataClient) so we can attach
  * an onUploadProgress callback — dataClient's payload cleaning would also
  * mangle a FormData body.

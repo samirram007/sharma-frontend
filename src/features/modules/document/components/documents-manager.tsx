@@ -27,7 +27,16 @@ import {
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { DocumentGrid } from './document-grid'
-import { DocumentToolbar, type DocumentView } from './document-toolbar'
+import {
+  DocumentToolbar,
+  readStoredDocumentsPrefs,
+  readStoredDocumentsSort,
+  readStoredDocumentsView,
+  saveDocumentsState,
+  type DocumentPrefs,
+  type DocumentSort,
+  type DocumentView,
+} from './document-toolbar'
 import { FolderTree, useExpandedFolders } from './folder-tree'
 import { DocumentUploadDialog } from './document-upload-dialog'
 import { DocumentShareDialog } from './document-share-dialog'
@@ -48,6 +57,8 @@ import {
 } from './document-clipboard-store'
 import { PropertiesDialog } from './properties-dialog'
 import { PreviewFallback } from './preview-fallback'
+import { TextFileEditor, type TextFileKind } from './text-file-editor'
+import { PreviewPane } from './preview-pane'
 import { describeNode, previewFamily } from './preview-utils'
 import { useFullscreen } from '@/hooks/use-fullscreen'
 import {
@@ -169,7 +180,13 @@ export function DocumentsManager() {
     const last = readLastDocumentsFolder()
     if (last != null) setFolderId(last, { replace: true })
   }, [])
-  const [view, setView] = useState<DocumentView>('cards')
+  // View mode + sort + Show prefs persist across reloads (localStorage).
+  const [view, setView] = useState<DocumentView>(readStoredDocumentsView)
+  const [sort, setSort] = useState<DocumentSort>(readStoredDocumentsSort)
+  const [prefs, setPrefs] = useState<DocumentPrefs>(readStoredDocumentsPrefs)
+  useEffect(() => {
+    saveDocumentsState(view, sort, prefs)
+  }, [view, sort, prefs])
   /** Show only documents other people shared with the current user. */
   const [sharedOnly, setSharedOnly] = useState(false)
   /** Show only documents the current user shared outward. */
@@ -233,6 +250,16 @@ export function DocumentsManager() {
   >(null)
   /** Multi-selection across the grid (mixed folders + files). */
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set())
+  /** Text-file editor: create (newKind) or edit (node) mode. */
+  const [textEditor, setTextEditor] = useState<{
+    node: DocumentNode | null
+    newKind: TextFileKind | null
+  } | null>(null)
+  const isTextFile = (node: DocumentNode) =>
+    node.kind === 'file' &&
+    ['md', 'txt', 'csv', 'json', 'log'].includes(
+      (node.extension ?? '').toLowerCase(),
+    )
 
   const searchMode = debouncedSearch.trim().length > 0
   /** Folder a search result pointed at — highlighted until something else opens. */
@@ -338,6 +365,18 @@ export function DocumentsManager() {
     if (searchMode) return [] // search already flattens targets into results
     return (browse.data?.data?.shortcuts ?? []) as DocumentNode[]
   }, [searchMode, browse.data])
+
+  /** Node shown in the preview pane (single selection only). */
+  const previewPaneTarget = useMemo(() => {
+    if (!prefs.previewPane || selectedIds.size !== 1) return null
+    const id = [...selectedIds][0]
+    return (
+      folders.find((f) => f.id === id) ??
+      files.find((f) => f.id === id) ??
+      shortcuts.find((s) => s.id === id) ??
+      null
+    )
+  }, [prefs.previewPane, selectedIds, folders, files, shortcuts])
 
   // ── Mutations ──
   const invalidate = useCallback(
@@ -807,6 +846,7 @@ export function DocumentsManager() {
 
   menuActions = {
     onPreview: setPreviewFile,
+    onEdit: (node) => setTextEditor({ node, newKind: null }),
     onRename: openRename,
     onDelete: setDeleteTarget,
     onShare: setShareTarget,
@@ -903,6 +943,10 @@ export function DocumentsManager() {
         onSearchChange={setSearch}
         view={view}
         onViewChange={setView}
+        sort={sort}
+        onSortChange={setSort}
+        prefs={prefs}
+        onPrefsChange={setPrefs}
         onUpload={() => {
           setDroppedFiles(undefined)
           setUploadOpen(true)
@@ -927,10 +971,18 @@ export function DocumentsManager() {
         </p>
       )}
 
-      <div className="flex gap-4">
+      {/* Workspace row: folder tree | file panel | preview pane. min-h-0
+          lets children shrink below their content height so the viewport-based
+          bounds hold; the file panel scrolls internally when it overflows. */}
+      <div className="flex items-start gap-4">
         {/* The panel stays visible during search — clicking a result marks its
             folder here instead of hiding the panel. */}
-        <div ref={treeContainerRef} className="hidden w-60 shrink-0 md:block">
+        <div
+          ref={treeContainerRef}
+          className={`hidden w-60 shrink-0 self-stretch md:block ${
+            prefs.navigationPane ? '' : 'md:hidden'
+          }`}
+        >
           <FolderTree
             expanded={tree.expanded}
             onToggleExpand={(id) => {
@@ -1019,6 +1071,8 @@ export function DocumentsManager() {
 
         <BackgroundContextMenu
           onNewFolder={() => setCreateFolderParent(folderId)}
+          onNewMarkdown={() => setTextEditor({ node: null, newKind: 'md' })}
+          onNewTextFile={() => setTextEditor({ node: null, newKind: 'txt' })}
           onUpload={() => {
             setDroppedFiles(undefined)
             setUploadOpen(true)
@@ -1026,6 +1080,10 @@ export function DocumentsManager() {
           onPaste={() => pasteClipboard(folderId)}
           canPaste={clipboard.entries.length > 0}
           onRefresh={invalidate}
+          view={view}
+          onViewChange={setView}
+          sort={sort}
+          onSortChange={setSort}
           onProperties={() => {
             if (folderId === null) {
               // Root is a location, not a node — describe it synthetically.
@@ -1046,16 +1104,17 @@ export function DocumentsManager() {
             if (currentFolder) setPropertiesTarget(currentFolder)
           }}
         >
-          {/* min-h keeps the paste/drop target at least one visible viewport
-              tall, so right-click and drops work below the last row too.
-              Doubles as the drop target for app-internal drags: releasing a
-              node dragged from the tree moves it into the open folder. */}
+          {/* Bounded by the viewport with a floor of ~12rem: right-click and
+              drops keep working below the last row, while very long folders
+              scroll internally instead of stretching the page. Doubles as the
+              drop target for app-internal drags: releasing a node dragged from
+              the tree moves it into the open folder. */}
           <div
             ref={(node) => {
               filePanelRef.current = node
               setFilePanelEl(node)
             }}
-            className={`min-w-0 flex-1 space-y-3 min-h-[calc(100svh-13rem)] rounded-md transition-colors ${
+            className={`min-w-0 flex-1 space-y-3 overflow-y-auto rounded-md transition-colors h-fit max-h-[calc(100svh-11rem)] min-h-[12rem] ${
               dragOverPanel
                 ? 'bg-primary/5 outline outline-1 outline-dashed outline-primary/50'
                 : ''
@@ -1231,87 +1290,117 @@ export function DocumentsManager() {
                 <IconLoader2 className="h-5 w-5 animate-spin" />
               </div>
             ) : (
-              <DocumentGrid
-                // In shared mode the grid shows either the flat shared list (root
-                // level) or the browse result (when a shared folder is opened).
-                folders={
-                  sharedOnly
-                    ? folderId != null
-                      ? ((browse.data?.data?.folders ?? []) as DocumentNode[])
-                      : sharedFolders
-                    : sharedByMe
+              <>
+                <DocumentGrid
+                  // In shared mode the grid shows either the flat shared list (root
+                  // level) or the browse result (when a shared folder is opened).
+                  folders={
+                    sharedOnly
                       ? folderId != null
                         ? ((browse.data?.data?.folders ?? []) as DocumentNode[])
-                        : sharedByMeFolders
-                      : folders
-                }
-                files={
-                  sharedOnly
-                    ? folderId != null
-                      ? ((browse.data?.data?.files ?? []) as DocumentNode[])
-                      : sharedFiles
-                    : sharedByMe
+                        : sharedFolders
+                      : sharedByMe
+                        ? folderId != null
+                          ? ((browse.data?.data?.folders ??
+                              []) as DocumentNode[])
+                          : sharedByMeFolders
+                        : folders
+                  }
+                  files={
+                    sharedOnly
                       ? folderId != null
                         ? ((browse.data?.data?.files ?? []) as DocumentNode[])
-                        : sharedByMeFiles
-                      : files
-                }
-                shortcuts={
-                  sharedOnly
-                    ? folderId != null
-                      ? ((browse.data?.data?.shortcuts ?? []) as DocumentNode[])
-                      : sharedShortcuts
-                    : sharedByMe
+                        : sharedFiles
+                      : sharedByMe
+                        ? folderId != null
+                          ? ((browse.data?.data?.files ?? []) as DocumentNode[])
+                          : sharedByMeFiles
+                        : files
+                  }
+                  shortcuts={
+                    sharedOnly
                       ? folderId != null
                         ? ((browse.data?.data?.shortcuts ??
                             []) as DocumentNode[])
-                        : sharedByMeShortcuts
-                      : shortcuts
-                }
-                view={view}
-                searchMode={searchMode || sharedOnly || sharedByMe}
-                onOpenFolder={(folder) => {
-                  setFolderId(folder.id)
-                  // In shared modes, drilling into a shared folder keeps the
-                  // shared view active.
-                  if (sharedOnly || sharedByMe) {
-                    setSharedFolderContext({
-                      folderId: folder.id,
-                      ownerId: folder.ownerId ?? null,
-                      ownerName: folder.ownerName ?? null,
-                    })
-                    setMarkedFolderId(folder.id)
-                    markFolderInTree(folder.id)
+                        : sharedShortcuts
+                      : sharedByMe
+                        ? folderId != null
+                          ? ((browse.data?.data?.shortcuts ??
+                              []) as DocumentNode[])
+                          : sharedByMeShortcuts
+                        : shortcuts
                   }
-                }}
-                onPreviewFile={(file) => {
-                  setPreviewFile(file)
-                  if (searchMode && file.parentId != null) {
-                    setMarkedFolderId(file.parentId)
-                    markFolderInTree(file.parentId)
-                  }
-                }}
-                onRename={openRename}
-                onDelete={setDeleteTarget}
-                onShare={setShareTarget}
-                onMoveCopy={(node, mode) => setMoveCopyTarget({ node, mode })}
-                menuActions={menuActions}
-                onDragStartNode={setDraggingNode}
-                onDragEndNode={() => {
-                  setDraggingNode(null)
-                  resetPanelDrag()
-                }}
-                draggingNodeId={draggingNode?.id ?? null}
-                onDropOnFolder={handleGridDropOnFolder}
-                onDropOnFile={handleGridDropOnFile}
-                selectedIds={selectedIds}
-                onSelectionChange={setSelectedIds}
-                marqueeSurface={filePanelEl}
-                onOpenShortcut={handleOpenShortcut}
-              />
+                  view={view}
+                  sort={sort}
+                  onSortChange={setSort}
+                  prefs={prefs}
+                  searchMode={searchMode || sharedOnly || sharedByMe}
+                  onOpenFolder={(folder) => {
+                    setFolderId(folder.id)
+                    // In shared modes, drilling into a shared folder keeps the
+                    // shared view active.
+                    if (sharedOnly || sharedByMe) {
+                      setSharedFolderContext({
+                        folderId: folder.id,
+                        ownerId: folder.ownerId ?? null,
+                        ownerName: folder.ownerName ?? null,
+                      })
+                      setMarkedFolderId(folder.id)
+                      markFolderInTree(folder.id)
+                    }
+                  }}
+                  onPreviewFile={(file) => {
+                    // Text files open in the editor instead of the viewer.
+                    if (isTextFile(file)) {
+                      setTextEditor({ node: file, newKind: null })
+                      return
+                    }
+                    setPreviewFile(file)
+                    if (searchMode && file.parentId != null) {
+                      setMarkedFolderId(file.parentId)
+                      markFolderInTree(file.parentId)
+                    }
+                  }}
+                  onRename={openRename}
+                  onDelete={setDeleteTarget}
+                  onShare={setShareTarget}
+                  onMoveCopy={(node, mode) => setMoveCopyTarget({ node, mode })}
+                  menuActions={menuActions}
+                  onDragStartNode={setDraggingNode}
+                  onDragEndNode={() => {
+                    setDraggingNode(null)
+                    resetPanelDrag()
+                  }}
+                  draggingNodeId={draggingNode?.id ?? null}
+                  onDropOnFolder={handleGridDropOnFolder}
+                  onDropOnFile={handleGridDropOnFile}
+                  selectedIds={selectedIds}
+                  onSelectionChange={setSelectedIds}
+                  marqueeSurface={filePanelEl}
+                  onOpenShortcut={handleOpenShortcut}
+                />
+              </>
             )}
           </div>
         </BackgroundContextMenu>
+
+        {/* Preview pane docks to the right of the file panel (Explorer-style),
+            stretching to match the row height instead of hugging its content. */}
+        {prefs.previewPane && (
+          <PreviewPane
+            node={previewPaneTarget}
+            loading={isLoading}
+            onPreviewFile={(file) => {
+              if (isTextFile(file)) {
+                setTextEditor({ node: file, newKind: null })
+                return
+              }
+              setPreviewFile(file)
+            }}
+            onEdit={(node) => setTextEditor({ node, newKind: null })}
+            onDownload={(node) => void downloadNodeService(node.id, node.name)}
+          />
+        )}
       </div>
 
       {/* Page-level drop overlay — hidden while hovering the folder tree, which handles drops itself */}
@@ -1335,6 +1424,18 @@ export function DocumentsManager() {
         folderId={folderId}
         initialFiles={droppedFiles}
         onUploaded={invalidate}
+      />
+
+      {/* Text/markdown editor — create (New ›), edit (double-click) or
+          Edit in the context menu */}
+      <TextFileEditor
+        open={textEditor !== null}
+        onOpenChange={(open) => {
+          if (!open) setTextEditor(null)
+        }}
+        node={textEditor?.node ?? null}
+        newKind={textEditor?.newKind ?? null}
+        parentId={folderId}
       />
 
       {/* Create folder dialog */}

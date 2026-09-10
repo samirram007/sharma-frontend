@@ -15,28 +15,30 @@ const ReportingPeriodShort = ({ className }: ReportingPeriodShortProps) => {
 
   return (
     <>
-      <PeriodDetailsDialog
-        open={open}
-        setopen={setOpen}
-        hideTrigger
-      />
+      <PeriodDetailsDialog open={open} setopen={setOpen} hideTrigger />
       <Button
         variant="ghost"
         size="sm"
         className={`inline-flex items-center gap-1.5 px-2 text-xs whitespace-nowrap ${className ?? ''}`}
+        // Icon-only below `sm` — the date range would overflow narrow phones.
+        title={
+          period
+            ? `Reporting period: ${date_format(period.startDate!)} - ${date_format(period.endDate!)}`
+            : 'Set reporting period'
+        }
         onClick={() => setOpen(true)}
       >
         {period ? (
           <>
-            <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-            <span>
+            <Clock className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+            <span className="hidden sm:inline">
               {date_format(period.startDate!)} - {date_format(period.endDate!)}
             </span>
           </>
         ) : (
           <>
-            <CalendarDays className="h-3.5 w-3.5 text-muted-foreground" />
-            <span>Set Period</span>
+            <CalendarDays className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+            <span className="hidden sm:inline">Set Period</span>
           </>
         )}
       </Button>

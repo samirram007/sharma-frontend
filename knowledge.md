@@ -4,7 +4,7 @@ This file gives Freebuff context about the **AIPT frontend** (React SPA). See th
 
 ## What is this?
 
-React 19 SPA for **AIPT** (Accounts | Inventory | Payroll | Tax). Serves the `sharma-api` Laravel backend via a JSON API. Built with Vite 8 + TypeScript 6 + TanStack Router (file-based) + TanStack Query/Table + Tailwind CSS v4 + Shadcn/Radix UI. Package manager is **pnpm** (`pnpm@11.10.0`, package name `frontendts`).
+React 19 SPA for **AIPT** (Accounts | Inventory | Payroll | Tax). Serves the `sharma-api` Laravel backend via a JSON API. Built with Vite 8 + TypeScript 6 + TanStack Router (file-based) + TanStack Query/Table + Tailwind CSS v4 + Shadcn/Radix UI. Package manager is **pnpm** (`pnpm@11.25.0` per `package.json` `packageManager`, package name `frontendts`).
 
 ## Quickstart / Commands
 
@@ -15,7 +15,7 @@ React 19 SPA for **AIPT** (Accounts | Inventory | Payroll | Tax). Serves the `sh
 | Alt dev            | `pnpm start` — port **3000**                                  |
 | Build              | `pnpm build` (`vite build && tsc`)                            |
 | Test               | `pnpm test` (Vitest 4, jsdom)                                 |
-| E2E                | `pnpm test:e2e` (Playwright — needs Laravel backend on :8000) |
+| E2E (Playwright)   | `pnpm exec playwright test` — ⚠️ no `test:e2e` script in package.json (older docs referenced one); run Playwright directly |
 | Lint               | `pnpm lint` (ESLint, TanStack config)                         |
 | Format             | `pnpm format` (Prettier)                                      |
 | Check all          | `pnpm check` (`prettier --write . && eslint --fix`)           |
@@ -25,15 +25,15 @@ React 19 SPA for **AIPT** (Accounts | Inventory | Payroll | Tax). Serves the `sh
 
 ## E2E testing (Playwright)
 
-Playwright e2e tests live in `e2e/` (`playwright.config.ts` at project root).
+Playwright e2e tests live in `e2e/` (`playwright.config.ts` at project root; `@playwright/test ^1.62` is a devDependency).
 
-- **Run:** `pnpm test:e2e` (also `test:e2e:headed`, `test:e2e:ui`, `test:e2e:report`, `test:e2e:typecheck`)
+- **Run:** `pnpm exec playwright test` (variants: `--headed`, `--ui`, `show-report`). NOTE: older docs referenced `pnpm test:e2e` / `test:e2e:headed` / `test:e2e:ui` / `test:e2e:report` / `test:e2e:typecheck` scripts, but **package.json defines none of them** — invoke Playwright directly (or add the scripts).
 - **Prereqs:** Laravel backend running on `http://localhost:8000` (seeded demo users) + `pnpm exec playwright install chromium` once. The Vite dev server is started (or reused) automatically by the config's `webServer`.
 - **Auth:** `e2e/helpers/auth.ts` logs in via the API and seeds the JWT into `localStorage` (`auth_token`) — the SPA's axios client sends it as a Bearer header, same as a real session.
 - **Dashboard regression coverage:** `e2e/dashboard.spec.ts` asserts the dashboard renders without error states, and simulates a 500 on `/api/dashboard/transporter_wise` via `page.route` to prove widget failures render an inline fallback (no full-page server error / no 'Internal Server Error!' toast).
 - CI: set `CI=1` for retries/single-worker mode; the Laravel backend must be reachable (it is not started by Playwright).
 
-**Stack (from package.json):** `react ^19.2.4`, `typescript ^6.0.2`, `vite ^8.0.4`, `@tanstack/react-router ^1.168`, `@tanstack/react-query ^5.96`, `@tanstack/react-table ^8.21`, `tailwindcss ^4.2`, `zod ^4.3`, `react-hook-form ^7.72` + `@hookform/resolvers ^5.2`, `recharts ^3.8`, `vitest ^4.1`. Dev: ESLint `^10.8` (tanstack/eslint-config), Prettier `^3.8`.
+**Stack (from package.json):** `react ^19.2.4`, `typescript ^6.0.2`, `vite ^8.0.4`, `@tanstack/react-router ^1.168`, `@tanstack/react-query ^5.96`, `@tanstack/react-table ^8.21`, `tailwindcss ^4.2`, `zod ^4.3`, `react-hook-form ^7.72` + `@hookform/resolvers ^5.2`, `recharts ^3.8`, `vitest ^4.1`. Dev: ESLint `^10.8` (tanstack/eslint-config), Prettier `^3.8`, `@playwright/test ^1.62` (e2e).
 
 ## Architecture
 
@@ -171,7 +171,7 @@ Two coexisting patterns:
 
 1. **`routeTree.gen.ts` is auto-generated** — never hand-edit; it regenerates on route-file changes via the router plugin. `tsconfig.json` excludes `entry-client.tsx`/`entry-server.tsx` (SSR mostly disabled; `index.html` loads `main.tsx`).
 2. **`VITE_API_BASE_URL` must end with `/api`.** The Vite dev proxy (`/api` → `VITE_BACKEND_URL`) does **not** rewrite the prefix (Laravel routes are already `/api`-prefixed).
-3. **Token duplication (security):** JWT stored in localStorage/sessionStorage (via `VITE_AUTH_STORAGE`, default `localStorage`, key `auth_token`) **and** in the httpOnly cookie set by the backend. Keep the two storage paths in sync when editing auth code (`AuthContext` + `axios-client.ts` — circular import note in the latter).
+3. **Token duplication (security):** JWT stored in sessionStorage/localStorage (via `VITE_AUTH_STORAGE`; `.env.example` default `sessionStorage`, key `auth_token`) **and** in the httpOnly cookie set by the backend. Keep the two storage paths in sync when editing auth code (`AuthContext` + `axios-client.ts` — circular import note in the latter).
 4. **Query behavior differs dev vs prod** — dev: no retries, no refetch-on-window-focus (root-provider). Don't be surprised if a dev query doesn't retry.
 5. **Two UI primitive sets coexist:** Radix (`@radix-ui/*`, shadcn `components/ui/`) and `@base-ui-components/react` — check what an existing component uses before adding/editing one.
 6. **Global input styling** in `styles.css` `@layer base` (small `h-6` inputs, underline borders, dark focus) applies app-wide — use `.voucher-entry` inside POS grids for the ledger look.
@@ -180,7 +180,7 @@ Two coexisting patterns:
 9. **pnpm is the standard package manager**; `package-lock.json` is gitignored, `pnpm-lock.yaml` + `pnpm-workspace.yaml` are canonical. CI installs with `--frozen-lockfile`.
 10. **SSR scripts** (`serve:ssr`, `dev:server`, `server.ts`) are experimental/disabled — the SPA is client-rendered.
 11. **`exceljs`/`jspdf` (v4)/`jspdf-autotable` (v5)/`file-saver`** are heavyweight deps — export handlers use dynamic `import()` for code-splitting; keep it that way.
-12. `.env.example` ships `VITE_API_BASE_URL=https://aipt-api.local/api`; social login URLs default to `#` (disabled); `VITE_AUTH_STORAGE` (default `localStorage`) and `VITE_REVERB_AUTH_ENDPOINT` are documented. The resolved API base is shared via `src/lib/env.ts` (`API_BASE_URL`, falls back to `/api`) and consumed by `axios-client.ts` and `echo-context.tsx`.
+12. `.env.example` ships `VITE_API_BASE_URL=/api` (relative — requests flow through the Vite dev proxy to `VITE_BACKEND_URL`; for a direct prod API set the absolute URL with the `/api` suffix) and `VITE_AUTH_STORAGE=sessionStorage`; social login URLs default to `#` (disabled); `VITE_REVERB_APP_KEY` has a dev default (`af749dfcf9c0012a6a40a3fd24650e4a`); `VITE_REVERB_AUTH_ENDPOINT` is documented (commented). The resolved API base is shared via `src/lib/env.ts` (`API_BASE_URL`, falls back to `/api`) and consumed by `axios-client.ts` and `echo-context.tsx`.
 
 ## Things to avoid
 

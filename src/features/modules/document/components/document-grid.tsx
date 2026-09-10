@@ -10,7 +10,11 @@ import {
   IconArrowBackUp,
   IconCopy,
   IconLink,
+  IconArrowsSort,
+  IconChevronDown,
+  IconChevronUp,
 } from '@tabler/icons-react'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import {
   Table,
@@ -35,11 +39,13 @@ import {
   ShortcutGlyph,
   VisibilityBadge,
   isBrokenShortcut,
+  PreviewImage,
 } from '@/features/modules/document/components/file-thumbnail'
 import {
   NodeContextMenu,
   type NodeMenuActions,
 } from '@/features/modules/document/components/node-context-menu'
+import { previewFamily } from './preview-utils'
 import {
   isMarqueeFarEnough,
   marqueeRect,
@@ -47,6 +53,13 @@ import {
   type Point,
 } from './selection-utils'
 import type { DocumentNode } from '@/features/modules/document/data/schema'
+import { useAuth } from '@/features/auth/contexts/AuthContext'
+import {
+  type DocumentPrefs,
+  type DocumentSort,
+  type DocumentSortKey,
+} from './document-toolbar'
+import { cn } from '@/lib/utils'
 
 interface DocumentGridProps {
   /** In search mode this is a flat list of mixed folders/files. */
@@ -54,7 +67,12 @@ interface DocumentGridProps {
   files: DocumentNode[]
   /** Shortcut aliases, rendered after folders + files. */
   shortcuts?: DocumentNode[]
-  view: 'cards' | 'table'
+  view: 'cards' | 'thumbnails' | 'list' | 'table'
+  /** Active sort — sortable headers render in list/table views. */
+  sort?: DocumentSort
+  onSortChange?: (sort: DocumentSort) => void
+  /** Explorer-style Show toggles (compact density, item check boxes). */
+  prefs?: DocumentPrefs
   /** Present when rendering search results (breadcrumb is not applicable). */
   searchMode?: boolean
   onOpenFolder: (folder: DocumentNode) => void
@@ -98,8 +116,12 @@ interface GridEntryProps {
   onDelete: (node: DocumentNode) => void
   onShare: (node: DocumentNode) => void
   onMoveCopy: (node: DocumentNode, mode: 'move' | 'copy') => void
-  view: 'cards' | 'table'
+  view: 'cards' | 'thumbnails' | 'list' | 'table'
+  /** Explorer-style Show toggles (compact density, item check boxes). */
+  prefs?: DocumentPrefs
   searchMode: boolean
+  /** Auth'd user id — nodes owned by someone else display their owner name. */
+  currentUserId: number | null
   onDragStartNode: (node: DocumentNode) => void
   onDragEndNode: () => void
   onPreviewFile: (file: DocumentNode) => void
@@ -141,6 +163,8 @@ function GridEntry({
   selectionActive,
   onEntryClick,
   onEntryOpen,
+  currentUserId,
+  prefs,
 }: GridEntryProps) {
   const [isDragOver, setIsDragOver] = useState(false)
   const isFolderTarget = node.kind === 'folder'
@@ -231,6 +255,151 @@ function GridEntry({
     </>
   )
 
+  const kindLabel =
+    node.kind === 'folder'
+      ? 'Folder'
+      : node.kind === 'shortcut'
+        ? 'Shortcut'
+        : (node.extension ?? 'File')
+
+  const compact = prefs?.compact ?? false
+  const showCheckBox = (prefs?.checkBoxes ?? false) || selectionActive
+  const checkBox = showCheckBox ? (
+    <span
+      aria-hidden
+      className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border text-[10px] font-bold ${
+        selected
+          ? 'border-primary bg-primary text-primary-foreground'
+          : 'border-muted-foreground/40 text-transparent'
+      }`}
+    >
+      ✓
+    </span>
+  ) : null
+
+  // Thumbnails view — large preview tiles (images render the real picture).
+  if (view === 'thumbnails') {
+    return (
+      <NodeContextMenu node={node} actions={menuActions}>
+        <div
+          data-node-id={node.id}
+          draggable={!broken}
+          onDragStart={handleDragStart}
+          onDragEnd={onDragEndNode}
+          {...dropBindings}
+          onClick={(event) => onEntryClick(node, event)}
+          onDoubleClick={() => onEntryOpen(node)}
+          className={`group relative cursor-grab select-none rounded-lg border bg-card transition-shadow hover:shadow-sm active:cursor-grabbing ${
+            selected ? 'border-primary/60 ring-1 ring-primary/50' : ''
+          } ${isDragOver ? 'ring-2 ring-primary/60' : ''} ${broken ? 'opacity-50' : ''}`}
+        >
+          <span className="absolute left-1.5 top-1.5 z-10 flex items-center gap-1">
+            {checkBox}
+          </span>
+          <span className="absolute right-1.5 top-1.5 z-10 flex items-center gap-1 rounded bg-background/70 px-1 backdrop-blur-sm dark:bg-card/70">
+            {badges}
+          </span>
+          <button
+            type="button"
+            className="flex w-full flex-col text-left"
+            onClick={(event) => {
+              event.stopPropagation()
+              onEntryClick(node, event)
+            }}
+            onDoubleClick={(event) => {
+              event.stopPropagation()
+              onEntryOpen(node)
+            }}
+          >
+            <span className="block aspect-square w-full overflow-hidden rounded-t-lg">
+              <PreviewImage node={node} />
+            </span>
+            <span className="flex w-full flex-col gap-0.5 px-2 py-1.5">
+              <span
+                className={`line-clamp-1 w-full break-all text-xs font-medium ${broken ? 'line-through' : ''}`}
+              >
+                {node.name}
+              </span>
+              <span className="flex min-w-0 items-center gap-1 text-[10px] text-muted-foreground">
+                <span className="shrink-0">{kindLabel}</span>
+                <OwnerChip
+                  node={node}
+                  currentUserId={currentUserId}
+                  showName={false}
+                />
+              </span>
+            </span>
+          </button>
+          <div className="absolute bottom-1.5 right-1.5">
+            <NodeActionsMenu
+              node={node}
+              onPreviewFile={onPreviewFile}
+              onEdit={menuActions.onEdit}
+              onRename={onRename}
+              onDelete={onDelete}
+              onShare={onShare}
+              onMoveCopy={onMoveCopy}
+            />
+          </div>
+        </div>
+      </NodeContextMenu>
+    )
+  }
+
+  // List view — one compact row per entry (between cards and full table).
+  if (view === 'list') {
+    return (
+      <NodeContextMenu node={node} actions={menuActions}>
+        <div
+          data-node-id={node.id}
+          draggable={!broken}
+          onDragStart={handleDragStart}
+          onDragEnd={onDragEndNode}
+          {...dropBindings}
+          onClick={(event) => onEntryClick(node, event)}
+          onDoubleClick={() => onEntryOpen(node)}
+          className={`group flex cursor-grab select-none items-center gap-2 px-3 text-sm transition-colors ${
+            compact ? 'py-1' : 'py-2'
+          } ${selected ? 'bg-primary/10' : 'hover:bg-muted/50'} ${
+            isDragOver
+              ? 'bg-primary/10 outline outline-1 outline-primary/50'
+              : ''
+          } ${broken ? 'opacity-50' : ''}`}
+        >
+          {checkBox}
+          <FileThumbnail node={node} />
+          <span
+            className={`min-w-0 flex-1 truncate font-medium ${broken ? 'line-through' : ''}`}
+          >
+            {node.name}
+          </span>
+          <OwnerChip node={node} currentUserId={currentUserId} />
+          {badges}
+          <span className="hidden w-20 shrink-0 text-xs text-muted-foreground md:block">
+            {kindLabel}
+          </span>
+          <span className="hidden w-16 shrink-0 text-right text-xs text-muted-foreground sm:block">
+            {node.kind === 'folder' || node.kind === 'shortcut'
+              ? '—'
+              : formatBytes(node.sizeBytes)}
+          </span>
+          <span className="hidden w-24 shrink-0 text-right text-xs text-muted-foreground lg:block">
+            {node.updatedAt ? formatDistanceToNow(node.updatedAt) : '—'}
+          </span>
+          <NodeActionsMenu
+            node={node}
+            onPreviewFile={onPreviewFile}
+            onEdit={menuActions.onEdit}
+            onRename={onRename}
+            onDelete={onDelete}
+            onShare={onShare}
+            onMoveCopy={onMoveCopy}
+          />
+        </div>
+      </NodeContextMenu>
+    )
+  }
+
   if (view === 'table') {
     return (
       <NodeContextMenu node={node} actions={menuActions}>
@@ -263,14 +432,13 @@ function GridEntry({
               )}
             </span>
           </TableCell>
+          <TableCell className="text-xs text-muted-foreground">
+            <OwnerChip node={node} currentUserId={currentUserId} showName />
+          </TableCell>
           {!searchMode && (
             <TableCell>
               <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                {node.kind === 'folder'
-                  ? 'Folder'
-                  : node.kind === 'shortcut'
-                    ? 'Shortcut'
-                    : (node.extension ?? 'File')}
+                {kindLabel}
                 {badges}
               </span>
             </TableCell>
@@ -289,6 +457,7 @@ function GridEntry({
             <NodeActionsMenu
               node={node}
               onPreviewFile={onPreviewFile}
+              onEdit={menuActions.onEdit}
               onRename={onRename}
               onDelete={onDelete}
               onShare={onShare}
@@ -310,17 +479,17 @@ function GridEntry({
         onDragEnd={onDragEndNode}
         {...dropBindings}
         onClick={(event) => onEntryClick(node, event)}
-        className={`group relative cursor-grab select-none rounded-lg border bg-card p-3 transition-shadow hover:shadow-sm active:cursor-grabbing ${
+        className={`group relative cursor-grab select-none rounded-lg border bg-card transition-shadow hover:shadow-sm active:cursor-grabbing ${
+          compact ? 'p-2' : 'p-3'
+        } ${
           selected
             ? 'border-primary/60 bg-primary/10 ring-1 ring-primary/50'
             : ''
         } ${isDragOver ? 'ring-2 ring-primary/60' : ''} ${broken ? 'opacity-50' : ''}`}
       >
-        {selectionActive && selected && (
-          <span className="absolute left-1.5 top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
-            ✓
-          </span>
-        )}
+        <span className="absolute left-1.5 top-1.5 z-10 flex items-center gap-1">
+          {checkBox}
+        </span>
         <span className="absolute right-1.5 top-1.5 flex items-center gap-1">
           {badges}
         </span>
@@ -349,11 +518,13 @@ function GridEntry({
                 ? 'Shortcut'
                 : `${node.extension?.toUpperCase() ?? 'File'} · ${formatBytes(node.sizeBytes)}`}
           </span>
+          <OwnerChip node={node} currentUserId={currentUserId} />
         </button>
         <div className="absolute bottom-1.5 right-1.5">
           <NodeActionsMenu
             node={node}
             onPreviewFile={onPreviewFile}
+            onEdit={menuActions.onEdit}
             onRename={onRename}
             onDelete={onDelete}
             onShare={onShare}
@@ -387,11 +558,36 @@ export function DocumentGrid({
   onSelectionChange,
   marqueeSurface,
   onOpenShortcut,
+  sort,
+  onSortChange,
+  prefs,
 }: DocumentGridProps) {
-  const entries = useMemo(
-    () => [...folders, ...files, ...shortcuts],
-    [folders, files, shortcuts],
-  )
+  const { user } = useAuth()
+  // Apply the active sort client-side (folders first is NOT preserved when a
+  // sort is active — the flat list is ordered purely by the chosen field).
+  const entries = useMemo(() => {
+    const list = [...folders, ...files, ...shortcuts]
+    if (!sort) return list
+    const dirFactor = sort.dir === 'asc' ? 1 : -1
+    return [...list].sort((a, b) => {
+      if (sort.key === 'name') {
+        return a.name.localeCompare(b.name) * dirFactor
+      }
+      if (sort.key === 'size') {
+        // Folders/shortcuts (no size) group before files.
+        const av = a.kind === 'file' ? (a.sizeBytes ?? 0) : -1
+        const bv = b.kind === 'file' ? (b.sizeBytes ?? 0) : -1
+        return (av - bv) * dirFactor
+      }
+      // modified — undated entries always sink to the end.
+      const at = a.updatedAt ? Date.parse(a.updatedAt) : NaN
+      const bt = b.updatedAt ? Date.parse(b.updatedAt) : NaN
+      if (Number.isNaN(at) && Number.isNaN(bt)) return 0
+      if (Number.isNaN(at)) return 1
+      if (Number.isNaN(bt)) return -1
+      return (at - bt) * dirFactor
+    })
+  }, [folders, files, shortcuts, sort])
 
   const selection = selectedIds ?? new Set<number>()
   const selectionActive = selection.size > 0
@@ -583,6 +779,8 @@ export function DocumentGrid({
       selectionActive={selectionActive}
       onEntryClick={handleEntryClick}
       onEntryOpen={handleEntryOpen}
+      currentUserId={user?.id ?? null}
+      prefs={prefs}
     />
   )
 
@@ -604,15 +802,120 @@ export function DocumentGrid({
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Name</TableHead>
+                <TableHead>
+                  <SortHeaderButton
+                    label="Name"
+                    sortKey="name"
+                    sort={sort}
+                    onSortChange={onSortChange}
+                  />
+                </TableHead>
+                <TableHead className="w-32">Owner</TableHead>
                 {!searchMode && <TableHead className="w-28">Kind</TableHead>}
-                <TableHead className="w-24">Size</TableHead>
-                <TableHead className="w-32">Modified</TableHead>
+                <TableHead className="w-24">
+                  <SortHeaderButton
+                    label="Size"
+                    sortKey="size"
+                    sort={sort}
+                    onSortChange={onSortChange}
+                  />
+                </TableHead>
+                <TableHead className="w-32">
+                  <SortHeaderButton
+                    label="Modified"
+                    sortKey="modified"
+                    sort={sort}
+                    onSortChange={onSortChange}
+                  />
+                </TableHead>
                 <TableHead className="w-24 text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>{entries.map(renderEntry)}</TableBody>
           </Table>
+        </div>
+      </div>
+    )
+  }
+
+  // Thumbnails view — bigger image-first tiles, fewer per row than cards.
+  if (view === 'thumbnails') {
+    return (
+      <div className="space-y-3">
+        <SelectionSummary
+          count={selection.size}
+          total={totalCount}
+          onClear={() => onSelectionChange?.(new Set())}
+        />
+        <div
+          ref={containerRef}
+          className="relative"
+          onMouseMove={updateMarquee}
+          onMouseUp={endMarquee}
+        >
+          {marquee && <MarqueeBox marquee={marquee} />}
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+            {entries.map(renderEntry)}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // List view — compact bordered rows, denser than cards, lighter than table.
+  if (view === 'list') {
+    return (
+      <div className="space-y-3">
+        <SelectionSummary
+          count={selection.size}
+          total={totalCount}
+          onClear={() => onSelectionChange?.(new Set())}
+        />
+        <div
+          ref={containerRef}
+          className="relative"
+          onMouseMove={updateMarquee}
+          onMouseUp={endMarquee}
+        >
+          {marquee && <MarqueeBox marquee={marquee} />}
+          <div className="rounded-md border">
+            <div className="flex items-center gap-2 border-b bg-muted/40 px-3 py-1.5">
+              <span className="min-w-0 flex-1">
+                <SortHeaderButton
+                  label="Name"
+                  sortKey="name"
+                  sort={sort}
+                  onSortChange={onSortChange}
+                />
+              </span>
+              <span className="text-xs font-medium text-muted-foreground">
+                Owner
+              </span>
+              <span className="hidden w-20 shrink-0 text-xs font-medium text-muted-foreground md:block">
+                Kind
+              </span>
+              <span className="hidden w-16 shrink-0 sm:block">
+                <SortHeaderButton
+                  label="Size"
+                  sortKey="size"
+                  sort={sort}
+                  onSortChange={onSortChange}
+                  align="right"
+                />
+              </span>
+              <span className="hidden w-24 shrink-0 lg:block">
+                <SortHeaderButton
+                  label="Modified"
+                  sortKey="modified"
+                  sort={sort}
+                  onSortChange={onSortChange}
+                  align="right"
+                />
+              </span>
+              <span className="w-7 shrink-0" />
+            </div>
+            <div className="divide-y">{entries.map(renderEntry)}</div>
+          </div>
         </div>
       </div>
     )
@@ -696,6 +999,8 @@ function MarqueeBox({
 interface NodeActionsMenuProps {
   node: DocumentNode
   onPreviewFile: (file: DocumentNode) => void
+  /** Present when the host can open text files in the editor. */
+  onEdit?: (file: DocumentNode) => void
   onRename: (node: DocumentNode) => void
   onDelete: (node: DocumentNode) => void
   onShare: (node: DocumentNode) => void
@@ -705,11 +1010,15 @@ interface NodeActionsMenuProps {
 function NodeActionsMenu({
   node,
   onPreviewFile,
+  onEdit,
   onRename,
   onDelete,
   onShare,
   onMoveCopy,
 }: NodeActionsMenuProps) {
+  // Text-family files (md/txt/csv/json/log) get an Edit shortcut in the menu.
+  const isEditableText = node.kind === 'file' && previewFamily(node) === 'text'
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -728,6 +1037,12 @@ function NodeActionsMenu({
               <IconEye className="h-4 w-4" />
               Preview
             </DropdownMenuItem>
+            {isEditableText && onEdit && (
+              <DropdownMenuItem onSelect={() => onEdit(node)}>
+                <IconPencil className="h-4 w-4" />
+                Edit
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem
               onSelect={() => void downloadNodeService(node.id, node.name)}
             >
@@ -774,5 +1089,107 @@ function NodeActionsMenu({
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
+  )
+}
+
+/** Avatar-only owner chip for the preview pane (name shown separately). */
+export function OwnerChipAvatar({ node }: { node: DocumentNode }) {
+  const { user } = useAuth()
+  const isShared =
+    node.ownerId != null &&
+    node.ownerId !== (user?.id ?? null) &&
+    node.ownerName != null
+  if (!isShared) return null
+  return (
+    <span
+      className="mt-1 inline-flex items-center gap-1.5 text-xs text-muted-foreground"
+      title={`Shared by ${node.ownerName}`}
+    >
+      <Avatar className="h-4 w-4">
+        <AvatarFallback className="text-[8px] font-semibold">
+          {node.ownerName![0]?.toUpperCase() ?? '?'}
+        </AvatarFallback>
+      </Avatar>
+      by {node.ownerName}
+    </span>
+  )
+}
+
+/** Avatar + name for a node's owner; hidden when the current user owns it. */
+function OwnerChip({
+  node,
+  currentUserId,
+  showName = true,
+}: {
+  node: DocumentNode
+  currentUserId: number | null
+  /** Show "by Name" — omit for compact inline use. */
+  showName?: boolean
+}) {
+  const isShared =
+    node.ownerId != null &&
+    node.ownerId !== currentUserId &&
+    node.ownerName != null
+  if (!isShared) return null
+  const initial = node.ownerName![0]?.toUpperCase() ?? '?'
+  return (
+    <span
+      className="inline-flex min-w-0 items-center gap-1 text-xs text-muted-foreground"
+      title={`Shared by ${node.ownerName}`}
+    >
+      <Avatar className="h-4 w-4">
+        <AvatarFallback className="text-[8px] font-semibold">
+          {initial}
+        </AvatarFallback>
+      </Avatar>
+      {showName && (
+        <span className="max-w-[120px] truncate">by {node.ownerName}</span>
+      )}
+    </span>
+  )
+}
+
+/** Sortable column header: click cycles asc → desc, icon shows direction. */
+function SortHeaderButton({
+  label,
+  sortKey,
+  sort,
+  onSortChange,
+  align = 'left',
+}: {
+  label: string
+  sortKey: DocumentSortKey
+  sort?: DocumentSort
+  onSortChange?: (sort: DocumentSort) => void
+  align?: 'left' | 'right'
+}) {
+  const active = sort?.key === sortKey
+  return (
+    <button
+      type="button"
+      disabled={!onSortChange}
+      onClick={() =>
+        onSortChange?.({
+          key: sortKey,
+          dir: active && sort?.dir === 'asc' ? 'desc' : 'asc',
+        })
+      }
+      className={cn(
+        'inline-flex items-center gap-1 text-xs font-medium transition-colors',
+        align === 'right' && 'w-full justify-end',
+        active
+          ? 'text-foreground'
+          : 'text-muted-foreground hover:text-foreground',
+      )}
+    >
+      {label}
+      {!active && <IconArrowsSort className="h-3 w-3 opacity-40" />}
+      {active &&
+        (sort?.dir === 'asc' ? (
+          <IconChevronUp className="h-3.5 w-3.5" />
+        ) : (
+          <IconChevronDown className="h-3.5 w-3.5" />
+        ))}
+    </button>
   )
 }

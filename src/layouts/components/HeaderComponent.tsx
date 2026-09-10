@@ -51,26 +51,23 @@ const HeaderComponent: React.FC<{}> = () => {
   )
 
   return (
-
-
     <div className="sticky top-0 z-10 ">
-
       <div className="    max-w-full rounded-xl border border-white/60 bg-white/70 shadow-sm backdrop-blur-md dark:border-white/8 dark:bg-card dark:shadow-black/40 dark:backdrop-blur-md">
         <Header className="rounded-t-xl bg-transparent  border-b-2 border-white/60 dark:border-white/8">
           <TopNav links={links} allowedRoutes={allowedRoutes} />
           <div className="ml-auto flex min-w-0 items-center gap-2 lg:gap-4">
             {/* <GodownItemSearch className='hidden lg:flex' placeholder='Search items...' /> */}
             <Search className="hidden sm:flex" />
-            <ReportingPeriodShort className="hidden sm:inline-flex" />
+            {/* Single instance for all breakpoints — the date text hides below
+                `sm` (icon-only button), so phones don't overflow and tablets
+                in the 640–768px range don't get a duplicate. */}
+            <ReportingPeriodShort />
             <NotificationBell />
             <DocumentsButton />
             <div className="hidden md:block h-6 w-px bg-slate-300/50 dark:bg-slate-700/50" />
             <ThemeSwitch />
-            <div className="  flex">
+            <div className="flex">
               <ProfileDropdown />
-            </div>
-            <div className="flex items-center gap-2 md:hidden">
-              <ReportingPeriodShort className="inline-flex" />
             </div>
           </div>
         </Header>
