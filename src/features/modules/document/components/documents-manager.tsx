@@ -58,6 +58,7 @@ import {
 import { PropertiesDialog } from './properties-dialog'
 import { PreviewFallback } from './preview-fallback'
 import { TextFileEditor, type TextFileKind } from './text-file-editor'
+import { FolderColorPicker } from './folder-color-picker'
 import { PreviewPane } from './preview-pane'
 import { describeNode, previewFamily } from './preview-utils'
 import { useFullscreen } from '@/hooks/use-fullscreen'
@@ -71,6 +72,7 @@ import {
   useDocumentSearch,
   useMoveNode,
   useRenameNode,
+  useUpdateNodeColor,
   sharedByMeQueryOptions,
   sharedWithMeQueryOptions,
 } from '@/features/modules/document/data/queryOptions'
@@ -389,6 +391,7 @@ export function DocumentsManager() {
   const copyNode = useCopyNode()
   const createFolderNode = useCreateFolder()
   const createShortcutNode = useCreateShortcut()
+  const updateNodeColor = useUpdateNodeColor()
 
   // ── Move/copy ──
   const applyNodeAction = (
@@ -852,6 +855,20 @@ export function DocumentsManager() {
     onShare: setShareTarget,
     onMoveCopy: (node, mode) => setMoveCopyTarget({ node, mode }),
     onProperties: setPropertiesTarget,
+    onChangeColor: (node, color) => {
+      updateNodeColor.mutate(
+        { id: node.id, color },
+        {
+          onSuccess: () =>
+            toast.success(
+              color
+                ? 'Folder colour updated.'
+                : 'Folder colour reset to default.',
+            ),
+          onError: () => toast.error('Could not update the folder colour.'),
+        },
+      )
+    },
     onCreateShortcut: (node) => {
       createShortcutNode.mutate(
         { targetId: node.id, parentId: node.parentId },
@@ -937,7 +954,7 @@ export function DocumentsManager() {
   const isMoving = moveNode.isPending
 
   return (
-    <div className="space-y-4">
+    <div className="flex h-[calc(100vh-15rem)] min-h-0 flex-col space-y-4 overflow-hidden pt-2 bg-slate-200/50 dark:bg-slate-950/30">
       <DocumentToolbar
         search={search}
         onSearchChange={setSearch}
@@ -971,10 +988,11 @@ export function DocumentsManager() {
         </p>
       )}
 
-      {/* Workspace row: folder tree | file panel | preview pane. min-h-0
-          lets children shrink below their content height so the viewport-based
-          bounds hold; the file panel scrolls internally when it overflows. */}
-      <div className="flex items-start gap-4">
+      {/* Workspace row: folder tree | file panel | preview pane. The row
+          absorbs the root's leftover height (min-h-0 lets it shrink below its
+          content height), so the tree and the file panel both stretch to the
+          maximum available height and scroll internally when they overflow. */}
+      <div className="flex min-h-0 flex-1 items-stretch gap-4">
         {/* The panel stays visible during search — clicking a result marks its
             folder here instead of hiding the panel. */}
         <div
@@ -1104,17 +1122,18 @@ export function DocumentsManager() {
             if (currentFolder) setPropertiesTarget(currentFolder)
           }}
         >
-          {/* Bounded by the viewport with a floor of ~12rem: right-click and
-              drops keep working below the last row, while very long folders
-              scroll internally instead of stretching the page. Doubles as the
-              drop target for app-internal drags: releasing a node dragged from
-              the tree moves it into the open folder. */}
+          {/* Fills the workspace row down to the footer (the row stretches
+              its children): right-click and drops work on the empty area below
+              the last row, while long folders scroll internally instead of
+              stretching the page. Doubles as the drop target for app-internal
+              drags: releasing a node dragged from the tree moves it into the
+              open folder. */}
           <div
             ref={(node) => {
               filePanelRef.current = node
               setFilePanelEl(node)
             }}
-            className={`min-w-0 flex-1 space-y-3 overflow-y-auto rounded-md transition-colors h-fit max-h-[calc(100svh-11rem)] min-h-[12rem] ${
+            className={`min-h-0 min-w-0 flex-1 space-y-3 overflow-y-auto rounded-md transition-colors ${
               dragOverPanel
                 ? 'bg-primary/5 outline outline-1 outline-dashed outline-primary/50'
                 : ''
@@ -1608,17 +1627,21 @@ interface CreateFolderDialogProps {
 
 function CreateFolderDialog({ parentId, onClose }: CreateFolderDialogProps) {
   const [name, setName] = useState('')
+  const [color, setColor] = useState<string | null>(null)
   const createFolder = useCreateFolder()
 
-  // Reset the name each time the dialog opens.
+  // Reset the name and colour each time the dialog opens.
   useEffect(() => {
-    if (parentId !== undefined) setName('')
+    if (parentId !== undefined) {
+      setName('')
+      setColor(null)
+    }
   }, [parentId])
 
   const submit = () => {
     if (!name.trim()) return
     createFolder.mutate(
-      { name: name.trim(), parentId: parentId ?? null },
+      { name: name.trim(), parentId: parentId ?? null, color },
       {
         onSuccess: () => {
           toast.success(`Folder "${name.trim()}" created.`)
@@ -1651,6 +1674,8 @@ function CreateFolderDialog({ parentId, onClose }: CreateFolderDialogProps) {
             autoFocus
             onKeyDown={(event) => event.key === 'Enter' && submit()}
           />
+          <Label htmlFor="folder-color-input">Folder colour</Label>
+          <FolderColorPicker value={color} onChange={setColor} />
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>

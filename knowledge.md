@@ -8,18 +8,18 @@ React 19 SPA for **AIPT** (Accounts | Inventory | Payroll | Tax). Serves the `sh
 
 ## Quickstart / Commands
 
-| Action             | Command                                                       |
-| ------------------ | ------------------------------------------------------------- |
-| Install            | `pnpm install`                                                |
-| Dev (Vite)         | `pnpm dev` — port **5173**                                    |
-| Alt dev            | `pnpm start` — port **3000**                                  |
-| Build              | `pnpm build` (`vite build && tsc`)                            |
-| Test               | `pnpm test` (Vitest 4, jsdom)                                 |
+| Action             | Command                                                                                                                    |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------- |
+| Install            | `pnpm install`                                                                                                             |
+| Dev (Vite)         | `pnpm dev` — port **5173**                                                                                                 |
+| Alt dev            | `pnpm start` — port **3000**                                                                                               |
+| Build              | `pnpm build` (`vite build && tsc`)                                                                                         |
+| Test               | `pnpm test` (Vitest 4, jsdom)                                                                                              |
 | E2E (Playwright)   | `pnpm exec playwright test` — ⚠️ no `test:e2e` script in package.json (older docs referenced one); run Playwright directly |
-| Lint               | `pnpm lint` (ESLint, TanStack config)                         |
-| Format             | `pnpm format` (Prettier)                                      |
-| Check all          | `pnpm check` (`prettier --write . && eslint --fix`)           |
-| SSR (experimental) | `pnpm serve:ssr` / `pnpm dev:server` (`tsx src/server.ts`)    |
+| Lint               | `pnpm lint` (ESLint, TanStack config)                                                                                      |
+| Format             | `pnpm format` (Prettier)                                                                                                   |
+| Check all          | `pnpm check` (`prettier --write . && eslint --fix`)                                                                        |
+| SSR (experimental) | `pnpm serve:ssr` / `pnpm dev:server` (`tsx src/server.ts`)                                                                 |
 
 **Setup:** copy `.env.example` → `.env` (canonical local defaults: `VITE_API_BASE_URL=/api` through the Vite proxy, `VITE_BACKEND_URL=http://localhost:8000`), then put machine-specific overrides in `.env.local` (gitignored) — e.g. `VITE_BACKEND_URL=https://sharma-api.local` for a Laragon HTTPS dev box. `.env.production` (tracked) holds the prod build config. Local dev login (seed only): `admin@admin.com` / `password`.
 

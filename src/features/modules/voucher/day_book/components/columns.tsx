@@ -19,6 +19,7 @@ import {
 import { VoucherTypeColorMapping } from '../data/data'
 import type { DayBookSchema } from '../data/schema'
 import RowActions from './row-actions'
+import VoucherNoSummaryDialog from './voucher-no-summary-dialog'
 import { useAuth } from '@/features/auth/contexts/AuthContext'
 import { FEATURES } from '@/data/features'
 
@@ -266,7 +267,14 @@ export const columns: ColumnDef<DayBookSchema>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="VchNo." />
     ),
-    cell: ({ row }) => <div>{row.getValue('voucherNo')}</div>,
+    cell: ({ row }) => {
+      // Delivery Note: first click shows a summary dialog; clicking the no
+      // again from the dialog opens the delivery note edit page.
+      if (row.original.voucherType?.id === 2001) {
+        return <VoucherNoSummaryDialog data={row.original} />
+      }
+      return <div>{row.getValue('voucherNo')}</div>
+    },
     enableSorting: false,
   },
   {

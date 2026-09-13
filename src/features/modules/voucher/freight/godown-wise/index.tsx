@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react'
-import { FreightGodownWiseListSchema, type GodownDetailSchema } from './data/schema'
+import {
+  FreightGodownWiseListSchema,
+  type GodownDetailSchema,
+} from './data/schema'
 import { cn } from '@/lib/utils'
 import { ExportDropdown, ExportOverlay } from '../shared/export-controls'
 import { useExportJob } from '../shared/export-job'
@@ -97,7 +100,8 @@ const ReportView = ({ data }: FreightGodownWiseProps) => {
       <ReportHeader />
       <div className="flex items-center justify-end px-2 py-1 border-b gap-2">
         <div className="text-xs text-muted-foreground">
-          Delivery initiated from {' '}<span className="font-semibold text-foreground">Godown</span>
+          Delivery initiated from{' '}
+          <span className="font-semibold text-foreground">Godown</span>
         </div>
         {data.length > 0 && (
           <ExportDropdown
@@ -276,7 +280,10 @@ const ReportFooter = ({ data }: FreightGodownWiseProps) => {
       if (item.unitCode) {
         uniqueUnitCode.add(item.unitCode)
       }
-      if (item.noOfDecimalPlaces != null && item.noOfDecimalPlaces !== undefined) {
+      if (
+        item.noOfDecimalPlaces != null &&
+        item.noOfDecimalPlaces !== undefined
+      ) {
         decimalPlaces.add(item.noOfDecimalPlaces)
       }
     })
@@ -292,7 +299,9 @@ const ReportFooter = ({ data }: FreightGodownWiseProps) => {
 
   return (
     <div className="grid grid-cols-[1.5fr_2.5fr] bg-gray-100 text-center font-bold">
-      <div className="text-accent-foreground border-2 text-right flex items-center pr-2 h-full justify-between">          <div className="pl-4 italic text-sm font-mono">
+      <div className="text-accent-foreground border-2 text-right flex items-center pr-2 h-full justify-between">
+        {' '}
+        <div className="pl-4 italic text-sm font-mono">
           Godown count: {data.length}
         </div>
         <div>Total:</div>

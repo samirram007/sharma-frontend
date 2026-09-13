@@ -4,27 +4,25 @@ import { Button } from '@/components/ui/button'
 import { Form } from '@/components/ui/form'
 
 import FormInputField from '@/components/form-input-field'
-import {
-  Dialog,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
 import { Route as StockItemRoute } from '@/routes/_protected/masters/inventory/_layout/stock_item/_layout'
-import { lowerCase } from '@/utils/removeEmptyStrings'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useNavigate } from '@tanstack/react-router'
-import { Loader2 } from 'lucide-react'
+import { ArrowLeft, Loader2 } from 'lucide-react'
+import { omit } from 'lodash'
+import { toast } from 'sonner'
 import { useEffect } from 'react'
 import { useForm, type Resolver, type UseFormReturn } from 'react-hook-form'
+import { useAuth } from '@/features/auth/contexts/AuthContext'
 import { useStockItem } from '../contexts/stock_item-context'
 import { useStockItemMutation } from '../data/queryOptions'
 import { formSchema, type StockItem, type StockItemForm } from '../data/schema'
+import { tryRecordOpeningStock } from './opening-stock-recorder'
+import OpeningStockSummaryCard from './opening-stock-summary-card'
 import AlternateStockUnitDropdown from './dropdown/alternate_stock_unit-dropdown'
 import CostingMethodSelect from './dropdown/costing_method-select'
 import MarketValuationMethodSelect from './dropdown/market_valuation_method-select'
 import StockCategoryDropdown from './dropdown/stock_category-dropdown'
+import OpeningGodownDropdown from './dropdown/opening_godown-dropdown'
 import StockGroupDropdown from './dropdown/stock_group-dropdown'
 import StockUnitDropdown from './dropdown/stock_unit-dropdown'
 import TypeOfSupplySelect from './dropdown/type_of_supply-select'
@@ -37,9 +35,17 @@ interface FormProps {
   form: UseFormReturn<StockItemForm>
 }
 
+const sectionClass =
+  'space-y-4 rounded-md border border-slate-200/70 bg-white p-3 sm:p-4 dark:border-white/[0.07] dark:bg-white/[0.06]'
+const headingClass = 'text-sm font-semibold text-slate-800 dark:text-slate-200'
+const subHeadingClass = 'text-xs text-slate-500 dark:text-slate-400'
+const innerHeadingClass =
+  'text-xs font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400'
+
 export function FormAction({ currentRow }: Props) {
   const isEdit = !!currentRow
   const navigate = useNavigate()
+  const { userFiscalYear } = useAuth()
 
   const { mutate: saveStockItem, isPending } = useStockItemMutation()
 
@@ -92,281 +98,364 @@ export function FormAction({ currentRow }: Props) {
           standardSellingPrice: 0,
           icon: '',
 
+          // Opening stock (create flow only) — posted to the OPNSK voucher
+          // pipeline after the item itself is saved.
+          openingQuantity: undefined,
+          openingRate: undefined,
+          openingGodownId: undefined,
+          openingValue: undefined,
+
           isEdit,
         },
   })
 
-  const gapClass = 'grid grid-cols-[200px_1fr]! gap-x-0   justify-start '
+  const gapClass = 'grid grid-cols-[200px_minmax(0,1fr)]! gap-x-3 justify-start'
 
-  const moduleName = 'StockItem'
   const onSubmit = (values: StockItemForm) => {
-    form.reset()
-    saveStockItem(currentRow ? { ...values, id: currentRow.id! } : values, {
-      onSuccess: () => {
-        navigate({ to: StockItemRoute.to })
+    const openingQuantity = Number(values.openingQuantity ?? 0)
+    const hasOpeningStock = !isEdit && openingQuantity > 0
+
+    // Never send the opening-stock-only fields to the stock_items API.
+    const itemPayload = omit(values, [
+      'openingQuantity',
+      'openingRate',
+      'openingGodownId',
+      'openingValue',
+    ])
+
+    saveStockItem(
+      currentRow ? { ...itemPayload, id: currentRow.id! } : itemPayload,
+      {
+        onSuccess: (response) => {
+          if (hasOpeningStock) {
+            const createdId =
+              (response as { data?: { id?: number } })?.data?.id ?? undefined
+            if (createdId) {
+              void tryRecordOpeningStock({
+                itemId: createdId,
+                quantity: openingQuantity,
+                rate: values.openingRate ?? undefined,
+                godownId: values.openingGodownId!,
+                stockUnitId: values.stockUnitId ?? undefined,
+                fyStartDate: userFiscalYear?.fiscalYear?.startDate,
+                currentFyId: userFiscalYear?.fiscalYearId,
+              })
+            } else {
+              toast.error(
+                'Item saved, but opening stock could not be recorded (missing item id). Please add it from Transactions → Opening Stock.',
+              )
+            }
+          }
+          navigate({ to: StockItemRoute.to })
+        },
       },
-    })
+    )
   }
 
   return (
-    <Dialog>
-      <DialogHeader className="text-left">
-        <DialogTitle>
-          {isEdit ? 'Edit ' : 'Add New '} {moduleName}
-        </DialogTitle>
-        <DialogDescription>
-          {isEdit
-            ? `Update the ${lowerCase(moduleName)} here. `
-            : `Create new ${lowerCase(moduleName)} here. `}
-          Click save when you&apos;re done.
-        </DialogDescription>
-      </DialogHeader>
-
-      <div className=" h-full w-full overflow-y-auto py-1 pr-4 ">
-        <Form {...form}>
-          <form
-            id="user-form"
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="space-y-4 p-0.5"
-          >
-            <div className="grid grid-cols-[1fr_20rem] gap-8 space-y-8 ">
-              <div className=" space-y-4 pr-20">
-                <FormInputField
-                  type="text"
-                  form={form}
-                  name="name"
-                  label="Name"
-                />
-                <FormInputField
-                  type="text"
-                  form={form}
-                  name="code"
-                  label="Code"
-                />
-                <FormInputField
-                  type="text"
-                  form={form}
-                  name="printName"
-                  label="Print Name"
-                />
-              </div>
-              <div className=" space-y-4">
-                <FormInputField
-                  type="text"
-                  form={form}
-                  name="articleNo"
-                  label="Article No"
-                />
-                <FormInputField
-                  type="text"
-                  form={form}
-                  name="partNo"
-                  label="Part No"
-                />
-                <FormInputField
-                  type="text"
-                  form={form}
-                  name="sku"
-                  label="SKU"
-                />
-              </div>
-            </div>
-            <div className=" grid grid-cols-[1fr_20rem] gap-8  space-y-2  ">
+    <Form {...form}>
+      <form
+        id="stock-item-form"
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="space-y-5"
+      >
+        {/* Identification */}
+        <section className={sectionClass}>
+          <div className="space-y-1">
+            <h3 className={headingClass}>Identification</h3>
+            <p className={subHeadingClass}>
+              Core item identity used across purchases, sales, and stock
+              reports.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="space-y-4">
               <FormInputField
-                type="textarea"
+                type="text"
                 form={form}
-                name="description"
-                label="Description"
+                name="name"
+                label="Name"
+                tabIndex={0}
               />
-              <div className="col-span-1  md:col-span-1 space-y-4"></div>
+              <FormInputField
+                type="text"
+                form={form}
+                name="code"
+                label="Code"
+              />
+              <FormInputField
+                type="text"
+                form={form}
+                name="printName"
+                label="Print Name"
+              />
             </div>
-            <div className=" grid grid-cols-[1fr_25rem_25rem] gap-8 border-y-2 border-solid border-gray-700  ">
-              <div className="space-y-2 pb-4">
-                <div>General</div>
-                <StockGroupDropdown form={form} gapClass={gapClass} />
-                <StockCategoryDropdown form={form} gapClass={gapClass} />
-                <FormInputField
-                  type="hidden"
-                  form={form}
-                  name="brandId"
-                  label="Brand ID"
-                />
-                <UnitManagement form={form} />
-                <div className="underline text-md font-bold">
-                  Additional Details
-                </div>
-                <RateManagement form={form} />
-
-                <BatchManagement form={form} />
-
-                <CostingMethodSelect form={form} gapClass={gapClass} />
-                <MarketValuationMethodSelect form={form} gapClass={gapClass} />
-              </div>
-              <div className="space-y-2 border-x-2 border-solid border-gray-700 px-4">
-                <div>Tax Information</div>
-                <GstManagement form={form} />
-                <FormInputField
-                  type="text"
-                  gapClass="hidden"
-                  form={form}
-                  name="icon"
-                  label="Icon"
-                />
-                <FormInputField
-                  type="checkbox"
-                  form={form}
-                  name="status"
-                  label="Status"
-                  options={[
-                    { label: 'Active', value: 'active' },
-                    { label: 'Inactive', value: 'inactive' },
-                  ]}
-                />
-              </div>
-              <div className="space-y-2">
-                <div>Behaviour</div>
-                <UqcDropdown form={form} gapClass={gapClass} />
-                <TypeOfSupplySelect form={form} gapClass={gapClass} />
-
-                <FormInputField
-                  type="checkbox"
-                  form={form}
-                  name="isFinishGoods"
-                  label="Is Finish Goods"
-                />
-                <FormInputField
-                  type="checkbox"
-                  form={form}
-                  name="isRawMaterial"
-                  label="Is Raw Material"
-                />
-                <FormInputField
-                  type="checkbox"
-                  form={form}
-                  name="isUnfinishedGoods"
-                  label="Is Unfinished Goods"
-                />
-
-                <FormInputField
-                  type="number"
-                  form={form}
-                  gapClass={gapClass}
-                  name="reorderLevel"
-                  label="Reorder Level"
-                />
-                <FormInputField
-                  type="number"
-                  form={form}
-                  gapClass={gapClass}
-                  name="minimumStock"
-                  label="Minimum Stock"
-                />
-                <FormInputField
-                  type="number"
-                  form={form}
-                  gapClass={gapClass}
-                  name="maximumStock"
-                  label="Maximum Stock"
-                />
-                <FormInputField
-                  type="checkbox"
-                  form={form}
-                  name="isNegativeSalesAllow"
-                  label="Ignore negetive balances"
-                />
-                <FormInputField
-                  type="checkbox"
-                  form={form}
-                  name="isSalesAsNewManufacture"
-                  label="Treat all sales as new manufacture"
-                />
-                <FormInputField
-                  type="checkbox"
-                  form={form}
-                  name="isPurchaseAsConsumed"
-                  label="Treat all purchases as consumed"
-                />
-                <FormInputField
-                  type="checkbox"
-                  form={form}
-                  name="isRejectionAsScrap"
-                  label="Treat all rejections inward as scrap"
-                />
-              </div>
+            <div className="space-y-4">
+              <FormInputField
+                type="text"
+                form={form}
+                name="articleNo"
+                label="Article No"
+              />
+              <FormInputField
+                type="text"
+                form={form}
+                name="partNo"
+                label="Part No"
+              />
+              <FormInputField type="text" form={form} name="sku" label="SKU" />
             </div>
-            <OpeningBalanceManagement form={form} />
-          </form>
-        </Form>
-      </div>
-      <div className="flex justify-center items-start pt-6 ">
-        <DialogFooter>
+          </div>
+          <FormInputField
+            type="textarea"
+            form={form}
+            name="description"
+            label="Description"
+          />
+        </section>
+
+        {/* Configuration grid */}
+        <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-2">
+          {/* General */}
+          <section className={sectionClass}>
+            <div className="space-y-1">
+              <h3 className={headingClass}>General</h3>
+              <p className={subHeadingClass}>
+                Grouping, units of measure, and valuation defaults.
+              </p>
+            </div>
+            <div className="space-y-2">
+              <StockGroupDropdown form={form} gapClass={gapClass} />
+              <StockCategoryDropdown form={form} gapClass={gapClass} />
+              <FormInputField
+                type="hidden"
+                form={form}
+                name="brandId"
+                label="Brand ID"
+              />
+              <UnitManagement form={form} />
+              <div className={innerHeadingClass}>Additional Details</div>
+              <RateManagement form={form} />
+              <BatchManagement form={form} />
+              <CostingMethodSelect form={form} gapClass={gapClass} />
+              <MarketValuationMethodSelect form={form} gapClass={gapClass} />
+            </div>
+          </section>
+
+          {/* Behaviour */}
+          <section className={sectionClass}>
+            <div className="space-y-1">
+              <h3 className={headingClass}>Behaviour</h3>
+              <p className={subHeadingClass}>
+                Stock levels, supply type, and item classification flags.
+              </p>
+            </div>
+            <div className="space-y-2">
+              <UqcDropdown form={form} gapClass={gapClass} />
+              <TypeOfSupplySelect form={form} gapClass={gapClass} />
+
+              <FormInputField
+                type="checkbox"
+                form={form}
+                name="isFinishGoods"
+                label="Is Finish Goods"
+              />
+              <FormInputField
+                type="checkbox"
+                form={form}
+                name="isRawMaterial"
+                label="Is Raw Material"
+              />
+              <FormInputField
+                type="checkbox"
+                form={form}
+                name="isUnfinishedGoods"
+                label="Is Unfinished Goods"
+              />
+
+              <FormInputField
+                type="number"
+                form={form}
+                gapClass={gapClass}
+                name="reorderLevel"
+                label="Reorder Level"
+              />
+              <FormInputField
+                type="number"
+                form={form}
+                gapClass={gapClass}
+                name="minimumStock"
+                label="Minimum Stock"
+              />
+              <FormInputField
+                type="number"
+                form={form}
+                gapClass={gapClass}
+                name="maximumStock"
+                label="Maximum Stock"
+              />
+              <FormInputField
+                type="checkbox"
+                form={form}
+                name="isNegativeSalesAllow"
+                label="Ignore negetive balances"
+              />
+              <FormInputField
+                type="checkbox"
+                form={form}
+                name="isSalesAsNewManufacture"
+                label="Treat all sales as new manufacture"
+              />
+              <FormInputField
+                type="checkbox"
+                form={form}
+                name="isPurchaseAsConsumed"
+                label="Treat all purchases as consumed"
+              />
+              <FormInputField
+                type="checkbox"
+                form={form}
+                name="isRejectionAsScrap"
+                label="Treat all rejections inward as scrap"
+              />
+            </div>
+          </section>
+
+          {/* Tax Information (spans full width) */}
+          <section className={`${sectionClass} lg:col-span-2`}>
+            <div className="space-y-1">
+              <h3 className={headingClass}>Tax Information</h3>
+              <p className={subHeadingClass}>
+                GST applicability, duty rate, and HSN/SAC classification.
+              </p>
+            </div>
+            <div className="grid gap-x-10 gap-y-2 sm:grid-cols-2">
+              <GstManagement form={form} />
+              <FormInputField
+                type="text"
+                gapClass="hidden"
+                form={form}
+                name="icon"
+                label="Icon"
+              />
+              <FormInputField
+                type="checkbox"
+                form={form}
+                name="status"
+                label="Status"
+                options={[
+                  { label: 'Active', value: 'active' },
+                  { label: 'Inactive', value: 'inactive' },
+                ]}
+              />
+            </div>
+          </section>
+        </div>
+
+        <OpeningBalanceManagement form={form} itemId={currentRow?.id} />
+
+        {/* Footer actions */}
+        <div className="flex items-center justify-end gap-2 border-t border-slate-200/70 pt-4 dark:border-white/[0.07]">
           <Button
-            size={'lg'}
-            type="submit"
-            form="user-form"
+            type="button"
+            variant="outline"
             disabled={isPending}
+            onClick={() => navigate({ to: StockItemRoute.to })}
           >
-            {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {isPending ? 'Saving...' : 'Save changes'}
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to List
           </Button>
-        </DialogFooter>
-        <div className="min-h-36"></div>
-      </div>
-    </Dialog>
+          <Button type="submit" disabled={isPending}>
+            {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isPending ? 'Saving...' : isEdit ? 'Save Changes' : 'Create Item'}
+          </Button>
+        </div>
+      </form>
+    </Form>
   )
 }
 
-const OpeningBalanceManagement = ({ form }: FormProps) => {
+const OpeningBalanceManagement = ({
+  form,
+  itemId,
+}: FormProps & { itemId?: number | null }) => {
   const { config } = useStockItem()
+  const isEdit = form.getValues('isEdit')
+
+  const quantity = Number(form.watch('openingQuantity') ?? 0)
+  const rate = Number(form.watch('openingRate') ?? 0)
+
+  const unitLabel =
+    form.watch('stockUnit')?.unitType === 'compound'
+      ? (form.watch('stockUnit')?.secondaryStockUnit?.code ?? 'units')
+      : (form.watch('stockUnit')?.code ?? 'units')
+
+  // Keep the computed value in sync (qty × rate); still editable if the
+  // user wants a valuation that differs from qty × rate.
+  useEffect(() => {
+    form.setValue('openingValue', Math.round(quantity * rate * 100) / 100)
+  }, [quantity, rate, form])
+
+  // Read-only once the item exists — opening stock lives on the OPNSK voucher
+  // and is edited from Transactions → Opening Stock, not from the item master.
+  // The read-only summary card below still shows what IS recorded.
+  if (isEdit && itemId) {
+    const item = form.getValues()
+    return (
+      <OpeningStockSummaryCard
+        itemId={itemId}
+        unitCode={item.stockUnit?.code}
+        noOfDecimalPlaces={item.stockUnit?.noOfDecimalPlaces}
+      />
+    )
+  }
+  if (isEdit) return null
+
   return (
     <>
       {config.map(
         (item) =>
           item.key === 'opening_balance' &&
           item.value && (
-            <div
-              className="opening-balance 
-                border-b-2 border-amber-800
-                grid grid-cols-5 px-[300px] gap-4 justify-center items-center pb-6"
+            <section
+              key="opening_balance"
+              className="space-y-4 rounded-md border border-amber-500/30 bg-amber-50/50 p-3 sm:p-4 dark:border-amber-400/20 dark:bg-amber-400/5"
             >
-              <div>Opening Balance</div>
-              <div>
+              <div className="space-y-1">
+                <h3 className={headingClass}>Opening Balance</h3>
+                <p className={subHeadingClass}>
+                  Starting quantity and valuation recorded as opening stock for
+                  the current fiscal year (requires a godown).
+                </p>
+              </div>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <FormInputField
                   type="number"
                   form={form}
                   gapClass={'grid grid-rows-2 grid-cols-1'}
-                  name="quantity"
+                  name="openingQuantity"
                   label="Quantity"
                 />
-              </div>
-              <div>
                 <FormInputField
                   type="number"
                   form={form}
                   gapClass={'grid grid-rows-2 grid-cols-1'}
-                  name="rate"
+                  name="openingRate"
                   label="Rate"
                 />
-              </div>
-              <div>
+                <div className="grid grid-rows-2 grid-cols-1">
+                  <span className="text-sm">per {unitLabel}</span>
+                </div>
                 <FormInputField
                   type="number"
                   form={form}
                   gapClass={'grid grid-rows-2 grid-cols-1'}
-                  name="unit"
-                  label="per"
+                  name="openingValue"
+                  label="Value"
                 />
               </div>
-              <div>
-                <FormInputField
-                  type="number"
-                  form={form}
-                  gapClass={'grid grid-rows-2 grid-cols-1'}
-                  name="value"
-                  label="value"
-                />
-              </div>
-            </div>
+              <OpeningGodownDropdown form={form} />
+            </section>
           ),
       )}
     </>
@@ -382,7 +471,7 @@ const BatchManagement = ({ form }: FormProps) => {
         (item) =>
           item.key === 'batch_serial' &&
           item.value && (
-            <div className="space-y-2">
+            <div className="space-y-2" key="batch_serial">
               <FormInputField
                 type="checkbox"
                 form={form}
@@ -426,9 +515,9 @@ const BatchManagement = ({ form }: FormProps) => {
 
 const UnitManagement = ({ form }: FormProps) => {
   const { config } = useStockItem()
-  const gapClass = 'grid grid-cols-[200px_1fr]! gap-x-0   justify-start '
+  const gapClass = 'grid grid-cols-[200px_minmax(0,1fr)]! gap-x-3 justify-start'
   const gapReverseClass =
-    'grid grid-cols-[100px_1fr]!   gap-x-2   justify-start '
+    'grid grid-cols-[100px_minmax(0,1fr)]! gap-x-2 justify-start'
 
   const alternateStockUnitId = form.watch('alternateStockUnitId')
   const stockUnitId = form.watch('stockUnitId')
@@ -448,7 +537,6 @@ const UnitManagement = ({ form }: FormProps) => {
       StockUnit?.unitType === 'compound'
         ? StockUnit?.primaryStockUnitId
         : StockUnit?.id
-    // console.log("C", StockUnit)
 
     const baseSecondaryUnitId =
       StockUnit?.unitType === 'compound'
@@ -486,7 +574,7 @@ const UnitManagement = ({ form }: FormProps) => {
     }
   }, [alternateStockUnitId, stockUnitId, form])
   return (
-    <div className="space-y-2 py-6 min-h-[200px]  ">
+    <div className="space-y-2 py-4 min-h-[200px]">
       <StockUnitDropdown form={form} config={config} gapClass={gapClass} />
       {/* Show message if 'alternate_units' config is set to false
              Configured to hide Alternate Units field */}
@@ -496,8 +584,7 @@ const UnitManagement = ({ form }: FormProps) => {
             item.key === 'alternate_units' &&
             item.value && (
               <div key={item.key} className="">
-                <div className="text-md   text-orange-950 py-2 text-center">
-                  {' '}
+                <div className="text-xs text-muted-foreground py-2">
                   * To add Alternate Units, please select the Alternate Units
                   field.
                 </div>
@@ -510,9 +597,9 @@ const UnitManagement = ({ form }: FormProps) => {
             ),
         )}
       {stockUnitId && alternateStockUnitId && (
-        <div className="grid grid-cols-[150px_1fr] items-center">
-          <div className="text-right text-md pr-4">Where</div>
-          <div className="grid grid-cols-[1fr_20px_1fr] gap-x-2">
+        <div className="grid grid-cols-[150px_minmax(0,1fr)] items-center">
+          <div className="text-right text-sm pr-4">Where</div>
+          <div className="grid grid-cols-[minmax(0,1fr)_20px_minmax(0,1fr)] gap-x-2">
             <div>
               <FormInputField
                 type="text"
@@ -523,7 +610,7 @@ const UnitManagement = ({ form }: FormProps) => {
                 label={AlternateStockUnitCode}
               />
             </div>
-            <div className="text-2xl text-center">=</div>
+            <div className="text-lg text-center">=</div>
             <div>
               <FormInputField
                 type="text"
@@ -538,7 +625,7 @@ const UnitManagement = ({ form }: FormProps) => {
         </div>
       )}
       {form.formState.errors.root && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-400 text-red-700 rounded-md text-sm flex items-center">
+        <div className="mb-4 p-3 bg-red-50 border border-red-400 text-red-700 rounded-md text-sm flex items-center dark:bg-red-950/20 dark:text-red-300 dark:border-red-500/30">
           <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
             <path
               fillRule="evenodd"
@@ -554,7 +641,7 @@ const UnitManagement = ({ form }: FormProps) => {
 }
 
 const RateManagement = ({ form }: FormProps) => {
-  const gapClass = 'grid grid-cols-[250px_1fr]! gap-x-0   justify-start '
+  const gapClass = 'grid grid-cols-[200px_minmax(0,1fr)]! gap-x-3 justify-start'
   return (
     <div className="py-2 space-y-2">
       <FormInputField
@@ -582,7 +669,7 @@ const RateManagement = ({ form }: FormProps) => {
   )
 }
 const GstManagement = ({ form }: FormProps) => {
-  const gapClass = 'grid grid-cols-[200px_1fr]! gap-x-0   justify-start '
+  const gapClass = 'grid grid-cols-[200px_minmax(0,1fr)]! gap-x-3 justify-start'
   const isGstApplicable = form.watch('isGstApplicable')
   return (
     <>

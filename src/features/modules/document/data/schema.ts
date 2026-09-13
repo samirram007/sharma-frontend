@@ -45,6 +45,8 @@ export const documentNodeSchema = z.object({
     })
     .nullish(),
   description: z.string().nullish(),
+  /** Folder accent colour (hex) — applied to the folder icon; null = default. */
+  color: z.string().nullish(),
   mimeType: z.string().nullish(),
   extension: z.string().nullish(),
   sizeBytes: z.number().nullish(),
@@ -93,6 +95,8 @@ export const documentListSchema = z.array(documentSchema)
 
 export const createFolderFormSchema = z.object({
   name: z.string().min(1, { message: 'Folder name is required.' }).max(255),
+  /** Optional folder accent colour (hex) chosen at creation time. */
+  color: z.string().max(20).nullish(),
 })
 
 export type CreateFolderForm = z.infer<typeof createFolderFormSchema>

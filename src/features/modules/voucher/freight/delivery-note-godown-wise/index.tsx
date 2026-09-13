@@ -18,6 +18,7 @@ import {
 import { cn } from '@/lib/utils'
 import { formatQty, getQuantityDecimals } from '@/utils/format-num'
 import { buildDispatchLabel, VoucherPaymentAction } from '../shared/utils'
+import { DeliveryNoteSummaryDialogById } from '@/features/modules/voucher/day_book/components/voucher-no-summary-dialog'
 import { deliveryNoteGodownWiseQueryOptions } from './data/queryOptions'
 import type { GodownWiseReportItem } from './data/schema'
 import type { GodownList } from '@/features/modules/godown/data/schema'
@@ -575,7 +576,10 @@ const GodownSection = ({ godown }: { godown: GodownWiseReportItem }) => {
                   className="pl-1 text-left font-mono font-semibold text-gray-700 truncate"
                   title={detail.voucherNo}
                 >
-                  {detail.voucherNo ?? '-'}
+                  <DeliveryNoteSummaryDialogById
+                    voucherId={detail.voucherId}
+                    voucherNo={detail.voucherNo}
+                  />
                 </div>
                 <div className="text-left text-gray-400 truncate">
                   {detail.voucherDate ?? '-'}

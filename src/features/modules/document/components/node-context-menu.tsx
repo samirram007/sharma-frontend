@@ -22,6 +22,7 @@ import {
   IconCheck,
   IconMarkdown,
   IconFileText,
+  IconPalette,
 } from '@tabler/icons-react'
 import {
   ContextMenu,
@@ -37,6 +38,7 @@ import { documentUrl, downloadNodeService } from '../data/api'
 import { cn } from '@/lib/utils'
 import { appearance } from './appearance-store'
 import { previewFamily } from './preview-utils'
+import { FOLDER_COLORS, DEFAULT_FOLDER_COLOR } from './folder-color-picker'
 import type { ClipboardEntry } from './document-clipboard-store'
 import type { DocumentNode } from '../data/schema'
 import {
@@ -59,6 +61,8 @@ export interface NodeMenuActions {
   onClipboard: (node: DocumentNode, mode: 'copy' | 'cut') => void
   /** Create a shortcut to this node in the same folder. */
   onCreateShortcut?: (node: DocumentNode) => void
+  /** Change a folder's accent colour (null = default). */
+  onChangeColor?: (node: DocumentNode, color: string | null) => void
 }
 
 /**
@@ -143,6 +147,41 @@ export function NodeContextMenu({
           <IconPencil className="h-4 w-4" />
           Rename
         </ContextMenuItem>
+
+        {node.kind === 'folder' && actions.onChangeColor && (
+          <ContextMenuSub>
+            <ContextMenuSubTrigger>
+              <IconPalette className="h-4 w-4" />
+              Colour
+            </ContextMenuSubTrigger>
+            <ContextMenuSubContent className="grid grid-cols-6 gap-1 p-2">
+              <ContextMenuItem
+                className="h-7 w-7 justify-center p-0"
+                title="Default"
+                onSelect={() => actions.onChangeColor?.(node, null)}
+              >
+                <span
+                  className="h-5 w-5 rounded-full"
+                  style={{ backgroundColor: DEFAULT_FOLDER_COLOR }}
+                />
+              </ContextMenuItem>
+              {FOLDER_COLORS.map((color) => (
+                <ContextMenuItem
+                  key={color.value}
+                  className="h-7 w-7 justify-center p-0"
+                  title={color.name}
+                  aria-label={`Folder colour ${color.name}`}
+                  onSelect={() => actions.onChangeColor?.(node, color.value)}
+                >
+                  <span
+                    className="h-5 w-5 rounded-full"
+                    style={{ backgroundColor: color.value }}
+                  />
+                </ContextMenuItem>
+              ))}
+            </ContextMenuSubContent>
+          </ContextMenuSub>
+        )}
 
         {isImage && (
           <>

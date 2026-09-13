@@ -60,6 +60,7 @@ import { ExportDropdown, ExportOverlay } from '../shared/export-controls'
 import { useExportJob } from '../shared/export-job'
 
 declare module '@tanstack/react-table' {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- required by the augmented interface's type signature
   interface ColumnMeta<TData extends RowData, TValue> {
     className: string
   }
@@ -230,20 +231,29 @@ const rawColumnDefs: Array<ColumnDef<any>> = rawExportColumns.map((col) => ({
   },
 }))
 
+/**
+ * Compact dispatch summary mirroring the merged grid Dispatch column:
+ * "No / Source → Destination / Carrier · Vehicle" lines joined by newlines
+ * (multi-line cell in the export, '-' when the dispatch detail is empty).
+ */
+function formatDispatchSummary(item: VoucherSchema): string {
+  const d = item.voucherDispatchDetail
+  const lines = [
+    d?.billOfLadingNo ?? '',
+    [d?.source, d?.destination].filter(Boolean).join(' → '),
+    [d?.carrierName, d?.motorVehicleNo].filter(Boolean).join(' · '),
+  ].filter(Boolean)
+
+  return lines.length > 0 ? lines.join('\n') : '-'
+}
+
 function toExportRows(records: Array<VoucherSchema>) {
   return records.map((item, idx) => ({
     slNo: idx + 1,
     voucherDate: date_format(item.voucherDate),
     voucherNo: item.voucherNo ?? '',
     partyName: item.party?.name ?? '',
-    dispatchNo: item.voucherDispatchDetail?.billOfLadingNo ?? '',
-    source: item.voucherDispatchDetail?.source ?? '',
-    destination: [
-      item.voucherDispatchDetail?.destination,
-      item.voucherDispatchDetail?.destinationSecondary,
-    ]
-      .filter(Boolean)
-      .join(', '),
+    dispatch: formatDispatchSummary(item),
     items: (item.stockJournal?.stockJournalEntries ?? [])
       .filter(Boolean)
       .map((entry) => {
@@ -273,8 +283,6 @@ function toExportRows(records: Array<VoucherSchema>) {
         return parts.join(' — ')
       })
       .join(' | '),
-    carrier: item.voucherDispatchDetail?.carrierName ?? '',
-    vehicleNo: item.voucherDispatchDetail?.motorVehicleNo ?? '',
     weight: item.voucherDispatchDetail?.weight
       ? Number(item.voucherDispatchDetail.weight).toFixed(3)
       : '',
@@ -309,7 +317,9 @@ export function GridTable({
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
-  const [globalFilter, _setGlobalFilter] = useState('')
+  // The setter is intentionally unused — the table manages its own global
+  // filter state internally (see useReactTable's initialState below).
+  const [globalFilter] = useState('')
   const [columnSizing, setColumnSizing] = useState({})
   // True once the table is scrolled horizontally — the pinned Bill column
   // only casts its separating shadow while content actually passes under it.
@@ -411,6 +421,18 @@ export function GridTable({
   // Prepare export column mapping from the MERGED column definitions — never
   // the table's, so merged exports keep their columns even in raw view.
   const exportColumns = useMemo(() => {
+    // Human-readable headers for id-based columns (their `header` is JSX, so
+    // the id alone would produce e.g. "totalFare" / "dispatch" labels).
+    const HEADER_LABELS: Record<string, string> = {
+      dispatch: 'Dispatch',
+      items: 'Items',
+      weight: 'Weight (Mt)',
+      rate: 'Rate (Per Mt)',
+      totalFare: 'Total Fare',
+      partyName: 'Distributor',
+      voucherNo: 'Dl. No.',
+      voucherDate: 'Date',
+    }
     return columns
       .filter((col) => col.id !== 'actions' && col.id !== 'slNo')
       .map((col) => {
@@ -419,7 +441,7 @@ export function GridTable({
         )
         if (!accessor || accessor.startsWith('_')) return null
         // Derive a human-readable header from the column definition
-        let header = accessor
+        let header = HEADER_LABELS[accessor] ?? accessor
         if (typeof col.header === 'string') {
           header = col.header
         }

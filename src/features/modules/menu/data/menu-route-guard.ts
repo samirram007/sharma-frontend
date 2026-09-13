@@ -172,31 +172,45 @@ export async function guardMenuRoutes(
 
   const queryClient: QueryClient = context.queryClient
 
-  // Full menu list — the set of paths that are menu-controlled.
-  const allMenus = await queryClient.ensureQueryData(MenuQueryOptions())
-  const allRoutes = collectMenuRoutes(
-    (allMenus?.data ?? []) as unknown as MenuTreeItem[],
-  )
-  if (allRoutes.length === 0) return
-
-  // Visible (permission + is_visible filtered) tree for the current user.
-  const visible = await queryClient.ensureQueryData(menuTreeQueryOptions())
-  const visibleRoutes = collectMenuRoutes(
-    ((visible as MenuTreeResponse | undefined)?.data ?? []) as MenuTreeItem[],
-  )
-
-  if (isBlockedMenuPath(pathname, allRoutes, visibleRoutes)) {
-    const normalized = pathname.replace(/\/+$/, '') || '/'
-    const blockedNode = findMenuEntryForPath(
+  // The guard runs in beforeLoad for EVERY protected navigation — a failure
+  // here must never crash the navigation into the global error page (the
+  // layout's error boundary renders a bare "Something Went Wrong" 500).
+  // Fail-open instead: an unreachable/broken menus API only means the
+  // permission check cannot run, not that the user loses every page. The
+  // page-level queries still enforce auth via jwt.cookies on their own calls.
+  try {
+    // Full menu list — the set of paths that are menu-controlled.
+    const allMenus = await queryClient.ensureQueryData(MenuQueryOptions())
+    const allRoutes = collectMenuRoutes(
       (allMenus?.data ?? []) as unknown as MenuTreeItem[],
-      normalized,
     )
-    const permissionCode = blockedNode ? featureCodeOf(blockedNode) : null
+    if (allRoutes.length === 0) return
 
-    setForbiddenRoute({
-      attemptedPath: normalized,
-      pageName: blockedNode?.menuName ?? undefined,
-      permissionCodes: permissionCode ? [permissionCode] : undefined,
-    })
+    // Visible (permission + is_visible filtered) tree for the current user.
+    const visible = await queryClient.ensureQueryData(menuTreeQueryOptions())
+    const visibleRoutes = collectMenuRoutes(
+      ((visible as MenuTreeResponse | undefined)?.data ??
+        []) as MenuTreeItem[],
+    )
+
+    if (isBlockedMenuPath(pathname, allRoutes, visibleRoutes)) {
+      const normalized = pathname.replace(/\/+$/, '') || '/'
+      const blockedNode = findMenuEntryForPath(
+        (allMenus?.data ?? []) as unknown as MenuTreeItem[],
+        normalized,
+      )
+      const permissionCode = blockedNode ? featureCodeOf(blockedNode) : null
+
+      setForbiddenRoute({
+        attemptedPath: normalized,
+        pageName: blockedNode?.menuName ?? undefined,
+        permissionCodes: permissionCode ? [permissionCode] : undefined,
+      })
+    }
+  } catch (error) {
+    console.error(
+      'guardMenuRoutes: menu lookup failed — allowing navigation (fail-open)',
+      error,
+    )
   }
 }

@@ -14,9 +14,9 @@ const UserFiscalYear = ({ data: fiscalYearData }: UserFiscalYearProps) => {
       <div className="mb-6">
         <h1 className="text-xl font-semibold text-foreground">Fiscal Year</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Select the fiscal year you want to use for your transactions.
-          This determines the accounting period for all vouchers, reports,
-          and financial records.
+          Select the fiscal year you want to use for your transactions. This
+          determines the accounting period for all vouchers, reports, and
+          financial records.
         </p>
       </div>
       <div className="flex flex-col gap-3">
@@ -64,11 +64,7 @@ const FiscalYearCard = ({ fy }: { fy: FiscalYear }) => {
 
         {/* Action */}
         <div className="shrink-0 flex items-center gap-2">
-          {isCurrent ? (
-            <CurrentlyUsingBadge />
-          ) : (
-            <UseButton fy={fy} />
-          )}
+          {isCurrent ? <CurrentlyUsingBadge /> : <UseButton fy={fy} />}
         </div>
       </div>
 
@@ -76,7 +72,9 @@ const FiscalYearCard = ({ fy }: { fy: FiscalYear }) => {
       <div className="border-t border-border/50 px-4 py-3 text-xs text-muted-foreground leading-relaxed">
         {fy.company && (
           <>
-            <span className="font-medium text-foreground">{fy.company.name}</span>
+            <span className="font-medium text-foreground">
+              {fy.company.name}
+            </span>
             {' — '}
           </>
         )}{' '}
@@ -92,10 +90,12 @@ function StatusBadge({ status }: { status: string }) {
   const isActive = status.toLowerCase() === 'active'
   return (
     <span
-      className={`ounded-full px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide transition-colors
-      ${isActive
-        ? 'bg-green-500/10 text-green-500 dark:bg-green-500/15 dark:text-green-400'
-        : 'bg-muted text-muted-foreground dark:bg-slate-800/50 dark:text-slate-400'
+      className={`
+ounded-full px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide transition-colors
+      ${
+        isActive
+          ? 'bg-green-500/10 text-green-500 dark:bg-green-500/15 dark:text-green-400'
+          : 'bg-muted text-muted-foreground dark:bg-slate-800/50 dark:text-slate-400'
       }`}
     >
       {status}
@@ -105,9 +105,7 @@ function StatusBadge({ status }: { status: string }) {
 
 function CurrentlyUsingBadge() {
   return (
-    <span
-      className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wide text-primary dark:bg-primary/20 dark:text-primary-foreground"
-    >
+    <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wide text-primary dark:bg-primary/20 dark:text-primary-foreground">
       In use
     </span>
   )
@@ -143,6 +141,9 @@ function UseButton({ fy }: { fy: FiscalYear }) {
 function formatDateRange(startDate: string, endDate: string): string {
   const start = new Date(startDate)
   const end = new Date(endDate)
-  const options: Intl.DateTimeFormatOptions = { month: 'short', year: 'numeric' }
+  const options: Intl.DateTimeFormatOptions = {
+    month: 'short',
+    year: 'numeric',
+  }
   return `${start.toLocaleDateString('en-IN', options)} – ${end.toLocaleDateString('en-IN', options)}`
 }

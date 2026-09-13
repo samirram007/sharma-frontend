@@ -16,7 +16,9 @@ export default function StockInHand({
   return (
     <>
       {stockInHandListSchema.length === 0 ? (
-        <div className="text-center text-muted-foreground">No data available.</div>
+        <div className="text-center text-muted-foreground">
+          No data available.
+        </div>
       ) : (
         <ReportView data={stockInHandListSchema} />
       )}
@@ -34,7 +36,9 @@ const ReportView = ({ data }: StockInHandProps) => {
             key={index}
             className={cn(
               'grid grid-cols-[1fr_2fr] text-center border-b border-border/50',
-              index % 2 === 0 ? 'bg-muted/30 dark:bg-secondary/20' : 'bg-card dark:bg-secondary/10',
+              index % 2 === 0
+                ? 'bg-muted/30 dark:bg-secondary/20'
+                : 'bg-card dark:bg-secondary/10',
             )}
           >
             <div className="text-left pl-2 font-semibold text-foreground">
@@ -141,9 +145,7 @@ const ReportHeader = () => {
           </div>
         </div>
         <div>
-          <div className="text-foreground border-b-2 border-l-2">
-            Inward
-          </div>
+          <div className="text-foreground border-b-2 border-l-2">Inward</div>
           <div className="grid grid-cols-2">
             <div className="border-l-2">Qty</div>
             <div className="border-l-2">Val</div>
@@ -151,18 +153,14 @@ const ReportHeader = () => {
         </div>
 
         <div>
-          <div className="text-foreground border-b-2 border-l-2">
-            Outward
-          </div>
+          <div className="text-foreground border-b-2 border-l-2">Outward</div>
           <div className="grid grid-cols-2">
             <div className="border-l-2">Qty</div>
             <div className="border-l-2">Val</div>
           </div>
         </div>
         <div>
-          <div className="text-foreground border-b-2 border-l-2">
-            Closing
-          </div>
+          <div className="text-foreground border-b-2 border-l-2">Closing</div>
           <div className="grid grid-cols-2">
             <div className="border-l-2">Qty</div>
             <div className="border-l-2">Val</div>

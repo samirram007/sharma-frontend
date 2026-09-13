@@ -61,6 +61,7 @@ export async function createFolderService(payload: {
   parentId?: number | null
   visibility?: string
   description?: string | null
+  color?: string | null
 }) {
   return await postData(`${API_PATH}/folders`, payload)
 }
@@ -140,6 +141,7 @@ export async function updateNodeService(
     typeId?: number | null
     description?: string | null
     parentId?: number | null
+    color?: string | null
   },
   conflict?: 'replace' | 'rename',
 ) {

@@ -1,10 +1,38 @@
-import { describe, expect, it } from 'vitest'
+import { QueryClient } from '@tanstack/react-query'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { fetchMenuService } from './api'
+import { clearForbiddenRoute, getForbiddenRoute } from '@/lib/forbidden-details'
 import type { MenuTreeItem } from './menu-tree-types'
 import {
   collectMenuRoutes,
+  guardMenuRoutes,
   isBlockedMenuPath,
   matchMostSpecificRoute,
 } from './menu-route-guard'
+import { fetchMenuTreeService } from './services'
+
+// Automock the menu list API (MenuQueryOptions' queryFn resolves through
+// fetchMenuService) and patch only the tree fetch, keeping the real
+// menuTreeQueryOptions wrapper intact.
+vi.mock('./api')
+vi.mock('./services', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('./services')>()
+  const fetchMenuTreeService = vi.fn()
+  // The real menuTreeQueryOptions closes over the real fetch, so it must be
+  // rebuilt around the mock — otherwise the guard hits the network.
+  const { queryOptions } = await import('@tanstack/react-query')
+  return {
+    ...actual,
+    fetchMenuTreeService,
+    menuTreeQueryOptions: () =>
+      queryOptions({
+        queryKey: ['MenuTree'],
+        queryFn: fetchMenuTreeService,
+        staleTime: 1000 * 60 * 30,
+        retry: 1,
+      }),
+  }
+})
 
 const node = (overrides: Partial<MenuTreeItem>): MenuTreeItem => ({
   id: 1,
@@ -178,5 +206,78 @@ describe('matchMostSpecificRoute', () => {
         routes,
       ),
     ).toBe('/transactions/vouchers/delivery_note')
+  })
+})
+
+describe('guardMenuRoutes fail-open behavior', () => {
+  const context = {
+    queryClient: new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    }),
+    auth: { isAuthenticated: true, permissions: [] },
+  } as unknown as Parameters<typeof guardMenuRoutes>[0]
+
+  beforeEach(() => {
+    clearForbiddenRoute()
+    context.queryClient.clear()
+    vi.mocked(fetchMenuService).mockReset()
+    vi.mocked(fetchMenuTreeService).mockReset()
+  })
+
+  afterEach(() => {
+    clearForbiddenRoute()
+  })
+
+  it('blocks a menu-controlled path absent from the visible tree', async () => {
+    // Full list contains the route; the user's visible tree does not.
+    vi.mocked(fetchMenuService).mockResolvedValue({
+      data: [node({ menuName: 'Day Book', route: '/reports/day_book' })],
+    })
+    vi.mocked(fetchMenuTreeService).mockResolvedValue({
+      status: 'success',
+      data: [],
+    })
+
+    await guardMenuRoutes(context, '/reports/day_book', 'enter')
+
+    expect(getForbiddenRoute()?.attemptedPath).toBe('/reports/day_book')
+  })
+
+  it('does NOT block when the menus API fails — navigation fails open', async () => {
+    // Backend down / 500 on the full menu list: the guard must swallow the
+    // error instead of crashing the navigation into the global 500 page.
+    vi.mocked(fetchMenuService).mockRejectedValue(new Error('network down'))
+    vi.mocked(fetchMenuTreeService).mockRejectedValue(
+      new Error('network down'),
+    )
+
+    await expect(
+      guardMenuRoutes(context, '/reports/day_book', 'enter'),
+    ).resolves.toBeUndefined()
+
+    // Nothing was recorded as forbidden — the page is allowed to load.
+    expect(getForbiddenRoute()).toBeNull()
+  })
+
+  it('does NOT block when only the visible-tree API fails', async () => {
+    vi.mocked(fetchMenuService).mockResolvedValue({
+      data: [node({ menuName: 'Day Book', route: '/reports/day_book' })],
+    })
+    vi.mocked(fetchMenuTreeService).mockRejectedValue(
+      new Error('auth/menus down'),
+    )
+
+    await expect(
+      guardMenuRoutes(context, '/reports/day_book', 'enter'),
+    ).resolves.toBeUndefined()
+    expect(getForbiddenRoute()).toBeNull()
+  })
+
+  it('skips the check entirely for link preloads', async () => {
+    await guardMenuRoutes(context, '/reports/day_book', 'preload')
+
+    // No queries were even started.
+    expect(fetchMenuService).not.toHaveBeenCalled()
+    expect(getForbiddenRoute()).toBeNull()
   })
 })

@@ -396,7 +396,6 @@ export default function ConversionJournalReport({
             vouchers
           </p>
         </div>
-
       </div>
 
       <div className="mb-4 flex items-center gap-2 rounded-lg border border-slate-200/70 bg-white/80 px-3 py-2 shadow-sm dark:border-white/[0.07] dark:bg-white/5">

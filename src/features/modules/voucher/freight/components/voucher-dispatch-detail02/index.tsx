@@ -56,10 +56,12 @@ import { PrimaryButtons as CreateVehicleButton } from '@/features/modules/delive
 type VoucherDispatchDetailFormProps = {
   form: UseFormReturn<FreightForm>
   voucherDispatchDefaultValues: VoucherDispatchDetailForm
+  /** When set, renders a labeled trigger button instead of the compact "D". */
+  triggerLabel?: string
 }
 
 const VoucherDispatchDetail02 = (props: VoucherDispatchDetailFormProps) => {
-  const { form, voucherDispatchDefaultValues } = props
+  const { form, voucherDispatchDefaultValues, triggerLabel } = props
   const { mutate: saveVoucherDispatchDetail, isPending } =
     useVoucherDispatchDetailMutation()
   const dispatchRef = useRef<HTMLDivElement>(null)
@@ -204,14 +206,26 @@ const VoucherDispatchDetail02 = (props: VoucherDispatchDetailFormProps) => {
         }}
       >
         <DialogTrigger asChild>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-8 w-8 min-w-0 rounded-lg border-slate-300 p-0 text-xs font-bold text-slate-600 shadow-xs transition-all hover:border-blue-400 hover:bg-blue-50 hover:text-blue-700 active:bg-blue-100 dark:border-slate-600 dark:text-slate-400 dark:hover:border-blue-500 dark:hover:bg-blue-950/30 dark:hover:text-blue-400"
-            title="Dispatch Details"
-          >
-            D
-          </Button>
+          {triggerLabel ? (
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8"
+              title="Dispatch Details"
+            >
+              <Truck className="mr-1 h-3.5 w-3.5" />
+              {triggerLabel}
+            </Button>
+          ) : (
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 w-8 min-w-0 rounded-lg border-slate-300 p-0 text-xs font-bold text-slate-600 shadow-xs transition-all hover:border-blue-400 hover:bg-blue-50 hover:text-blue-700 active:bg-blue-100 dark:border-slate-600 dark:text-slate-400 dark:hover:border-blue-500 dark:hover:bg-blue-950/30 dark:hover:text-blue-400"
+              title="Dispatch Details"
+            >
+              D
+            </Button>
+          )}
         </DialogTrigger>
         <DialogContent className="sm:max-w-4xl max-h-[85vh] overflow-hidden flex flex-col">
           <DialogHeader className="border-b border-slate-200 pb-3 dark:border-slate-700">
@@ -685,3 +699,4 @@ const VoucherDispatchDetail02 = (props: VoucherDispatchDetailFormProps) => {
 }
 
 export default VoucherDispatchDetail02
+export type { VoucherDispatchDetailFormProps }

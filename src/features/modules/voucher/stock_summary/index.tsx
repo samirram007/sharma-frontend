@@ -20,19 +20,9 @@ import { cn } from '@/lib/utils'
 import { reportLinks } from '@/layouts/links/report-links'
 import { useLayoutEffect, useMemo } from 'react'
 
-
 export default function StockSummary() {
   const location = useLocation()
   const { currentReport, setCurrentReport } = useStockSummary()
-  const reportPeriodVisible = [
-    'Stock In Hand (Item Summary)',
-    'Stock In Hand (Item Wise)',
-    'Stock In Hand (Godown Wise)',
-    'Stock In Hand (Voucher Wise)',
-    'Day Book',
-    'Receipt Book',
-    'Distributor Book',
-  ]
   const allLinksPlucked = useMemo(() => {
     return reportLinks.flatMap((report) =>
       report.menus.map((menu) => ({
@@ -68,11 +58,6 @@ export default function StockSummary() {
             )}{' '}
           </h3>
           {/* {currentReport} */}
-          {reportPeriodVisible.includes(currentReport) && (
-            <p className="text-slate-600 dark:text-slate-300">
-              reporting period is now in the global topbar
-            </p>
-          )}
         </div>
         <PrimaryButtons />
       </div>

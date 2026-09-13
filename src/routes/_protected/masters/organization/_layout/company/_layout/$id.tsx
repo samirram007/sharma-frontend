@@ -1,15 +1,11 @@
 import DataLoadError from '@/features/errors/data-load-error'
 import { companyQueryOptions } from '@/features/modules/company/data/queryOptions'
-// import CompanyDetails from '@/features/accounts/settings/company/details'
+import CompanyDetails from '@/features/modules/company/details'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
-import { Loader } from 'lucide-react'
-import React, { Suspense } from 'react'
+import { Loader2 } from 'lucide-react'
 import z from 'zod'
 
-const CompanyDetails = React.lazy(
-  () => import('@/features/modules/company/details'),
-)
 // build queryOptions for company
 const paramsSchema = z.object({
   id: z.union([
@@ -19,6 +15,7 @@ const paramsSchema = z.object({
     }),
   ]),
 })
+
 export const Route = createFileRoute(
   '/_protected/masters/organization/_layout/company/_layout/$id',
 )({
@@ -33,21 +30,29 @@ export const Route = createFileRoute(
     // instead of a stale cached snapshot.
     return context.queryClient.fetchQuery(companyQueryOptions(id))
   },
-  component: () => {
-    const { id } = Route.useParams()
-
-    if (id === 'new') return <CompanyDetails />
-
-    const { data: company } = useSuspenseQuery(companyQueryOptions(id))
-
-    return (
-      <Suspense fallback={<Loader className="animate-spin" />}>
-        <CompanyDetails data={company?.data} />
-      </Suspense>
-    )
-  },
+  component: CompanyIdRoute,
   errorComponent: ({ error }) => (
     <DataLoadError error={error} title="Couldn't load this company" />
   ),
-  pendingComponent: () => <Loader className="animate-spin" />,
+  pendingComponent: () => (
+    <div className="flex h-40 items-center justify-center">
+      <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+    </div>
+  ),
 })
+
+function CompanyIdRoute() {
+  const { id } = Route.useParams()
+
+  // Branch before rendering so each sub-component calls hooks unconditionally.
+  return id === 'new' ? (
+    <CompanyDetails />
+  ) : (
+    <ExistingCompanyDetails id={id as number} />
+  )
+}
+
+function ExistingCompanyDetails({ id }: { id: number }) {
+  const { data: company } = useSuspenseQuery(companyQueryOptions(id))
+  return <CompanyDetails data={company?.data} />
+}

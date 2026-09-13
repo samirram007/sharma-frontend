@@ -179,6 +179,13 @@ code {
     @apply py-0! h-6! rounded-sm!;
     @apply text-shadow-sm!    border-b-gray-700!;
   }
+  /* Text-file editor textarea: the global rule above forces h-6!/py-0! on every
+     textarea, which would clamp the multiline editor to a single line. This
+     more-specific base-layer rule re-enables auto height/padding so the editor
+     fills the dialog (it wins over the generic `textarea` rule on specificity). */
+  .text-file-editor-textarea {
+    @apply h-auto! py-3! rounded-md! focus:font-normal!;
+  }
   .voucher-entry {
     input,
     select,

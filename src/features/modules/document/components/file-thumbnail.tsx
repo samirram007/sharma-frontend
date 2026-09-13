@@ -152,7 +152,10 @@ export function FileThumbnail({
   if (node.kind === 'folder') {
     return (
       <IconFolderFilled
-        className={`${large ? 'h-8 w-8' : 'h-4 w-4'} shrink-0 text-amber-500 dark:text-amber-400`}
+        className={`${large ? 'h-8 w-8' : 'h-4 w-4'} shrink-0 ${
+          node.color ? '' : 'text-amber-500 dark:text-amber-400'
+        }`}
+        style={node.color ? { color: node.color } : undefined}
       />
     )
   }

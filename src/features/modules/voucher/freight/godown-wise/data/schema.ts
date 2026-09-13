@@ -19,4 +19,6 @@ export const godownDetailSchema = z.object({
 export type GodownDetailSchema = z.infer<typeof godownDetailSchema>
 
 export const FreightGodownWiseListSchema = z.array(godownDetailSchema)
-export type FreightGodownWiseListSchema = z.infer<typeof FreightGodownWiseListSchema>
+export type FreightGodownWiseListSchema = z.infer<
+  typeof FreightGodownWiseListSchema
+>

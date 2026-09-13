@@ -36,12 +36,12 @@ const MarketValuationMethodSelect = (props: Props) => {
         render={({ field }) => (
           <FormItem
             className={cn(
-              'grid grid-cols-[100px_1fr] items-center space-y-0 gap-x-4 gap-y-1',
+              'grid grid-cols-[100px_minmax(0,1fr)] items-center space-y-0 gap-x-4 gap-y-1',
               gapClass,
             )}
           >
             <FormLabel className="pt-1  ">Market Valuation Method</FormLabel>
-            <div className="w-full flex gap-2 flex-row items-center justify-start  space-y-1">
+            <div className="flex w-full min-w-0 flex-row items-center justify-start gap-2">
               <SelectDropdown
                 defaultValue={field.value ? field.value.toString() : ''}
                 onValueChange={(value) => handleValueChange(value)}
@@ -58,7 +58,7 @@ const MarketValuationMethodSelect = (props: Props) => {
                 }))}
               />
             </div>
-            <FormMessage className="col-span-4 col-start-3" />
+            <FormMessage className="col-span-2 col-start-1" />
           </FormItem>
         )}
       />

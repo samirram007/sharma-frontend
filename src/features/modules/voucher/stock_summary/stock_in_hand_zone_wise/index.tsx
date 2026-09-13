@@ -19,7 +19,9 @@ export default function StockInHandZoneWiseComponent({
   return (
     <>
       {StockInHandZoneWiseListSchema.length === 0 ? (
-        <div className="text-center text-muted-foreground">No data available.</div>
+        <div className="text-center text-muted-foreground">
+          No data available.
+        </div>
       ) : (
         <div className="w-full min-h-full  grid grid-rows-[auto_1fr]">
           <GridTable

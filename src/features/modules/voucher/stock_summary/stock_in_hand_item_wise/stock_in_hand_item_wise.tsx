@@ -15,7 +15,9 @@ export default function StockInHandItemWise({
   return (
     <>
       {stockInHandItemWiseListSchema.length === 0 ? (
-        <div className="text-center text-muted-foreground">No data available.</div>
+        <div className="text-center text-muted-foreground">
+          No data available.
+        </div>
       ) : (
         <ReportView data={stockInHandItemWiseListSchema} />
       )}
@@ -124,7 +126,9 @@ const ReportView = ({ data }: { data: StockInHandItemWiseListSchema }) => {
                     className={cn(
                       'grid grid-cols-[1fr_2fr] text-center ',
                       index % 2 === 0 ? 'bg-card' : 'bg-muted/50',
-                      !godown.godownId ? 'font-semibold text-red-400 dark:text-red-500' : '',
+                      !godown.godownId
+                        ? 'font-semibold text-red-400 dark:text-red-500'
+                        : '',
                     )}
                   >
                     <div className=" text-left pl-8 font-semibold">
@@ -232,9 +236,7 @@ const ReportHeader = () => {
           </div>
         </div>
         <div>
-          <div className="text-foreground border-b-2 border-l-2">
-            Inward
-          </div>
+          <div className="text-foreground border-b-2 border-l-2">Inward</div>
           <div className="grid grid-cols-2">
             <div className="border-l-2">Qty</div>
             <div className="border-l-2">Val</div>
@@ -242,18 +244,14 @@ const ReportHeader = () => {
         </div>
 
         <div>
-          <div className="text-foreground border-b-2 border-l-2">
-            Outward
-          </div>
+          <div className="text-foreground border-b-2 border-l-2">Outward</div>
           <div className="grid grid-cols-2">
             <div className="border-l-2">Qty</div>
             <div className="border-l-2">Val</div>
           </div>
         </div>
         <div>
-          <div className="text-foreground border-b-2 border-l-2">
-            Closing
-          </div>
+          <div className="text-foreground border-b-2 border-l-2">Closing</div>
           <div className="grid grid-cols-2">
             <div className="border-l-2">Qty</div>
             <div className="border-l-2">Val</div>

@@ -161,6 +161,16 @@ export function useRenameNode() {
   })
 }
 
+/** Change a folder's accent colour (null resets to the default). */
+export function useUpdateNodeColor() {
+  const invalidate = useInvalidateDocuments()
+  return useMutation({
+    mutationFn: ({ id, color }: { id: number; color: string | null }) =>
+      updateNodeService(id, { color }),
+    onSuccess: () => invalidate(),
+  })
+}
+
 export function useCopyNode() {
   const invalidate = useInvalidateDocuments()
   return useMutation({

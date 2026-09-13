@@ -110,27 +110,21 @@ const ReportHeader = () => {
           </div>
         </div>
         <div>
-          <div className="text-foreground border-b-2 border-l-2">
-            Inward
-          </div>
+          <div className="text-foreground border-b-2 border-l-2">Inward</div>
           <div className="grid grid-cols-2">
             <div className="border-l-2">Qty</div>
             <div className="border-l-2">Val</div>
           </div>
         </div>
         <div>
-          <div className="text-foreground border-b-2 border-l-2">
-            Outward
-          </div>
+          <div className="text-foreground border-b-2 border-l-2">Outward</div>
           <div className="grid grid-cols-2">
             <div className="border-l-2">Qty</div>
             <div className="border-l-2">Val</div>
           </div>
         </div>
         <div>
-          <div className="text-foreground border-b-2 border-l-2">
-            Closing
-          </div>
+          <div className="text-foreground border-b-2 border-l-2">Closing</div>
           <div className="grid grid-cols-2">
             <div className="border-l-2">Qty</div>
             <div className="border-l-2">Val</div>
@@ -150,7 +144,9 @@ const ReportView = ({ table }: { table: any }) => {
             <div
               className={cn(
                 'grid grid-cols-[1fr_2fr] text-center font-semibold border-b border-border/50',
-                index % 2 === 0 ? 'bg-muted/30 dark:bg-secondary/20' : 'bg-card dark:bg-secondary/10',
+                index % 2 === 0
+                  ? 'bg-muted/30 dark:bg-secondary/20'
+                  : 'bg-card dark:bg-secondary/10',
               )}
             >
               <div className="text-left pl-2 text-foreground">
@@ -256,8 +252,12 @@ const ReportView = ({ table }: { table: any }) => {
                       <div
                         className={cn(
                           'grid grid-cols-[1fr_2fr] text-center border-b border-border/30',
-                          index % 2 === 0 ? 'bg-muted/30 dark:bg-secondary/20' : 'bg-card dark:bg-secondary/10',
-                          !godown.godownId ? 'font-semibold text-destructive' : '',
+                          index % 2 === 0
+                            ? 'bg-muted/30 dark:bg-secondary/20'
+                            : 'bg-card dark:bg-secondary/10',
+                          !godown.godownId
+                            ? 'font-semibold text-destructive'
+                            : '',
                         )}
                       >
                         <div className="text-left pl-8 font-semibold">
@@ -330,7 +330,8 @@ const ReportView = ({ table }: { table: any }) => {
                                   ? '-'
                                   : formatQty(
                                       godown.closingQuantity,
-                                      godown.itemDetails?.[0]?.noOfDecimalPlaces,
+                                      godown.itemDetails?.[0]
+                                        ?.noOfDecimalPlaces,
                                       godown.itemDetails?.[0]?.unitCode,
                                     )}
                               </span>
@@ -354,7 +355,9 @@ const ReportView = ({ table }: { table: any }) => {
                             <div
                               className={cn(
                                 'grid grid-cols-[1fr_2fr] text-center border-b border-border/20',
-                                index % 2 === 0 ? 'bg-muted/30 dark:bg-secondary/20' : 'bg-card dark:bg-secondary/10',
+                                index % 2 === 0
+                                  ? 'bg-muted/30 dark:bg-secondary/20'
+                                  : 'bg-card dark:bg-secondary/10',
                               )}
                             >
                               <div className="text-left pl-16 italic">

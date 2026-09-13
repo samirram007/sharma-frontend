@@ -1,14 +1,10 @@
 import { stockItemQueryOptions } from '@/features/modules/stock_item/data/queryOptions'
-// import StockItemDetails from '@/features/accounts/settings/stockitem/details'
+import StockItemDetails from '@/features/modules/stock_item/details'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
-import { Loader } from 'lucide-react'
-import React, { Suspense } from 'react'
+import { Loader2 } from 'lucide-react'
 import z from 'zod'
 
-const StockItemDetails = React.lazy(
-  () => import('@/features/modules/stock_item/details'),
-)
 // build queryOptions for stockitem
 const paramsSchema = z.object({
   id: z.union([
@@ -18,6 +14,7 @@ const paramsSchema = z.object({
     }),
   ]),
 })
+
 export const Route = createFileRoute(
   '/_protected/masters/inventory/_layout/stock_item/_layout/$id/',
 )({
@@ -29,24 +26,34 @@ export const Route = createFileRoute(
     if (id === 'new') return null
     return context.queryClient.ensureQueryData(stockItemQueryOptions(id))
   },
-  component: () => {
-    const { id } = Route.useParams()
-
-    if (id === 'new') return <StockItemDetails />
-
-    const { data: stockItem } = useSuspenseQuery(stockItemQueryOptions(id))
-    return (
-      <Suspense fallback={<Loader className="animate-spin" />}>
-        <StockItemDetails data={stockItem?.data} />
-      </Suspense>
-    )
-  },
+  component: StockItemIdRoute,
   errorComponent: () => (
-    <div>
-      {' '}
-      <span className="bg-red-400  ">By ID:</span> Error loading stockItem
-      data[].{' '}
+    <div className="flex h-60 flex-col items-center justify-center gap-3">
+      <p className="text-sm font-medium text-destructive">
+        Failed to load stock item data. The record may not exist or you may not
+        have access.
+      </p>
     </div>
   ),
-  pendingComponent: () => <Loader className="animate-spin" />,
+  pendingComponent: () => (
+    <div className="flex h-40 items-center justify-center">
+      <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+    </div>
+  ),
 })
+
+function StockItemIdRoute() {
+  const { id } = Route.useParams()
+
+  // Branch before rendering so each sub-component calls hooks unconditionally.
+  return id === 'new' ? (
+    <StockItemDetails />
+  ) : (
+    <ExistingStockItemDetails id={id as number} />
+  )
+}
+
+function ExistingStockItemDetails({ id }: { id: number }) {
+  const { data: stockItem } = useSuspenseQuery(stockItemQueryOptions(id))
+  return <StockItemDetails data={stockItem?.data} />
+}

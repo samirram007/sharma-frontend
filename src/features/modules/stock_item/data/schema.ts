@@ -119,6 +119,13 @@ export const formSchema = z.object({
   alternateStockUnit: stockUnitSchema.nullish(),
   stockInHand: z.coerce.number().nullish(),
 
+  // Opening stock (create form only) — recorded through the OPNSK voucher
+  // pipeline after the item is saved; never sent to the stock_items API.
+  openingQuantity: z.coerce.number().nonnegative().nullish(),
+  openingRate: z.coerce.number().nonnegative().nullish(),
+  openingGodownId: z.number().int().positive().nullish(),
+  openingValue: z.coerce.number().nullish(),
+
   isEdit: z.boolean(),
 })
 

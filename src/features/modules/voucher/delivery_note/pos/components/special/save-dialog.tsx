@@ -26,7 +26,7 @@ type SaveDialogProps = {
 }
 
 const SaveDialog = ({ mainForm, isSaving, setSaving }: SaveDialogProps) => {
-  const { userFiscalYear } = useAuth()
+  const { userFiscalYear, period } = useAuth()
   const { mutate: createDeliveryNote, isPending } = useDeliveryNoteMutation()
   const [errors, setErrors] = useState<string[]>([])
   const [checking, setChecking] = useState(true)
@@ -69,6 +69,23 @@ const SaveDialog = ({ mainForm, isSaving, setSaving }: SaveDialogProps) => {
         if (vDate < startDate || vDate > endDate) {
           newErrors.push(
             `Voucher date (${vDate.toLocaleDateString()}) must be within the fiscal year period (${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}).`,
+          )
+        }
+      }
+
+      // --- REPORTING PERIOD VALIDATION ---
+      // Day Book and the Freight list only show delivery notes dated inside
+      // the global reporting period, so a note saved outside it (but inside
+      // the fiscal year) would silently vanish from every list. The backend
+      // enforces the same rule on store/update.
+      if (period?.startDate && period?.endDate && voucherDate) {
+        const vDate = new Date(voucherDate)
+        const periodStart = new Date(period.startDate)
+        const periodEnd = new Date(period.endDate)
+
+        if (vDate < periodStart || vDate > periodEnd) {
+          newErrors.push(
+            `Voucher date (${vDate.toLocaleDateString()}) must be within the reporting period (${periodStart.toLocaleDateString()} - ${periodEnd.toLocaleDateString()}). Adjust the reporting period from the header to include this date.`,
           )
         }
       }

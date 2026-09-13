@@ -17,6 +17,7 @@ import {
 import { DataTableToolbar } from './data-table-toolbar'
 import VoucherChart from './components/voucher-chart'
 import { buildDispatchLabel, VoucherPaymentAction } from '../shared/utils'
+import { DeliveryNoteSummaryDialogById } from '@/features/modules/voucher/day_book/components/voucher-no-summary-dialog'
 import type {
   ColumnDef,
   ColumnFiltersState,
@@ -348,7 +349,10 @@ const ZoneSection = ({ zone }: { zone: ZoneWiseReportItem; index: number }) => {
                   className="pl-1 text-left font-mono font-semibold text-gray-700 truncate"
                   title={detail.voucherNo}
                 >
-                  {detail.voucherNo ?? '-'}
+                  <DeliveryNoteSummaryDialogById
+                    voucherId={detail.voucherId}
+                    voucherNo={detail.voucherNo}
+                  />
                 </div>
                 {/* Date */}
                 <div className="text-left text-gray-400 truncate">

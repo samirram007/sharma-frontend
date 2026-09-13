@@ -70,9 +70,9 @@ const ProtectedLayout = () => {
             <div className="max-w-screen w-full relative flex  h-screen overflow-hidden ">
               <AppSidebar />
               <div className="relative  flex flex-1 flex-col overflow-y-auto overflow-x-hidden p-2">
-              {/* <div className="relative grid grid-rows-[auto_auto_1fr_auto]  overflow-y-auto overflow-x-hidden"> */}
+                {/* <div className="relative grid grid-rows-[auto_auto_1fr_auto]  overflow-y-auto overflow-x-hidden"> */}
                 <HeaderComponent />
-                
+
                 {/* <main className="flex-1"> */}
                 <div className="flex-1 pt-2">
                   <Suspense fallback={<Toaster />}>

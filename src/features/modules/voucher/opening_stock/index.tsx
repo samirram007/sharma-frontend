@@ -39,5 +39,4 @@ const OpeningStockVoucherComponent = ({ currentRow }: OpeningStockProps) => {
   )
 }
 
-
 export default OpeningStockVoucherComponent

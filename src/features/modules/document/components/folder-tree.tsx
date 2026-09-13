@@ -551,9 +551,19 @@ function TreeItem({
             }}
           >
             {isExpanded ? (
-              <IconFolderOpen className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-500" />
+              <IconFolderOpen
+                className={`h-4 w-4 shrink-0 ${
+                  folder.color ? '' : 'text-amber-600 dark:text-amber-500'
+                }`}
+                style={folder.color ? { color: folder.color } : undefined}
+              />
             ) : (
-              <IconFolder className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-500" />
+              <IconFolder
+                className={`h-4 w-4 shrink-0 ${
+                  folder.color ? '' : 'text-amber-600 dark:text-amber-500'
+                }`}
+                style={folder.color ? { color: folder.color } : undefined}
+              />
             )}
             {isFileHover ? (
               <IconUpload className="h-3.5 w-3.5 shrink-0 text-primary" />

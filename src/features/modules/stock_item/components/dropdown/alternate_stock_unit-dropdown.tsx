@@ -55,7 +55,7 @@ const AlternateStockUnitDropdown = (props: Props) => {
       render={({ field }) => (
         <FormItem
           className={cn(
-            'grid grid-cols-[100px_1fr] items-center space-y-0 gap-x-4 gap-y-1',
+            'grid grid-cols-[100px_minmax(0,1fr)] items-center space-y-0 gap-x-4 gap-y-1',
             gapClass,
           )}
         >
@@ -76,7 +76,7 @@ const AlternateStockUnitDropdown = (props: Props) => {
               },
             ]}
           />
-          <FormMessage className="col-span-4 col-start-3" />
+          <FormMessage className="col-span-2 col-start-1" />
         </FormItem>
       )}
     />

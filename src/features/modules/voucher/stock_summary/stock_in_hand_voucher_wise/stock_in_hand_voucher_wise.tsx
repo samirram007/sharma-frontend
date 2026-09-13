@@ -39,14 +39,21 @@ const ReportView = ({ data }: { data: StockInHandVoucherWiseListSchema }) => {
   return (
     <div className="w-full h-[72vh] grid grid-rows-[auto_1fr]">
       <ReportHeader />
-      <div className={cn('border-2 border-t-0 overflow-y-auto h-full', borderColor)}>
+      <div
+        className={cn(
+          'border-2 border-t-0 overflow-y-auto h-full',
+          borderColor,
+        )}
+      >
         {data.map((item, index) => (
           <div key={index} className="grid grid-rows-1 gap-0">
             {/* Item summary row */}
             <div
               className={cn(
                 'grid grid-cols-[1fr_2fr] text-center font-semibold border-b border-border/50',
-                index % 2 === 0 ? 'bg-muted/30 dark:bg-secondary/20' : 'bg-card dark:bg-secondary/10',
+                index % 2 === 0
+                  ? 'bg-muted/30 dark:bg-secondary/20'
+                  : 'bg-card dark:bg-secondary/10',
               )}
             >
               <div className="text-left pl-2 text-foreground">
@@ -416,7 +423,9 @@ const ReportFooter = ({ data }: { data: StockInHandVoucherWiseListSchema }) => {
           </div>
           <div className="font-semibold text-foreground">Total:</div>
         </div>
-        <div className={cn('grid grid-cols-4 border-b-2 border-l-0', borderColor)}>
+        <div
+          className={cn('grid grid-cols-4 border-b-2 border-l-0', borderColor)}
+        >
           <div>
             <div className="grid grid-cols-2">
               <div className="border-l-2 text-right pr-2 text-muted-foreground">

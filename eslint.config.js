@@ -1,6 +1,7 @@
 //  @ts-check
 
 import { tanstackConfig } from '@tanstack/eslint-config'
+import reactRefresh from 'eslint-plugin-react-refresh'
 import noUninterpolatedCodeTemplateLiteral from './eslint-rules/no-uninterpolated-code-template-literal.js'
 
 /** @type {import('eslint').Linter.Config[]} */
@@ -9,7 +10,7 @@ export default [
   {
     // Tooling-only JS files aren't part of any tsconfig project and would trip
     // the @typescript-eslint/parser "file not found in project" error.
-    ignores: ['eslint-rules/**'],
+    ignores: ['eslint-rules/**', 'dist-ssr/**', 'dist/**', '_eslint.json'],
   },
   {
     // Scope custom plugins + overrides to TS/TSX files: the '@typescript-eslint'
@@ -17,6 +18,7 @@ export default [
     // applying its rules to .js/.mjs files fails config resolution.
     files: ['**/*.{ts,tsx}'],
     plugins: {
+      'react-refresh': reactRefresh,
       local: {
         rules: {
           'no-uninterpolated-code-template-literal':
@@ -56,6 +58,7 @@ export default [
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
       '@typescript-eslint/no-unnecessary-condition': 'off',
+      'react-refresh/only-export-components': 'warn',
     },
   },
 ]

@@ -1,4 +1,5 @@
 import BillCell from './bill-cell'
+import VoucherNoSummaryDialog from '../../day_book/components/voucher-no-summary-dialog'
 import type { ColumnDef } from '@tanstack/react-table'
 import type { VoucherSchema } from '../../data-schema/voucher-schema'
 import { cn } from '@/lib/utils'
@@ -57,9 +58,9 @@ export const columns: Array<ColumnDef<VoucherSchema>> = [
   {
     accessorKey: 'voucherNo',
     header: () => <div>Dl. No.</div>,
-    cell: ({ row }) => (
-      <div className="font-medium">{row.getValue('voucherNo')}</div>
-    ),
+    // Delivery no: first click shows the delivery note summary dialog; clicking
+    // the no again from the dialog opens the delivery note edit page.
+    cell: ({ row }) => <VoucherNoSummaryDialog data={row.original} />,
     size: 100,
     meta: { className: cn('w-[100px]') },
     enableSorting: false,
@@ -79,44 +80,52 @@ export const columns: Array<ColumnDef<VoucherSchema>> = [
     enableSorting: false,
   },
   {
-    id: 'dispatchNo',
-    header: () => <div>Dispatch No.</div>,
+    id: 'dispatch',
+    header: () => <div>Dispatch</div>,
     cell: ({ row }) => {
       const d = row.original.voucherDispatchDetail
+      const dispatchNo = d?.billOfLadingNo
+      const route = [d?.source, d?.destination].filter(Boolean).join(' → ')
+      const carrier = [d?.carrierName, d?.motorVehicleNo]
+        .filter(Boolean)
+        .join(' · ')
+
+      if (!dispatchNo && !route && !carrier) {
+        return <div className="text-muted-foreground">-</div>
+      }
+
       return (
-        <div className="text-muted-foreground">{d?.billOfLadingNo ?? '-'}</div>
+        <div className="flex min-w-[180px] flex-col gap-0.5">
+          {dispatchNo && (
+            <div
+              className="truncate font-medium text-foreground"
+              title={dispatchNo}
+            >
+              {dispatchNo}
+            </div>
+          )}
+          {route && (
+            <div
+              className="truncate text-xs text-muted-foreground"
+              title={route}
+            >
+              {route}
+            </div>
+          )}
+          {carrier && (
+            <div
+              className="truncate text-xs text-muted-foreground"
+              title={carrier}
+            >
+              {carrier}
+            </div>
+          )}
+        </div>
       )
     },
-    minSize: 100,
-    size: 120,
-    meta: { className: cn('min-w-[100px] hidden lg:table-cell') },
-    enableSorting: false,
-  },
-  {
-    id: 'source',
-    header: () => <div>Source</div>,
-    cell: ({ row }) => {
-      const d = row.original.voucherDispatchDetail
-      return <div className="text-muted-foreground">{d?.source ?? '-'}</div>
-    },
-    minSize: 120,
-    size: 130,
-    meta: { className: cn('min-w-[120px] hidden lg:table-cell') },
-    enableSorting: false,
-  },
-  {
-    id: 'destination',
-    header: () => <div>Destination</div>,
-    cell: ({ row }) => {
-      const d = row.original.voucherDispatchDetail
-      const dest = [d?.destination, d?.destinationSecondary]
-        .filter(Boolean)
-        .join(', ')
-      return <div className="text-xs text-muted-foreground">{dest || '-'}</div>
-    },
-    minSize: 120,
-    size: 140,
-    meta: { className: cn('min-w-[120px] hidden lg:table-cell') },
+    minSize: 180,
+    size: 220,
+    meta: { className: cn('min-w-[180px]') },
     enableSorting: false,
   },
   {
@@ -190,34 +199,6 @@ export const columns: Array<ColumnDef<VoucherSchema>> = [
     minSize: 180,
     size: 220,
     meta: { className: cn('min-w-[180px]') },
-    enableSorting: false,
-  },
-  {
-    id: 'carrier',
-    header: () => <div>Carrier Name</div>,
-    cell: ({ row }) => {
-      const d = row.original.voucherDispatchDetail
-      return <div className="text-foreground/80">{d?.carrierName ?? '-'}</div>
-    },
-    minSize: 130,
-    size: 145,
-    meta: { className: cn('min-w-[130px] hidden lg:table-cell') },
-    enableSorting: false,
-  },
-  {
-    id: 'vehicleNo',
-    header: () => <div>Vehicle No.</div>,
-    cell: ({ row }) => {
-      const d = row.original.voucherDispatchDetail
-      return (
-        <div className="text-xs text-muted-foreground">
-          {d?.motorVehicleNo ?? '-'}
-        </div>
-      )
-    },
-    minSize: 100,
-    size: 115,
-    meta: { className: cn('min-w-[100px] hidden lg:table-cell') },
     enableSorting: false,
   },
   {

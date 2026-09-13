@@ -25,7 +25,7 @@ export default function StockItemProvider({ children }: Props) {
   const config = [
     { key: 'alternate_units', value: true },
     { key: 'batch_serial', value: true },
-    { key: 'opening_balance', value: false },
+    { key: 'opening_balance', value: true },
   ]
 
   return (

@@ -10,9 +10,7 @@ export const Route = createFileRoute(
   '/_protected/reports/freight/_layout/freight-godown-wise',
 )({
   loader: ({ context }) =>
-    context.queryClient.ensureQueryData(
-      freightGodownWiseQueryOptions(),
-    ),
+    context.queryClient.ensureQueryData(freightGodownWiseQueryOptions()),
   component: () => {
     const { data: freightGodownWise } = useSuspenseQuery(
       freightGodownWiseQueryOptions(),

@@ -58,7 +58,12 @@ export function PreviewPane({
       {/* Large preview area */}
       <div className="flex h-40 min-h-40 shrink-0 items-center justify-center overflow-hidden rounded-md border bg-muted/30">
         {node.kind === 'folder' ? (
-          <IconFolderFilled className="h-14 w-14 text-amber-500 dark:text-amber-400" />
+          <IconFolderFilled
+            className={`h-14 w-14 ${
+              node.color ? '' : 'text-amber-500 dark:text-amber-400'
+            }`}
+            style={node.color ? { color: node.color } : undefined}
+          />
         ) : node.kind === 'shortcut' ? (
           <IconLink className="h-14 w-14 text-muted-foreground/50" />
         ) : (

@@ -563,13 +563,19 @@ export function DocumentGrid({
   prefs,
 }: DocumentGridProps) {
   const { user } = useAuth()
-  // Apply the active sort client-side (folders first is NOT preserved when a
-  // sort is active — the flat list is ordered purely by the chosen field).
+  // Apply the active sort client-side. Folders always come first (then files,
+  // then shortcuts) regardless of the chosen column or direction — the chosen
+  // sort is applied within each kind, like a file explorer.
   const entries = useMemo(() => {
     const list = [...folders, ...files, ...shortcuts]
     if (!sort) return list
     const dirFactor = sort.dir === 'asc' ? 1 : -1
+    // folder < file < shortcut — folders stay grouped at the top.
+    const kindRank = (kind: string) =>
+      kind === 'folder' ? 0 : kind === 'file' ? 1 : 2
     return [...list].sort((a, b) => {
+      const rank = kindRank(a.kind) - kindRank(b.kind)
+      if (rank !== 0) return rank
       if (sort.key === 'name') {
         return a.name.localeCompare(b.name) * dirFactor
       }

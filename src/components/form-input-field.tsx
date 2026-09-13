@@ -171,7 +171,17 @@ const TextAreaBox = (props: Props) => {
 }
 
 const TextBox = (props: Props) => {
-  const { form, name, label, gapClass, rtl, noLabel, tabIndex, ...rest } = props
+  const {
+    form,
+    name,
+    label,
+    gapClass,
+    rtl,
+    noLabel,
+    tabIndex,
+    inputType,
+    ...rest
+  } = props
   return (
     <FormField
       control={form.control}
@@ -192,6 +202,7 @@ const TextBox = (props: Props) => {
             <Input
               tabIndex={tabIndex}
               autoFocus={tabIndex === 0}
+              type={inputType ?? 'text'}
               placeholder={'Enter ' + lowerCase(label ?? name)}
               className="w-full placeholder"
               autoComplete="off"

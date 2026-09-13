@@ -17,6 +17,7 @@ import {
   useDeleteNode,
   useMoveNode,
   useRenameNode,
+  useUpdateNodeColor,
 } from '@/features/modules/document/data/queryOptions'
 import { conflictsService, type NodeConflict } from '../data/api'
 import { ConflictDialog, type ConflictBatch } from './conflict-dialog'
@@ -83,6 +84,7 @@ export function useDocumentNodeActions(options?: {
   const moveNode = useMoveNode()
   const copyNode = useCopyNode()
   const createShortcutNode = useCreateShortcut()
+  const updateNodeColor = useUpdateNodeColor()
 
   // ── Move/copy with a conflict pre-check (Skip / Replace / Keep both) ──
   const applyNodeAction = (
@@ -267,6 +269,20 @@ export function useDocumentNodeActions(options?: {
     onShare: setShareTarget,
     onMoveCopy: (node, mode) => setMoveCopyTarget({ node, mode }),
     onProperties: setPropertiesTarget,
+    onChangeColor: (node, color) => {
+      updateNodeColor.mutate(
+        { id: node.id, color },
+        {
+          onSuccess: () =>
+            toast.success(
+              color
+                ? `Folder colour updated.`
+                : 'Folder colour reset to default.',
+            ),
+          onError: () => toast.error('Could not update the folder colour.'),
+        },
+      )
+    },
     onCreateShortcut: (node) => {
       createShortcutNode.mutate(
         { targetId: node.id, parentId: node.parentId },

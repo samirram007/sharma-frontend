@@ -4,19 +4,11 @@ import { Button } from '@/components/ui/button'
 import { Form } from '@/components/ui/form'
 
 import FormInputField from '@/components/form-input-field'
-import {
-  Dialog,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
 import { cn } from '@/lib/utils'
 import { Route as EmployeeRoute } from '@/routes/_protected/masters/payroll/_layout/employee/_layout'
-import { lowerCase } from '@/utils/removeEmptyStrings'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useNavigate } from '@tanstack/react-router'
-import { Loader2 } from 'lucide-react'
+import { ArrowLeft, Loader2 } from 'lucide-react'
 import { useForm, type Resolver } from 'react-hook-form'
 import { useEmployeeMutation } from '../data/queryOptions'
 import { formSchema, type Employee, type EmployeeForm } from '../data/schema'
@@ -33,6 +25,14 @@ import { useEffect } from 'react'
 interface Props {
   currentRow?: Employee
 }
+
+const sectionClass =
+  'space-y-4 rounded-md border border-slate-200/70 bg-white p-3 sm:p-4 shadow-sm dark:border-white/8 dark:bg-card'
+const headingClass = 'text-sm font-semibold text-slate-800 dark:text-slate-200'
+const subHeadingClass = 'text-xs text-slate-500 dark:text-slate-400'
+// Two fields per row inside a section (single column on mobile).
+const fieldGridClass = 'grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-x-6'
+
 export function FormAction({ currentRow }: Props) {
   const isEdit = !!currentRow
   const navigate = useNavigate()
@@ -60,7 +60,7 @@ export function FormAction({ currentRow }: Props) {
             countryId: 76,
             stateId: 36,
             city: 'Malda',
-            zipCode: '',
+            postalCode: '',
             isPrimary: true,
             addressable: {
               addressableId: null,
@@ -87,13 +87,9 @@ export function FormAction({ currentRow }: Props) {
           isEdit,
         },
   })
-  //  const employeeStatusOptions: ActiveInactiveStatus[] = ['active', 'inactive'];
   const gapClass =
     'grid grid-cols-1 gap-2 sm:grid-cols-[120px_minmax(0,1fr)] sm:gap-4'
-  const moduleName = 'Employee'
   const onSubmit = (values: EmployeeForm) => {
-    // console.log("here: ", values)
-
     saveEmployee(currentRow ? { ...values, id: currentRow.id! } : values, {
       onSuccess: () => {
         navigate({ to: EmployeeRoute.to })
@@ -105,7 +101,6 @@ export function FormAction({ currentRow }: Props) {
     })
   }
   useEffect(() => {
-    console.log('currentRow: ', currentRow)
     if (currentRow) {
       form.reset({
         ...currentRow,
@@ -116,165 +111,192 @@ export function FormAction({ currentRow }: Props) {
   }, [currentRow])
 
   return (
-    <Dialog>
-      <DialogHeader className="text-left">
-        <DialogTitle>
-          {isEdit ? 'Edit ' : 'Add New '} {moduleName}
-        </DialogTitle>
-        <DialogDescription>
-          {isEdit
-            ? `Update the ${lowerCase(moduleName)} here. `
-            : `Create new ${lowerCase(moduleName)} here. `}
-          Click save when you&apos;re done.
-        </DialogDescription>
-      </DialogHeader>
+    <Form {...form}>
+      <form
+        id="user-form"
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="space-y-5"
+      >
+        {/* Personal Information */}
+        <section className={sectionClass}>
+          <div className="space-y-1">
+            <h3 className={headingClass}>Personal Information</h3>
+            <p className={subHeadingClass}>
+              Core identity and personal details used across payroll and
+              statutory records (PAN, qualifications).
+            </p>
+          </div>
+          <div className={fieldGridClass}>
+            <FormInputField
+              type="text"
+              gapClass={gapClass}
+              form={form}
+              name="name"
+              label="Name"
+              tabIndex={0}
+            />
+            <FormInputField
+              type="text"
+              gapClass={gapClass}
+              form={form}
+              name="code"
+              label="Employee Code"
+            />
+            <FormInputField
+              type="date"
+              gapClass={gapClass}
+              form={form}
+              name="dob"
+              label="Date of Birth"
+            />
+            <FormInputField
+              type="text"
+              gapClass={gapClass}
+              form={form}
+              name="pan"
+              label="PAN Number"
+            />
+            <FormInputField
+              type="text"
+              gapClass={gapClass}
+              form={form}
+              name="education"
+              label="Education"
+            />
+          </div>
+        </section>
 
-      <div className="ml-0 mr-auto h-full w-full max-w-3xl overflow-y-auto overflow-x-hidden py-0 sm:py-1">
-        <Form {...form}>
-          <form
-            id="user-form"
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="space-y-4 p-0 sm:space-y-6 sm:p-1"
-          >
-            <div className="grid grid-cols-1 items-start gap-5">
-              <section className="min-w-0 space-y-4 rounded-md border border-slate-200/70 bg-white p-3 sm:p-4 shadow-sm dark:border-white/8 dark:bg-card">
-                <div className="space-y-1">
-                  <h3 className="font-semibold text-md">Bio</h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
-                    Primary employee identity and personal profile details.
-                  </p>
-                </div>
-                <FormInputField
-                  type="text"
-                  gapClass={gapClass}
-                  form={form}
-                  name="name"
-                  label="Name"
-                />
-                <FormInputField
-                  type="text"
-                  gapClass={gapClass}
-                  form={form}
-                  name="code"
-                  label="Code"
-                />
+        {/* Contact Information */}
+        <section className={sectionClass}>
+          <div className="space-y-1">
+            <h3 className={headingClass}>Contact Information</h3>
+            <p className={subHeadingClass}>
+              Primary contact channels used for HR communication and payslip
+              delivery.
+            </p>
+          </div>
+          <div className={fieldGridClass}>
+            <FormInputField
+              type="text"
+              gapClass={gapClass}
+              form={form}
+              name="contactNo"
+              label="Contact Number"
+            />
+            <FormInputField
+              type="text"
+              gapClass={gapClass}
+              form={form}
+              name="email"
+              label="Email"
+            />
+          </div>
+        </section>
 
-                <FormInputField
-                  type="date"
-                  gapClass={gapClass}
-                  form={form}
-                  name="dob"
-                  label="DOB"
-                />
-                <FormInputField
-                  type="date"
-                  gapClass={gapClass}
-                  form={form}
-                  name="doj"
-                  label="Joining Date"
-                />
-                <FormInputField
-                  type="text"
-                  gapClass={gapClass}
-                  form={form}
-                  name="pan"
-                  label="Pan Number"
-                />
-                <FormInputField
-                  type="text"
-                  gapClass={gapClass}
-                  form={form}
-                  name="education"
-                  label="Education"
-                />
-                <FormInputField
-                  type="text"
-                  gapClass={gapClass}
-                  form={form}
-                  name="contactNo"
-                  label="Contact Number"
-                />
-                <FormInputField
-                  type="text"
-                  gapClass={gapClass}
-                  form={form}
-                  name="phone"
-                  label="Phone Number"
-                />
-                <FormInputField
-                  type="text"
-                  gapClass={gapClass}
-                  form={form}
-                  name="email"
-                  label="Email"
-                />
-              </section>
-              <section className="min-w-0 space-y-4">
-                <AddressForm form={form} />
-              </section>
-              <section className="min-w-0 space-y-4 rounded-md border border-slate-200/70 bg-white p-3 sm:p-4 shadow-sm dark:border-white/8 dark:bg-card">
-                <div className="space-y-1">
-                  <h3 className="font-semibold text-md">Additional</h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
-                    Department, designation, payroll grouping, and account
-                    settings.
-                  </p>
-                </div>
-                <DesignationDropdown form={form} gapClass={gapClass} />
-                <DepartmentDropdown form={form} gapClass={gapClass} />
-                <EmployeeGroupDropdown form={form} gapClass={gapClass} />
-                <ShiftDropdown form={form} gapClass={gapClass} />
-                <GradeDropdown form={form} gapClass={gapClass} />
-                {isEdit && form.getValues('accountLedger') ? (
-                  <div className={cn(gapClass, 'items-center')}>
-                    <div>Ledger A/c: </div>
-                    <div
-                      className={cn('font-bold border-2 px-2 py-1 rounded-sm')}
-                    >
-                      {form.getValues('accountLedger')?.name}
-                    </div>
-                  </div>
-                ) : (
-                  <>
-                    <CurrentLiabilityGroupsDropdown
-                      form={form}
-                      gapClass={gapClass}
-                    />
-                  </>
+        {/* Address */}
+        <AddressForm form={form} />
+
+        {/* Employment Details */}
+        <section className={sectionClass}>
+          <div className="space-y-1">
+            <h3 className={headingClass}>Employment Details</h3>
+            <p className={subHeadingClass}>
+              Job classification, shift schedule, joining date, and current
+              employment status within the organization.
+            </p>
+          </div>
+          <div className={fieldGridClass}>
+            <DesignationDropdown form={form} gapClass={gapClass} />
+            <DepartmentDropdown form={form} gapClass={gapClass} />
+            <EmployeeGroupDropdown form={form} gapClass={gapClass} />
+            <GradeDropdown form={form} gapClass={gapClass} />
+            <ShiftDropdown form={form} gapClass={gapClass} />
+            <FormInputField
+              type="date"
+              gapClass={gapClass}
+              form={form}
+              name="doj"
+              label="Joining Date"
+            />
+            <FormInputField
+              type="checkbox"
+              gapClass={gapClass}
+              form={form}
+              name="status"
+              label="Status"
+              options={[
+                { label: 'Active', value: 'active' },
+                { label: 'Inactive', value: 'inactive' },
+              ]}
+            />
+          </div>
+        </section>
+
+        {/* Payroll & Account Access */}
+        <section className={sectionClass}>
+          <div className="space-y-1">
+            <h3 className={headingClass}>Payroll &amp; Account Access</h3>
+            <p className={subHeadingClass}>
+              Salary ledger mapping for payroll postings and the employee&apos;s
+              portal login.
+            </p>
+          </div>
+          <div className={fieldGridClass}>
+            {isEdit && form.getValues('accountLedger') ? (
+              <div
+                className={cn(
+                  gapClass,
+                  'items-center sm:grid-cols-[120px_minmax(0,1fr)]',
                 )}
+              >
+                <div className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  Ledger A/c
+                </div>
+                <div className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-700 dark:border-white/[0.07] dark:bg-secondary dark:text-slate-200">
+                  {form.getValues('accountLedger')?.name}
+                </div>
+              </div>
+            ) : (
+              <CurrentLiabilityGroupsDropdown
+                form={form}
+                gapClass={gapClass}
+              />
+            )}
+            <FormInputField
+              type="checkbox"
+              gapClass={gapClass}
+              form={form}
+              name="hasUserAccount"
+              label="Has User Account"
+              options={[
+                { label: 'Yes', value: true },
+                { label: 'No', value: false },
+              ]}
+            />
+          </div>
+        </section>
 
-                <FormInputField
-                  type="checkbox"
-                  form={form}
-                  name="status"
-                  label="Status"
-                  options={[
-                    { label: 'Active', value: 'active' },
-                    { label: 'Inactive', value: 'inactive' },
-                  ]}
-                />
-                <FormInputField
-                  type="checkbox"
-                  form={form}
-                  name="hasUserAccount"
-                  label="Has user account"
-                  options={[
-                    { label: 'yes', value: true },
-                    { label: 'No', value: false },
-                  ]}
-                />
-              </section>
-            </div>
-          </form>
-        </Form>
-      </div>
-
-      <DialogFooter className="ml-0 mr-auto w-full max-w-3xl border-t border-slate-200/70 pt-4 sm:justify-start dark:border-white/8">
-        <Button type="submit" form="user-form" disabled={isPending}>
-          {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {isPending ? 'Saving...' : 'Save changes'}
-        </Button>
-      </DialogFooter>
-    </Dialog>
+        {/* Footer actions */}
+        <div className="flex items-center justify-end gap-2 border-t border-slate-200/70 pt-4 dark:border-white/[0.07]">
+          <Button
+            type="button"
+            variant="outline"
+            disabled={isPending}
+            onClick={() => navigate({ to: EmployeeRoute.to })}
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to List
+          </Button>
+          <Button type="submit" disabled={isPending}>
+            {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isPending
+              ? 'Saving...'
+              : isEdit
+                ? 'Save Changes'
+                : 'Create Employee'}
+          </Button>
+        </div>
+      </form>
+    </Form>
   )
 }
