@@ -330,11 +330,14 @@ type DateBoxProps = {
 export const WeightBox = (props: Boxprops) => {
   const { form, name, stockUnits, freightBasis } = props
   const weightUnits = useMemo(() => {
+    // freightBasis can be briefly undefined while the dialog's watch streams
+    // in; defaulting to 'weight' keeps the unit (and the saved value's
+    // "12.5 Mt"-style label) from being dropped to '' on open.
+    const basis = lowerCase(freightBasis ?? 'weight')
     return stockUnits.filter(
-      (su) =>
-        su.unitType === 'simple' && lowerCase(su.quantityType) === freightBasis,
+      (su) => su.unitType === 'simple' && lowerCase(su.quantityType) === basis,
     )
-  }, [stockUnits])
+  }, [stockUnits, freightBasis])
   const weightUnitId = form.watch('weightUnitId')
   const weightUnit = useMemo(() => {
     return weightUnits.find((su) => su.id === weightUnitId)
@@ -433,12 +436,13 @@ export const WeightBox = (props: Boxprops) => {
 export const RateBox = (props: Boxprops) => {
   const { form, name, stockUnits, freightBasis } = props
   const rateUnits = useMemo(() => {
+    // Default the basis like WeightBox so the rate unit survives the brief
+    // undefined window while the dialog mounts.
+    const basis = lowerCase(freightBasis ?? 'weight')
     return stockUnits.filter(
-      (su) =>
-        su.unitType === 'simple' &&
-        lowerCase(su.quantityType) === freightBasis!,
+      (su) => su.unitType === 'simple' && lowerCase(su.quantityType) === basis,
     )
-  }, [stockUnits])
+  }, [stockUnits, freightBasis])
   const rateUnitId = form.watch('rateUnitId')
   const rateUnit = useMemo(() => {
     return rateUnits.find((su) => su.id === rateUnitId)

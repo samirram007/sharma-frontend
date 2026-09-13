@@ -40,42 +40,59 @@ export const DestinationPlaceSelector = ({ form, name }: Props) => {
   const carrierName = form.watch('carrierName')
   const source = form.watch('source')
   const vehicleNo = form.watch('motorVehicleNo')
+
+  // Keep the button label in sync with the form: the dialog re-uses this
+  // component across rows and the saved destination can arrive after mount
+  // (or be set by other selectors) — without this it shows "Select place…"
+  // even when a destination is stored.
+  React.useEffect(() => {
+    const formValue = form.getValues(name)?.toString() ?? ''
+    setValue(formValue)
+  }, [form, name, open])
   const { data: destinationPlaces } = useSuspenseQuery(
     deliveryRouteQueryOptions(),
   )
 
   const destinationPlacesFiltered = React.useMemo(() => {
+    // The carrier filter always applies; source/vehicle narrow it further.
     if (!carrierName) return []
-    if (!source && !vehicleNo) return destinationPlaces.data
-    if (source && !vehicleNo) {
+    if (source && vehicleNo) {
       return destinationPlaces.data?.filter(
         (destinationPlace: DeliveryRoute) =>
+          destinationPlace.transporter?.name === carrierName &&
           destinationPlace.sourcePlace?.name === source &&
-          destinationPlace.transporter?.name === carrierName,
+          destinationPlace.vehicleNo === vehicleNo,
       )
     }
-    if (!source && vehicleNo) {
+    if (source) {
       return destinationPlaces.data?.filter(
         (destinationPlace: DeliveryRoute) =>
-          destinationPlace.vehicleNo === vehicleNo &&
-          destinationPlace.transporter?.name === carrierName,
+          destinationPlace.transporter?.name === carrierName &&
+          destinationPlace.sourcePlace?.name === source,
+      )
+    }
+    if (vehicleNo) {
+      return destinationPlaces.data?.filter(
+        (destinationPlace: DeliveryRoute) =>
+          destinationPlace.transporter?.name === carrierName &&
+          destinationPlace.vehicleNo === vehicleNo,
       )
     }
     return destinationPlaces.data?.filter(
       (destinationPlace: DeliveryRoute) =>
         destinationPlace.transporter?.name === carrierName,
     )
-  }, [carrierName, destinationPlaces])
+  }, [carrierName, source, vehicleNo, destinationPlaces])
 
-  const handleSelect = (value: string) => {
-    if (!value) {
+  const handleSelect = (selectedName: string) => {
+    if (!selectedName) {
       setOpen(true)
       return
     }
 
     const rateValue =
       destinationPlacesFiltered?.find((deliveryRoute: DeliveryRoute) => {
-        if (deliveryRoute.destinationPlace?.name !== value) return false
+        if (deliveryRoute.destinationPlace?.name !== selectedName) return false
 
         if (source && vehicleNo) {
           return (
@@ -95,20 +112,14 @@ export const DestinationPlaceSelector = ({ form, name }: Props) => {
         return true
       })?.rate ?? 0
 
-    // Atomic update
-    form.reset(
-      {
-        ...form.getValues(),
-        [name]: value,
-        rate: rateValue,
-        freightCharges: 0,
-        totalFare: 0,
-        dispatchedThrough: carrierName,
-      },
-      { keepDirty: true },
-    )
+    // Targeted update — a form.reset() here reset freightCharges/totalFare to
+    // 0 (wiping the fare the Freight Calculator had computed) and overwrote
+    // "Dispatched Through" with the transporter's name. The rate from the
+    // selected route still pre-fills; the calculator recomputes the fare.
+    form.setValue(name, selectedName, { shouldDirty: true })
+    form.setValue('rate', rateValue, { shouldDirty: true })
 
-    setValue(value)
+    setValue(selectedName)
     setOpen(false)
   }
 

@@ -39,6 +39,14 @@ export const DeliveryVehicleSelector = ({ form, name }: Props) => {
   const [open, setOpen] = React.useState(false)
   const [value, setValue] = React.useState(form.getValues(name)?.toString())
 
+  // Sync the label with the form value — the saved vehicle number can arrive
+  // after mount (row switch / dialog reopen); without this the button shows
+  // "Select vehicle..." even though a vehicle is stored.
+  React.useEffect(() => {
+    const formValue = form.getValues(name)?.toString() ?? ''
+    setValue(formValue)
+  }, [form, name, open])
+
   const carrierName = form.watch('carrierName')
 
   const { data: deliveryVehicles } = useSuspenseQuery(

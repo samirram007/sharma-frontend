@@ -76,7 +76,6 @@ interface DataTableProps {
   totalFareOverall?: number
   search?: string
   onSearchChange?: (value: string) => void
-  onSearch?: () => void
   onReset?: () => void
   onPageChange?: (page: number, pageSize: number) => void
   freightStatus?: string
@@ -84,6 +83,10 @@ interface DataTableProps {
   zones?: GodownList
   zoneId?: number
   onZoneChange?: (zoneId?: number) => void
+  /** Fare amount range inputs — local string state so partial typing works */
+  amountFrom?: string
+  amountTo?: string
+  onAmountChange?: (from: string, to: string) => void
   /** API query params for the list — reused by the export to fetch ALL
    *  matching records (current filters applied) instead of just this page. */
   exportParams?: FreightQueryParams
@@ -305,13 +308,15 @@ export function GridTable({
   totalFareOverall,
   search,
   onSearchChange,
-  onSearch,
   onPageChange,
   freightStatus = 'pending',
   onFreightStatusChange,
   zones,
   zoneId,
   onZoneChange,
+  amountFrom,
+  amountTo,
+  onAmountChange,
   exportParams,
 }: DataTableProps) {
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
@@ -561,22 +566,38 @@ export function GridTable({
       {/* Toolbar with search, freight status filter, column visibility toggle + export buttons */}
       <div className="flex flex-wrap items-center justify-between gap-3 px-2 pt-1">
         <div className="flex items-center gap-3">
-          {/* Search input */}
+          {/* Search input — auto-commits debounced (no click-to-search) */}
           <div className="relative flex w-[200px] items-center">
+            <Search className="absolute left-2.5 h-3.5 w-3.5 text-muted-foreground" />
             <Input
               placeholder="Search..."
               value={search || ''}
-              className="h-8 w-full pr-9 text-xs"
+              className="h-8 w-full pl-8 pr-3 text-xs"
               onChange={(e) => onSearchChange?.(e.target.value)}
             />
-            <Button
-              variant="ghost"
-              size="sm"
-              className="absolute right-0 top-1/2 h-8 w-8 -translate-y-1/2 p-0"
-              onClick={onSearch}
-            >
-              <Search className="h-3.5 w-3.5 text-muted-foreground" />
-            </Button>
+          </div>
+
+          {/* Fare amount range (min–max on the freight fare) */}
+          <div className="flex items-center gap-1">
+            <Input
+              type="number"
+              min={0}
+              placeholder="Min fare"
+              className="h-8 w-[90px] text-xs"
+              value={amountFrom ?? ''}
+              onChange={(e) => onAmountChange?.(e.target.value, amountTo ?? '')}
+            />
+            <span className="text-xs text-muted-foreground">–</span>
+            <Input
+              type="number"
+              min={0}
+              placeholder="Max fare"
+              className="h-8 w-[90px] text-xs"
+              value={amountTo ?? ''}
+              onChange={(e) =>
+                onAmountChange?.(amountFrom ?? '', e.target.value)
+              }
+            />
           </div>
 
           {/* Zone filter dropdown (only when zones exist in the system) */}

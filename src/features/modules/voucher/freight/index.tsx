@@ -47,6 +47,12 @@ export default function Freight({
   const [localZoneId, setLocalZoneId] = useState<number | undefined>(
     search?.zoneId,
   )
+  const [localAmountFrom, setLocalAmountFrom] = useState<string>(
+    search?.amountFrom != null ? String(search.amountFrom) : '',
+  )
+  const [localAmountTo, setLocalAmountTo] = useState<string>(
+    search?.amountTo != null ? String(search.amountTo) : '',
+  )
 
   // Server-side pagination values from API response meta
   const pageCount = meta?.last_page ?? 1
@@ -69,28 +75,82 @@ export default function Freight({
     setLocalSearch(search?.search ?? '')
     setLocalFreightStatus(search?.freightStatus ?? 'pending')
     setLocalZoneId(search?.zoneId)
-  }, [search?.search, search?.freightStatus, search?.zoneId])
+    setLocalAmountFrom(
+      search?.amountFrom != null ? String(search.amountFrom) : '',
+    )
+    setLocalAmountTo(search?.amountTo != null ? String(search.amountTo) : '')
+  }, [
+    search?.search,
+    search?.freightStatus,
+    search?.zoneId,
+    search?.amountFrom,
+    search?.amountTo,
+  ])
 
-  const handleSearch = useCallback(
-    (searchValue: string) => {
+  // Debounced auto-search: committing the text search as the user types (they
+  // no longer need to press Enter). Status/zone filters commit
+  // immediately as before.
+  useEffect(() => {
+    const currentUrlSearch = search?.search ?? ''
+    if (localSearch === currentUrlSearch) return
+    const timer = setTimeout(() => {
       onSearchChange?.({
-        search: searchValue || undefined,
-        freightStatus: localFreightStatus || undefined,
-        zoneId: localZoneId,
+        search: localSearch || undefined,
         page: 1,
       })
-    },
-    [localFreightStatus, localZoneId, onSearchChange],
-  )
+    }, 400)
+    return () => clearTimeout(timer)
+  }, [localSearch, search?.search, onSearchChange])
+
+  // Fare range follows the same debounced pattern as search: committing on
+  // every keystroke made the URL update race the typing, and the sync-back
+  // effect clobbered in-progress input ("1000" degenerated to "1").
+  useEffect(() => {
+    const urlFrom = search?.amountFrom
+    const urlTo = search?.amountTo
+    const fromNum =
+      localAmountFrom !== '' && !isNaN(Number(localAmountFrom))
+        ? Number(localAmountFrom)
+        : undefined
+    const toNum =
+      localAmountTo !== '' && !isNaN(Number(localAmountTo))
+        ? Number(localAmountTo)
+        : undefined
+    if (fromNum === urlFrom && toNum === urlTo) return
+    const timer = setTimeout(() => {
+      onSearchChange?.({
+        amountFrom: fromNum,
+        amountTo: toNum,
+        page: 1,
+      })
+    }, 400)
+    return () => clearTimeout(timer)
+  }, [
+    localAmountFrom,
+    localAmountTo,
+    search?.amountFrom,
+    search?.amountTo,
+    onSearchChange,
+  ])
+
+  const handleAmountChange = useCallback((from: string, to: string) => {
+    // Local-only while typing — the debounced effect commits to the URL.
+    setLocalAmountFrom(from)
+    setLocalAmountTo(to)
+  }, [])
 
   const handleReset = useCallback(() => {
     setLocalSearch('')
     setLocalFreightStatus('pending')
     setLocalZoneId(undefined)
+    setLocalAmountFrom('')
+    setLocalAmountTo('')
     onSearchChange?.({
       search: undefined,
       freightStatus: undefined,
       zoneId: undefined,
+      amountFrom: undefined,
+      amountTo: undefined,
       page: 1,
     })
   }, [onSearchChange])
@@ -165,6 +225,8 @@ export default function Freight({
 
             {(localSearch ||
               localZoneId ||
+              localAmountFrom !== '' ||
+              localAmountTo !== '' ||
               localFreightStatus !== 'pending') && (
               <button
                 onClick={handleReset}
@@ -187,13 +249,15 @@ export default function Freight({
               onPageChange={handlePageChange}
               search={localSearch}
               onSearchChange={(value) => setLocalSearch(value)}
-              onSearch={() => handleSearch(localSearch)}
               onReset={handleReset}
               freightStatus={localFreightStatus}
               onFreightStatusChange={handleFreightStatusChange}
               zones={zones}
               zoneId={localZoneId}
               onZoneChange={handleZoneChange}
+              amountFrom={localAmountFrom}
+              amountTo={localAmountTo}
+              onAmountChange={handleAmountChange}
               exportParams={exportParams}
             />
           </FreightProvider>

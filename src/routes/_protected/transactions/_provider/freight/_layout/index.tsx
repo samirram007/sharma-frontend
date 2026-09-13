@@ -22,6 +22,10 @@ const freightSearchSchema = z.object({
   search: z.string().optional().catch(undefined),
   freightStatus: z.string().optional().catch(undefined),
   zoneId: z.coerce.number().int().positive().optional().catch(undefined),
+  // Fare amount range filters (dispatch-detail total_fare), mirrored
+  // snake_case in the API query params below.
+  amountFrom: z.coerce.number().nonnegative().optional().catch(undefined),
+  amountTo: z.coerce.number().nonnegative().optional().catch(undefined),
 })
 
 export type FreightSearchParams = z.infer<typeof freightSearchSchema>
@@ -69,6 +73,8 @@ export const Route = createFileRoute(
       search: search.search,
       freight_status: search.freightStatus,
       zone_id: search.zoneId,
+      amount_min: search.amountFrom,
+      amount_max: search.amountTo,
     }
 
     const { data: freightResponse } = useSuspenseQuery(

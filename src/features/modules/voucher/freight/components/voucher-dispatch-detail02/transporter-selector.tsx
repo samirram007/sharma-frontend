@@ -41,16 +41,24 @@ export const TransporterSelector = ({ form, name }: Props) => {
   const [open, setOpen] = React.useState(false)
   const [value, setValue] = React.useState(form.getValues(name)?.toString())
 
+  // Sync the label with the form value — the dialog re-mounts this per row and
+  // a saved carrierName can arrive after mount; without this the button shows
+  // "Select transporter..." even though a transporter is stored.
+  React.useEffect(() => {
+    const formValue = form.getValues(name)?.toString() ?? ''
+    setValue(formValue)
+  }, [form, name, open])
+
   const { data: transporters } = useSuspenseQuery(transporterQueryOptions())
 
-  const handleSelect = (value: string) => {
+  const handleSelect = (selectedName: string) => {
     const selectedTransporter = transporters.data?.find(
-      (transporter: Transporter) => transporter.name === value,
+      (transporter: Transporter) => transporter.name === selectedName,
     )
     setTransporter(selectedTransporter || null)
-    form.setValue(name, value)
+    form.setValue(name, selectedName)
 
-    setValue(value)
+    setValue(selectedName)
     setOpen(false)
     // focusNext();
   }

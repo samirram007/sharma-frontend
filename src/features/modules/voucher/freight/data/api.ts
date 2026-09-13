@@ -10,6 +10,9 @@ export interface FreightQueryParams {
   search?: string
   freight_status?: string
   zone_id?: number
+  /** Fare amount range (dispatch-detail total_fare) — backend applyAmountRangeFilter */
+  amount_min?: number
+  amount_max?: number
 }
 
 async function fetchFreightService(

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { lowerCase } from 'lodash'
@@ -27,6 +27,25 @@ export default function BillCell({ row }: CellContext<VoucherSchema, unknown>) {
     string,
     unknown
   > | null>(null)
+
+  // Defaults for the Dispatch Details dialog: the saved dispatch detail wins,
+  // but null fields must NOT override the base defaults' unit ids (e.g.
+  // weightUnitId 16 / rateUnitId 10) — stripping nulls keeps weight, rate and
+  // units reading correctly when the dialog opens on a partially filled row.
+  const dispatchDefaults = useMemo(() => {
+    const dd = data.voucherDispatchDetail as
+      | (Record<string, unknown> & { voucherId?: number | null })
+      | null
+      | undefined
+    const cleaned = dd
+      ? Object.fromEntries(Object.entries(dd).filter(([, v]) => v !== null))
+      : {}
+    return {
+      ...voucherDispatchDefaultValues,
+      voucherId: dd?.voucherId ?? data.id,
+      ...cleaned,
+    }
+  }, [data])
 
   const form = useForm<FreightForm>({
     resolver: zodResolver(formSchema) as Resolver<FreightForm>,
@@ -240,20 +259,12 @@ export default function BillCell({ row }: CellContext<VoucherSchema, unknown>) {
           {config.find((c) => c.key === 'freight_method')?.value === 1 ? (
             <VoucherDispatchDetail01
               form={form}
-              voucherDispatchDefaultValues={{
-                ...voucherDispatchDefaultValues,
-                voucherId: data.voucherDispatchDetail?.voucherId,
-                ...data.voucherDispatchDetail,
-              }}
+              voucherDispatchDefaultValues={dispatchDefaults}
             />
           ) : (
             <VoucherDispatchDetail02
               form={form}
-              voucherDispatchDefaultValues={{
-                ...voucherDispatchDefaultValues,
-                voucherId: data.voucherDispatchDetail?.voucherId,
-                ...data.voucherDispatchDetail,
-              }}
+              voucherDispatchDefaultValues={dispatchDefaults}
             />
           )}
           {Number(data.voucherDispatchDetail?.totalFare) > 0 && data.id && (
