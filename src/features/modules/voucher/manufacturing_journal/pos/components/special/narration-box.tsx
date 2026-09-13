@@ -116,7 +116,7 @@ const NarrationBox = (props: Props) => {
                             placeholder:italic placeholder:text-gray-400 "
               placeholder={`Add a ${name} to your entry`}
               name={field.name}
-              value={field.value}
+              value={field.value ?? ''}
               onChange={field.onChange}
             />
           </FormControl>

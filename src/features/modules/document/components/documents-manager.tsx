@@ -1722,11 +1722,8 @@ function FilePreviewDialog({
     setFailed(false)
     if (!file) return
     const family = previewFamily(file)
-    // PDFs stream straight from the preview URL in an iframe and unsupported
-    // types render the informational fallback — neither needs a blob fetch.
-    // (The API's preview response carries a CSP frame-ancestors header so
-    // browsers ignore the web server's X-Frame-Options: SAMEORIGIN.)
-    if (family === 'pdf' || family === 'unsupported') return
+    // Unsupported types render the informational fallback — no blob fetch.
+    if (family === 'unsupported') return
     let revoke: string | null = null
     let cancelled = false
     const load = async () => {
@@ -1739,7 +1736,15 @@ function FilePreviewDialog({
         if (!response.ok) throw new Error('preview failed')
         const blob = await response.blob()
         if (cancelled) return
-        revoke = URL.createObjectURL(blob)
+        // PDFs are re-wrapped with an explicit type so the blob: URL is
+        // always application/pdf — if the response ever arrives with a
+        // generic/incorrect Content-Type, Chrome's viewer would offer a
+        // download instead of rendering the file inline.
+        revoke = URL.createObjectURL(
+          family === 'pdf'
+            ? new Blob([blob], { type: 'application/pdf' })
+            : blob,
+        )
         setObjectUrl(revoke)
         if (family === 'text') {
           setTextContent(await blob.text())
@@ -1849,21 +1854,22 @@ function FilePreviewDialog({
         >
           {failed ? (
             <PreviewFallback file={file} />
-          ) : family === 'pdf' ? (
-            // Streams directly from the preview endpoint — the response's
-            // CSP frame-ancestors header permits framing by this SPA origin.
-            // #toolbar=0 hides Chrome's PDF toolbar for a cleaner viewer.
-            <iframe
-              src={`${documentUrl(file.id, 'preview', 'fetch')}#toolbar=0`}
-              title={file.name}
-              className="h-full w-full"
-            />
           ) : family === 'unsupported' ? (
             <PreviewFallback file={file} />
           ) : objectUrl === null ? (
             <div className="flex h-full items-center justify-center">
               <IconLoader2 className="h-5 w-5 animate-spin text-muted-foreground" />
             </div>
+          ) : family === 'pdf' ? (
+            // Rendered from a blob: URL fetched with credentials — never
+            // directly from the API URL, which the web server's X-Frame-Options:
+            // SAMEORIGIN blocks when the SPA and API are different origins.
+            // #toolbar=0 hides Chrome's PDF toolbar for a cleaner viewer.
+            <iframe
+              src={`${objectUrl}#toolbar=0`}
+              title={file.name}
+              className="h-full w-full"
+            />
           ) : family === 'image' ? (
             <img
               src={objectUrl}

@@ -70,7 +70,15 @@ const BatchSelection = (props: BatchSelectionProps) => {
       // An empty batch no leaves the CommandItem with an empty value,
       // which cmdk can't reach with the up/down arrow keys. Fall back
       // to a displayable placeholder so keyboard navigation still works.
-      const batchNo = batch.batchNo?.trim() || 'Unknown'
+      // batchNo must be a string: older cached responses (or a PHP
+      // numeric-key cast) can deliver it as a number, and .trim() on a
+      // number crashes this component (and with it the whole voucher page).
+      const batchNo =
+        (typeof batch.batchNo === 'string'
+          ? batch.batchNo.trim()
+          : batch.batchNo != null
+            ? String(batch.batchNo)
+            : '') || 'Unknown'
       return {
         label: batchNo,
         value: batchNo,

@@ -120,7 +120,11 @@ const NarrationBox = (props: Props) => {
                             placeholder:italic placeholder:text-gray-400 "
               placeholder={`Add a ${name} to your entry`}
               name={field.name}
-              value={field.value}
+              // Coerce to string: an undefined/null field value must become
+              // '' — React treats a null `value` prop on a textarea as an
+              // error ("should not be null"), and undefined flips the input
+              // to uncontrolled.
+              value={field.value ?? ''}
               onChange={field.onChange}
 
               // {...field}
