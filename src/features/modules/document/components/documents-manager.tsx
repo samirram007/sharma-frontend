@@ -1724,6 +1724,8 @@ function FilePreviewDialog({
     const family = previewFamily(file)
     // PDFs stream straight from the preview URL in an iframe and unsupported
     // types render the informational fallback — neither needs a blob fetch.
+    // (The API's preview response carries a CSP frame-ancestors header so
+    // browsers ignore the web server's X-Frame-Options: SAMEORIGIN.)
     if (family === 'pdf' || family === 'unsupported') return
     let revoke: string | null = null
     let cancelled = false
@@ -1796,12 +1798,6 @@ function FilePreviewDialog({
   const family = previewFamily(file)
   const isText = textContent !== null
 
-  // PDFs render in an iframe pointed directly at the preview endpoint — the
-  // browser streams the bytes progressively instead of waiting for the whole
-  // blob the dialog fetches for images/text. The cookie carries auth.
-  // #toolbar=0 hides Chrome's PDF toolbar for a cleaner viewer.
-  const pdfSrc = `${documentUrl(file.id, 'preview', 'fetch')}#toolbar=0`
-
   return (
     <Dialog
       open
@@ -1854,7 +1850,14 @@ function FilePreviewDialog({
           {failed ? (
             <PreviewFallback file={file} />
           ) : family === 'pdf' ? (
-            <iframe src={pdfSrc} title={file.name} className="h-full w-full" />
+            // Streams directly from the preview endpoint — the response's
+            // CSP frame-ancestors header permits framing by this SPA origin.
+            // #toolbar=0 hides Chrome's PDF toolbar for a cleaner viewer.
+            <iframe
+              src={`${documentUrl(file.id, 'preview', 'fetch')}#toolbar=0`}
+              title={file.name}
+              className="h-full w-full"
+            />
           ) : family === 'unsupported' ? (
             <PreviewFallback file={file} />
           ) : objectUrl === null ? (
