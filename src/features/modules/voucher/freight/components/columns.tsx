@@ -1,5 +1,7 @@
 import BillCell from './bill-cell'
 import VoucherNoSummaryDialog from '../../day_book/components/voucher-no-summary-dialog'
+import { EstimatedHint } from '../../shared/EstimatedHint'
+import { resolveDispatchWeight } from '../../shared/dispatch-defaults'
 import type { ColumnDef } from '@tanstack/react-table'
 import type { VoucherSchema } from '../../data-schema/voucher-schema'
 import { cn } from '@/lib/utils'
@@ -207,12 +209,22 @@ export const columns: Array<ColumnDef<VoucherSchema>> = [
     cell: ({ row }) => {
       const d = row.original.voucherDispatchDetail
 
-      const weight = d?.weight
-        ? Number(d.weight).toFixed(d.weightUnit?.noOfDecimalPlaces ?? 2)
-        : '-'
+      const savedWeight = Number(d?.weight) > 0 ? Number(d?.weight) : 0
+      // Rows without a saved weight show the calculated weight (sum of the
+      // stock-journal quantities) marked "estimated" — same defaulting the
+      // dispatch-detail editors and the summary card use.
+      const weight =
+        savedWeight > 0 ? savedWeight : resolveDispatchWeight(row.original)
       return (
         <div className="px-4 text-right text-foreground/80 font-medium">
-          {weight}
+          {weight > 0 ? (
+            <>
+              {Number(weight).toFixed(d?.weightUnit?.noOfDecimalPlaces ?? 2)}
+              {!savedWeight && <EstimatedHint className="ml-1 align-middle" />}
+            </>
+          ) : (
+            '-'
+          )}
         </div>
       )
     },

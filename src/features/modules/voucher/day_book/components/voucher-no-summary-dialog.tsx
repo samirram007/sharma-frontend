@@ -15,6 +15,8 @@ import {
 } from '@/components/ui/dialog'
 import { deliveryNoteQueryOptions } from '@/features/modules/voucher/delivery_note/data/queryOptions'
 import DispatchDetailsButton from '@/features/modules/voucher/freight/components/dispatch-details-button'
+import { resolveDispatchWeight } from '@/features/modules/voucher/shared/dispatch-defaults'
+import { EstimatedHint } from '@/features/modules/voucher/shared/EstimatedHint'
 import { cn } from '@/lib/utils'
 import { formatLocale, formatQty } from '@/utils/format-num'
 import { date_format } from '@/utils/removeEmptyStrings'
@@ -217,6 +219,29 @@ const SummaryBody = ({
     )
     .join(' + ')
 
+  // Weight shown on the card: the saved dispatch-detail weight when present,
+  // otherwise the calculated weight (sum of the entries' actual quantities) —
+  // the same defaulting the Dispatch Details editor prefills with. The value
+  // is marked "estimated" until it is saved on the dispatch detail. Unit
+  // label comes from the saved weight unit, falling back to the first entry's
+  // unit.
+  const isSavedWeight = Number(dispatchDetail?.weight) > 0
+  const weightValue = resolveDispatchWeight(data)
+  const weightUnitCode =
+    dispatchDetail?.weightUnit?.code ??
+    entries[0]?.stockUnit?.code ??
+    entries[0]?.stockItem?.stockUnit?.code ??
+    null
+  const weightUnitDecimals =
+    dispatchDetail?.weightUnit?.noOfDecimalPlaces ??
+    entries[0]?.stockUnit?.noOfDecimalPlaces ??
+    entries[0]?.stockItem?.stockUnit?.noOfDecimalPlaces ??
+    null
+  const weightLabel =
+    weightValue > 0
+      ? formatQty(weightValue, weightUnitDecimals, weightUnitCode)
+      : undefined
+
   const openEditPage = () => {
     setOpen(false)
     navigate({ to: `/transactions/vouchers/delivery_note/${data.id}` })
@@ -264,15 +289,8 @@ const SummaryBody = ({
             />
             <SummaryRow
               label="Weight"
-              value={
-                Number(dispatchDetail?.weight) > 0
-                  ? formatQty(
-                      dispatchDetail?.weight,
-                      dispatchDetail?.weightUnit?.noOfDecimalPlaces,
-                      dispatchDetail?.weightUnit?.code,
-                    )
-                  : undefined
-              }
+              value={weightLabel}
+              hint={!isSavedWeight && !!weightLabel}
             />
             <SummaryRow
               label="Rate"
@@ -416,13 +434,19 @@ const EditButton = ({
 const SummaryRow = ({
   label,
   value,
+  hint,
 }: {
   label: string
   value?: string | null
+  /** Small suffix badge, e.g. "estimated" for a not-yet-saved calculated weight. */
+  hint?: boolean
 }) => (
   <div className="flex items-center justify-between gap-2">
     <span className="text-muted-foreground">{label}:</span>
-    <span className="text-right font-medium">{value || '—'}</span>
+    <span className="flex items-center gap-1.5 text-right font-medium">
+      {value || '—'}
+      {hint && <EstimatedHint />}
+    </span>
   </div>
 )
 

@@ -5,6 +5,7 @@ import { lowerCase } from 'lodash'
 import { formSchema } from '../data/schema'
 import { useFreightMutation } from '../data/queryOptions'
 import { computeFare } from '../../shared/freight-fare'
+import { resolveDispatchWeight } from '../../shared/dispatch-defaults'
 import { useFreight } from '../contexts/freight-context'
 import { voucherDispatchDefaultValues } from '../../delivery_note/data/data'
 import VoucherDispatchDetail01 from './voucher-dispatch-detail01'
@@ -60,14 +61,7 @@ export default function BillCell({ row }: CellContext<VoucherSchema, unknown>) {
       destination: data.voucherDispatchDetail?.destination || '',
       distance: data.voucherDispatchDetail?.distance || 0,
       vehicleNumber: data.voucherDispatchDetail?.motorVehicleNo || '',
-      weight:
-        data.voucherDispatchDetail?.weight ||
-        data.stockJournal?.stockJournalEntries?.reduce(
-          (sum: number, entry: any) =>
-            sum + (Number(entry.actualQuantity) || 0),
-          0,
-        ) ||
-        0,
+      weight: resolveDispatchWeight(data),
       weightUnitId: data.voucherDispatchDetail?.weightUnitId || 16,
       volume: data.voucherDispatchDetail?.volume || 0,
       volumeUnitId: data.voucherDispatchDetail?.volumeUnitId || 10,

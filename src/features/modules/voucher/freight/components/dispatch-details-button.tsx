@@ -6,6 +6,7 @@ import VoucherDispatchDetail02 from './voucher-dispatch-detail02'
 import FreightProvider from '../contexts/freight-context'
 import { voucherDispatchDefaultValues } from '../../delivery_note/data/data'
 import { formSchema, type FreightForm } from '../data/schema'
+import { resolveDispatchWeight } from '../../shared/dispatch-defaults'
 import type { VoucherDispatchDetailForm } from '@/features/modules/voucher/data-schema/voucher-schema'
 import type { VoucherSchema } from '@/features/modules/voucher/data-schema/voucher-schema'
 
@@ -43,7 +44,10 @@ const DispatchDetailsButton = ({
         '',
       destination: dd?.destination ?? '',
       quantity: dd?.quantity ?? null,
-      weight: dd?.weight ?? 0,
+      // No saved weight → default to the calculated weight (sum of the stock
+      // journal entries' actual quantities), matching the freight grid's
+      // Bill cell so the dialog opens with the note's computed weight.
+      weight: resolveDispatchWeight(data),
       weightUnitId: dd?.weightUnitId ?? 16,
       volume: dd?.volume ?? 0,
       volumeUnitId: dd?.volumeUnitId ?? 10,

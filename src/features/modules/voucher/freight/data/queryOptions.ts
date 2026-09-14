@@ -81,8 +81,12 @@ export const useVoucherDispatchDetailMutation = () => {
       return await storeVoucherDispatchDetailService(data)
     },
     onSuccess: () => {
-      // console.log("are you here?")
+      // Freight list AND the delivery-note queries (summary dialog, Day Book
+      // card) — they all render the dispatch detail, so stale caches would
+      // keep showing the pre-save state (e.g. an "estimated" weight).
       queryClient.invalidateQueries({ queryKey: [queryKey] })
+      queryClient.invalidateQueries({ queryKey: ['deliveryNote'] })
+      queryClient.invalidateQueries({ queryKey: ['DayBooks'] })
     },
     onError: (error) => {
       console.error('Dispatch mutation failed:', error)
