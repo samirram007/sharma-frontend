@@ -5,7 +5,7 @@ import type { ConversionJournalReportParams } from '@/features/modules/voucher/c
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { Loader, AlertTriangle, RefreshCw } from 'lucide-react'
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback } from 'react'
 import { useLocalStorage } from '@/hooks/use-local-storage'
 import type { SortingState } from '@tanstack/react-table'
 import { Button } from '@/components/ui/button'
@@ -20,16 +20,15 @@ export const Route = createFileRoute(
       'conversion_journal_report_per_page',
       10,
     )
-    const [debouncedSearch, setDebouncedSearch] = useState('')
+    const [appliedSearch, setAppliedSearch] = useState('')
     const [sortBy, setSortBy] = useState('')
     const [sortOrder, setSortOrder] = useState('')
     const [stockJournalType, setStockJournalType] = useState('')
-    const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
     const params: ConversionJournalReportParams = {
       page,
       per_page: perPage,
-      ...(debouncedSearch ? { search: debouncedSearch } : {}),
+      ...(appliedSearch ? { search: appliedSearch } : {}),
       ...(sortBy ? { sort_by: sortBy, sort_order: sortOrder } : {}),
       ...(stockJournalType ? { stock_journal_type: stockJournalType } : {}),
     }
@@ -53,12 +52,10 @@ export const Route = createFileRoute(
       [setPerPage],
     )
 
+    // Applied on Enter from the toolbar — no per-keystroke server queries.
     const handleSearchChange = useCallback((value: string) => {
-      if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current)
-      searchTimeoutRef.current = setTimeout(() => {
-        setDebouncedSearch(value)
-        setPage(1)
-      }, 400)
+      setAppliedSearch(value)
+      setPage(1)
     }, [])
 
     const handleSortChange = useCallback(

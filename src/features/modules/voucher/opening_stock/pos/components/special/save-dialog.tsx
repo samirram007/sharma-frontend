@@ -20,6 +20,7 @@ import type {
   StockJournalGodownEntryForm,
 } from '@/features/modules/voucher/data-schema/voucher-schema'
 import { useAuth } from '@/features/auth/contexts/AuthContext'
+import { startOfDay } from '@/utils/date'
 import { useQuery } from '@tanstack/react-query'
 import type { OpeningStockVoucher } from '../../../data/schema'
 import {
@@ -93,7 +94,10 @@ const SaveDialog = ({ mainForm, isSaving, setSaving }: SaveDialogProps) => {
 
       const voucherDate = data.voucherDate
       if (userFiscalYear?.fiscalYear && voucherDate) {
-        const vDate = new Date(voucherDate)
+        // Date-only comparison: voucherDate carries a time-of-day while the
+        // fiscal-year boundaries are midnight, so a raw > would reject a
+        // voucher dated on the last valid day.
+        const vDate = startOfDay(new Date(voucherDate))
         // Parse 'YYYY-MM-DD' as local midnight to avoid UTC date-shifting.
         const startDate = new Date(
           `${userFiscalYear.fiscalYear.startDate}T00:00:00`,

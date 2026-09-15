@@ -360,7 +360,7 @@ export const WeightBox = (props: Boxprops) => {
 
     const quantity = Number.parseFloat(quantityStr)
 
-    return { quantity, unit: unitStr ?? weightUnit?.code }
+    return { quantity, unit: unitStr || weightUnit?.code || null }
   }
 
   const handleBlurOrEnter = () => {
@@ -369,6 +369,12 @@ export const WeightBox = (props: Boxprops) => {
     if (quantity === 0) {
       form.setValue(name, 0, { shouldValidate: true })
       setBoxValue('')
+      return
+    }
+
+    // Already committed this exact value — don't touch the form again.
+    if (quantity === Number(form.getValues(name))) {
+      setBoxValue(`${quantity.toFixed(basenoOfDecimalPlaces)} ${baseUnitCode}`)
       return
     }
 
@@ -456,7 +462,11 @@ export const RateBox = (props: Boxprops) => {
   const parseQuantityWithUnit = (
     input: string,
   ): { quantity: number; unit: StockUnit | null } => {
-    const match = input.trim().match(/^(\d+\.?\d*)\s*([a-zA-Z]+)?$/)
+    // Must accept this box's own formatted output ("502.00/MT") as well as
+    // raw input ("502", "502/MT") — otherwise the blur that fires when the
+    // user clicks Save re-parses the formatted text, fails, and zeroes the
+    // rate that Enter just committed.
+    const match = input.trim().match(/^(\d+\.?\d*)\s*\/?([a-zA-Z]*)$/)
 
     if (!match) {
       return { quantity: 0, unit: null }
@@ -465,7 +475,7 @@ export const RateBox = (props: Boxprops) => {
 
     const quantity = Number.parseFloat(quantityStr)
 
-    return { quantity, unit: unitStr ?? rateUnit?.code }
+    return { quantity, unit: unitStr || rateUnit?.code || null }
   }
 
   const handleBlurOrEnter = () => {
@@ -474,6 +484,12 @@ export const RateBox = (props: Boxprops) => {
     if (quantity === 0) {
       form.setValue(name, 0, { shouldValidate: true })
       setBoxValue('')
+      return
+    }
+
+    // Already committed this exact value — don't touch the form again.
+    if (quantity === Number(form.getValues(name))) {
+      setBoxValue(`${quantity.toFixed(basenoOfDecimalPlaces)}/${baseUnitCode}`)
       return
     }
 

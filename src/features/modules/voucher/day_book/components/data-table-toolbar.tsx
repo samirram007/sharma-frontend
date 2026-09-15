@@ -132,9 +132,22 @@ export function DataTableToolbar<TData>({
     searchValue
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value
-    setSearchValue(value)
-    onSearchChange?.(value)
+    // Local-only: the query is re-fetched when the search is applied
+    // (Enter), not on every keystroke.
+    setSearchValue(e.target.value)
+  }
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      onSearchChange?.(searchValue)
+    }
+  }
+
+  const handleSearchBlur = () => {
+    // Mouse-only users never press Enter — applying on blur (clicking
+    // elsewhere / Save) gives them the same commit path. Re-applying the
+    // value Enter already applied is a no-op (same state → no refetch).
+    onSearchChange?.(searchValue)
   }
 
   const handleVoucherTypeToggle = (value: string) => {
@@ -203,6 +216,8 @@ export function DataTableToolbar<TData>({
           placeholder={placeHolder ?? 'Filter records...'}
           value={searchValue}
           onChange={handleSearchChange}
+          onKeyDown={handleSearchKeyDown}
+          onBlur={handleSearchBlur}
           className="h-8 w-[150px] lg:w-[250px]"
         />
         <Popover>

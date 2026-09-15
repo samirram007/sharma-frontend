@@ -18,6 +18,7 @@ import type {
   StockJournalGodownEntryForm,
 } from '@/features/modules/voucher/data-schema/voucher-schema'
 import { useAuth } from '@/features/auth/contexts/AuthContext'
+import { startOfDay } from '@/utils/date'
 
 type SaveDialogProps = {
   mainForm: UseFormReturn<DeliveryNoteForm>
@@ -62,9 +63,14 @@ const SaveDialog = ({ mainForm, isSaving, setSaving }: SaveDialogProps) => {
 
       const voucherDate = data.voucherDate
       if (userFiscalYear?.fiscalYear && voucherDate) {
-        const vDate = new Date(voucherDate)
-        const startDate = new Date(userFiscalYear.fiscalYear.startDate)
-        const endDate = new Date(userFiscalYear.fiscalYear.endDate)
+        // Compare date-only: voucherDate carries a time-of-day while the
+        // fiscal-year end date is midnight, so a raw > would reject a voucher
+        // dated on the last day of the period.
+        const vDate = startOfDay(new Date(voucherDate))
+        const startDate = startOfDay(
+          new Date(userFiscalYear.fiscalYear.startDate),
+        )
+        const endDate = startOfDay(new Date(userFiscalYear.fiscalYear.endDate))
 
         if (vDate < startDate || vDate > endDate) {
           newErrors.push(
@@ -79,9 +85,9 @@ const SaveDialog = ({ mainForm, isSaving, setSaving }: SaveDialogProps) => {
       // the fiscal year) would silently vanish from every list. The backend
       // enforces the same rule on store/update.
       if (period?.startDate && period?.endDate && voucherDate) {
-        const vDate = new Date(voucherDate)
-        const periodStart = new Date(period.startDate)
-        const periodEnd = new Date(period.endDate)
+        const vDate = startOfDay(new Date(voucherDate))
+        const periodStart = startOfDay(new Date(period.startDate))
+        const periodEnd = startOfDay(new Date(period.endDate))
 
         if (vDate < periodStart || vDate > periodEnd) {
           newErrors.push(

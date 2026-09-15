@@ -188,6 +188,13 @@ export default function ConversionJournalReport({
 }: ConversionJournalReportProps) {
   const [activeTab, setActiveTab] = useState('list')
 
+  // Applied on Enter or blur — search filters the List view, so switch to it
+  // so the filter is visibly applied (grouped views are pre-aggregated).
+  const applySearch = (value: string) => {
+    if (activeTab !== 'list') setActiveTab('list')
+    onSearchChange?.(value)
+  }
+
   const {
     data: stockGrouped,
     isLoading: stockLoading,
@@ -401,14 +408,13 @@ export default function ConversionJournalReport({
       <div className="mb-4 flex items-center gap-2 rounded-lg border border-slate-200/70 bg-white/80 px-3 py-2 shadow-sm dark:border-white/[0.07] dark:bg-white/5">
         <Search className="h-4 w-4 text-muted-foreground shrink-0" />
         <input
-          placeholder="Search conversion journals..."
+          placeholder="Search conversion journals... (Enter to apply)"
           defaultValue=""
-          onChange={(e) => {
-            // Search filters the List view — switch to it so the filter is
-            // always visibly applied (grouped views are pre-aggregated).
-            if (activeTab !== 'list') setActiveTab('list')
-            onSearchChange?.(e.target.value)
+          onKeyDown={(e) => {
+            if (e.key !== 'Enter') return
+            applySearch(e.currentTarget.value)
           }}
+          onBlur={(e) => applySearch(e.currentTarget.value)}
           className="h-7 flex-1 min-w-[120px] bg-transparent text-sm outline-none placeholder:text-muted-foreground/60"
         />
         <div className="h-5 w-px bg-border mx-1" />

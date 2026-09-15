@@ -25,19 +25,77 @@ const PosFooter = ({ mainForm }: PosFooterProps) => {
       (acc, entry) => acc + (entry?.amount || 0),
       0,
     ) || 0
+  const partyLedgerId = watch('partyLedger.id')
+  const transactionLedgerId = watch('transactionLedger.id')
+
+  // Remember which ledger owned each role on the previous pass, so a changed
+  // ledger is re-pointed to the existing entry (keeping its DB id) instead of
+  // leaving a stale leg behind while a new one is appended.
+  const prevPartyLedgerIdRef = useRef<number | null>(null)
+  const prevTransactionLedgerIdRef = useRef<number | null>(null)
+
   useEffect(() => {
     const voucherEntries = mainForm.getValues('voucherEntries') || []
-
-    const transactionLedgerId = mainForm.getValues('transactionLedger.id')
-    const partyLedgerId = mainForm.getValues('partyLedger.id')
 
     if (!transactionLedgerId || !partyLedgerId) return
 
     let updated = [...voucherEntries]
 
+    // Find the entry currently serving a role. If the ledger for the role
+    // changed, the leg from the previous pass is re-pointed to the new ledger
+    // — its preserved id makes the backend UPDATE the voucher_entries row.
+    // Vouchers edited before that fix was in place can have a party leg still
+    // pointing at the old ledger, so when no direct/previous match exists we
+    // adopt the leg carrying this role's direction (party debits on delivery
+    // notes, transaction credits) and re-point it instead of adding a new leg
+    // — which would double-count the amount.
+    const takeLeg = (
+      currentId: number,
+      previousId: number | null | undefined,
+      adoptDirection: 'debit' | 'credit' | null,
+    ) => {
+      const directIndex = updated.findIndex(
+        (e) => e && e.accountLedgerId === currentId,
+      )
+      if (directIndex >= 0) return updated[directIndex]
+
+      if (previousId != null) {
+        const staleIndex = updated.findIndex(
+          (e) => e && e.accountLedgerId === previousId,
+        )
+        if (staleIndex >= 0) {
+          updated[staleIndex] = {
+            ...updated[staleIndex],
+            accountLedgerId: currentId,
+          }
+          return updated[staleIndex]
+        }
+      }
+
+      if (adoptDirection) {
+        const adoptedIndex = updated.findIndex(
+          (e) =>
+            e &&
+            e.accountLedgerId !== transactionLedgerId &&
+            Number(e[adoptDirection]) > 0,
+        )
+        if (adoptedIndex >= 0) {
+          updated[adoptedIndex] = {
+            ...updated[adoptedIndex],
+            accountLedgerId: currentId,
+          }
+          return updated[adoptedIndex]
+        }
+      }
+
+      return undefined
+    }
+
     // --- STEP 1: ensure transaction entry exists ---
-    let transactionEntry = updated.find(
-      (e) => e && e.accountLedgerId === transactionLedgerId,
+    let transactionEntry = takeLeg(
+      transactionLedgerId,
+      prevTransactionLedgerIdRef.current,
+      'credit',
     )
 
     if (!transactionEntry) {
@@ -54,8 +112,10 @@ const PosFooter = ({ mainForm }: PosFooterProps) => {
     }
 
     // --- STEP 2: ensure party entry exists ---
-    let partyEntry = updated.find(
-      (e) => e && e.accountLedgerId === partyLedgerId,
+    let partyEntry = takeLeg(
+      partyLedgerId,
+      prevPartyLedgerIdRef.current,
+      'debit',
     )
 
     if (!partyEntry) {
@@ -78,23 +138,11 @@ const PosFooter = ({ mainForm }: PosFooterProps) => {
         // ensure entryOrder is always correct
         const entryOrder = idx + 1
 
-        if (entry.accountLedgerId === transactionLedgerId) {
-          return {
-            ...entry,
-            accountLedgerId: transactionLedgerId,
-            debit: 0,
-            credit: total,
-            entryOrder,
-          }
+        if (entry === transactionEntry) {
+          return { ...entry, debit: 0, credit: total, entryOrder }
         }
-        if (entry.accountLedgerId === partyLedgerId) {
-          return {
-            ...entry,
-            accountLedgerId: partyLedgerId,
-            debit: total,
-            credit: 0,
-            entryOrder,
-          }
+        if (entry === partyEntry) {
+          return { ...entry, debit: total, credit: 0, entryOrder }
         }
         return { ...entry, accountLedgerId: entry.accountLedgerId!, entryOrder }
       })
@@ -103,7 +151,10 @@ const PosFooter = ({ mainForm }: PosFooterProps) => {
       shouldValidate: false,
       shouldDirty: true,
     })
-  }, [total])
+
+    prevPartyLedgerIdRef.current = partyLedgerId
+    prevTransactionLedgerIdRef.current = transactionLedgerId
+  }, [total, partyLedgerId, transactionLedgerId])
 
   return (
     <div

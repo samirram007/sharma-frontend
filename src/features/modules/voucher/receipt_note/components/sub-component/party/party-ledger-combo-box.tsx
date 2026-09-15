@@ -49,7 +49,11 @@ export const PartyLedgerCombobox = ({ partyLedgers }: Props) => {
       (partyLedger) => partyLedger.id === Number(value),
     )
     const ledgerable = partyLedger?.ledgerable as any
+    // Keep the existing voucher-party row id when re-selecting a party on an
+    // existing voucher — without it the backend would create a second
+    // voucher_party row while the hasOne relation keeps serving the original.
     const party: PartyForm = {
+      id: form.getValues('party.id'),
       name: ledgerable?.name,
       mailingName: ledgerable?.name,
       line1: ledgerable?.address?.line1,

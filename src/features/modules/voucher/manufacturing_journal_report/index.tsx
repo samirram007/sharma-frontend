@@ -385,9 +385,13 @@ export default function ManufacturingJournalReport({
       <div className="mb-4 flex items-center gap-2 rounded-lg border border-slate-200/70 bg-white/80 px-3 py-2 shadow-sm dark:border-white/[0.07] dark:bg-white/5">
         <Search className="h-4 w-4 text-muted-foreground shrink-0" />
         <input
-          placeholder="Search manufacturing journals..."
+          placeholder="Search manufacturing journals... (Enter to apply)"
           defaultValue=""
-          onChange={(e) => onSearchChange?.(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key !== 'Enter') return
+            onSearchChange?.(e.currentTarget.value)
+          }}
+          onBlur={(e) => onSearchChange?.(e.currentTarget.value)}
           className="h-7 flex-1 min-w-[120px] bg-transparent text-sm outline-none placeholder:text-muted-foreground/60"
         />
         <div className="h-5 w-px bg-border mx-1" />
