@@ -24,13 +24,24 @@ type PosBodyProps = {
   mainForm: UseFormReturn<OpeningStockVoucherForm>
   /** Scroll container ref — used to bring the imported rows into view after a fetch. */
   scrollRef?: React.RefObject<HTMLDivElement | null>
+  /** Item-wise / godown-wise filter (view-only aid): rows NOT matching are
+   * visually dimmed. Nothing is removed from the form — saving is unaffected.
+   * An item matches when the entry OR any of its godown rows carries the id;
+   * a godown matches likewise. null = no filter. */
+  filterItemId?: number | null
+  filterGodownId?: number | null
 }
 
 // Mirrors the entry grid column widths so the summary numbers line up
 // directly under their columns (Particulars | Qty | Rate | per | disc% | Amount | Action).
 const SUMMARY_GRID_COLS = 'grid-cols-[1fr_280px_130px_70px_70px_180px_120px]'
 
-const PosBody = ({ mainForm, scrollRef }: PosBodyProps) => {
+const PosBody = ({
+  mainForm,
+  scrollRef,
+  filterItemId = null,
+  filterGodownId = null,
+}: PosBodyProps) => {
   const { config } = useTransaction()
   const showActualBilling = config.find(
     (c) => c.key === 'show_actual_and_billing_quantity',
@@ -180,7 +191,11 @@ const PosBody = ({ mainForm, scrollRef }: PosBodyProps) => {
       >
         <div className="grid w-full grid-cols-1 items-start gap-2 px-2">
           <Form {...stockJournalForm}>
-            <StockJournal stockJournalForm={stockJournalForm} />
+            <StockJournal
+              stockJournalForm={stockJournalForm}
+              filterItemId={filterItemId}
+              filterGodownId={filterGodownId}
+            />
           </Form>
         </div>
       </div>

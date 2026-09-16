@@ -141,6 +141,152 @@ const Pos = ({ currentRow }: OpeningStockProps) => {
   const bodyScrollRef = useRef<HTMLDivElement>(null)
   useScrollTopAfterFetch(bodyScrollRef, isFetchingClosing)
 
+  // ── Item-wise / godown-wise filter + export ─────────────────────────
+  // View-only aids for checking the saved opening stock: the filter dims
+  // non-matching entry rows (nothing is removed from the form, so saving is
+  // unaffected), and the export flattens ALL entries (never just the
+  // filtered subset) so reports always carry the complete opening stock.
+  const [filterItemId, setFilterItemId] = useState('all')
+  const [filterGodownId, setFilterGodownId] = useState('all')
+  const [isExporting, setIsExporting] = useState(false)
+
+  // Dropdown options built from the entries actually in the grid (plus the
+  // godown master for godowns without any entry yet).
+  const journalEntries = mainForm.watch('stockJournal.stockJournalEntries')
+  const itemOptions = useMemo(() => {
+    const seen = new Map<number, string>()
+    for (const entry of journalEntries ?? []) {
+      if (!entry) continue
+      const id = entry.stockItemId ?? entry.stockItem?.id
+      const name = entry.stockItem?.name
+      if (id && name && !seen.has(id)) seen.set(id, name)
+    }
+    return [...seen.entries()].map(([id, name]) => ({
+      value: String(id),
+      label: name,
+    }))
+  }, [journalEntries])
+
+  const godownOptions = useMemo(() => {
+    const seen = new Map<number, string>()
+    for (const entry of journalEntries ?? []) {
+      for (const ge of entry?.stockJournalGodownEntries ?? []) {
+        if (!ge) continue
+        const id = ge.godownId ?? ge.godown?.id
+        const name = ge.godown?.name
+        if (id && !seen.has(id)) seen.set(id, name ?? `Godown #${id}`)
+      }
+    }
+    return [...seen.entries()].map(([id, name]) => ({
+      value: String(id),
+      label: name,
+    }))
+  }, [journalEntries])
+
+  const hasActiveFilter = filterItemId !== 'all' || filterGodownId !== 'all'
+
+  const handleExport = async (format: 'excel' | 'pdf') => {
+    if (isExporting) return
+    setIsExporting(true)
+    try {
+      const entries = (
+        mainForm.getValues('stockJournal.stockJournalEntries') ?? []
+      ).filter((entry): entry is NonNullable<typeof entry> => Boolean(entry))
+
+      const voucherNo = mainForm.getValues('voucherNo') ?? 'new'
+      const voucherDate = mainForm.getValues('voucherDate')
+
+      // One flat row per godown entry — the level the opening stock is
+      // actually stored at (item → godown → batch).
+      const rows: Record<string, string>[] = []
+      for (const entry of entries) {
+        const itemName = entry.stockItem?.name ?? `Item #${entry.stockItemId}`
+        const unitCode = entry.stockUnit?.code ?? entry.rateUnit?.code ?? ''
+        const godownEntries = (entry.stockJournalGodownEntries ?? []).filter(
+          (ge): ge is NonNullable<typeof ge> => Boolean(ge),
+        )
+
+        if (godownEntries.length === 0) {
+          rows.push({
+            voucherNo,
+            voucherDate: voucherDate
+              ? new Date(voucherDate).toLocaleDateString('en-IN')
+              : '',
+            itemName,
+            unit: unitCode,
+            godown: '—',
+            batchNo: '',
+            quantity: Number(entry.actualQuantity ?? 0).toFixed(2),
+            rate: Number(entry.rate ?? 0).toFixed(2),
+            amount: Number(entry.amount ?? 0).toFixed(2),
+          })
+          continue
+        }
+
+        for (const ge of godownEntries) {
+          rows.push({
+            voucherNo,
+            voucherDate: voucherDate
+              ? new Date(voucherDate).toLocaleDateString('en-IN')
+              : '',
+            itemName,
+            unit: unitCode,
+            godown: ge.godown?.name ?? `Godown #${ge.godownId ?? '?'}`,
+            batchNo: ge.batchNo ?? '',
+            quantity: Number(ge.actualQuantity ?? 0).toFixed(2),
+            rate: Number(ge.rate ?? 0).toFixed(2),
+            amount: Number(ge.amount ?? 0).toFixed(2),
+          })
+        }
+      }
+
+      if (rows.length === 0) {
+        toast.error('No opening stock entries to export.')
+        return
+      }
+
+      const columns = [
+        { header: 'Voucher No', accessor: 'voucherNo' as const },
+        { header: 'Date', accessor: 'voucherDate' as const },
+        { header: 'Item', accessor: 'itemName' as const },
+        { header: 'Unit', accessor: 'unit' as const },
+        { header: 'Godown', accessor: 'godown' as const },
+        { header: 'Batch No', accessor: 'batchNo' as const },
+        { header: 'Quantity', accessor: 'quantity' as const },
+        { header: 'Rate', accessor: 'rate' as const },
+        { header: 'Amount', accessor: 'amount' as const },
+      ]
+      const fileName = `opening-stock-${voucherNo}`
+      const title = 'Opening Stock Report'
+
+      if (format === 'excel') {
+        const { default: exportTableToExcel } =
+          await import('@/utils/export-table-excel')
+        await exportTableToExcel({
+          title,
+          columnData: columns,
+          data: rows,
+          fileName: `${fileName}.xlsx`,
+        })
+      } else {
+        const { default: exportTableToPdf } =
+          await import('@/utils/export-table-pdf')
+        exportTableToPdf({
+          title,
+          columnData: columns,
+          data: rows,
+          fileName: `${fileName}.pdf`,
+          orientation: 'l',
+        })
+      }
+    } catch (error) {
+      console.error('Opening stock export failed:', error)
+      toast.error('Export failed. Please try again.')
+    } finally {
+      setIsExporting(false)
+    }
+  }
+
   const mapClosingVoucherToStockJournal = (
     closingVoucher: OpeningStockVoucher | null | undefined,
   ): StockJournalForm | undefined => {
@@ -306,6 +452,16 @@ const Pos = ({ currentRow }: OpeningStockProps) => {
                 }
                 closingInfo={!readOnly ? closingInfo : null}
                 onClearClosing={!readOnly ? handleClearClosing : undefined}
+                itemOptions={itemOptions}
+                godownOptions={godownOptions}
+                filterItemId={filterItemId}
+                filterGodownId={filterGodownId}
+                onFilterItemChange={setFilterItemId}
+                onFilterGodownChange={setFilterGodownId}
+                hasActiveFilter={hasActiveFilter}
+                onExportExcel={() => handleExport('excel')}
+                onExportPdf={() => handleExport('pdf')}
+                isExporting={isExporting}
               />
             </div>
 
@@ -314,7 +470,15 @@ const Pos = ({ currentRow }: OpeningStockProps) => {
               ref={bodyScrollRef}
               className="flex min-h-0 w-full flex-1 flex-col overflow-hidden"
             >
-              <PosBody mainForm={mainForm} />
+              <PosBody
+                mainForm={mainForm}
+                filterItemId={
+                  filterItemId !== 'all' ? Number(filterItemId) : null
+                }
+                filterGodownId={
+                  filterGodownId !== 'all' ? Number(filterGodownId) : null
+                }
+              />
             </div>
 
             {/* Fixed footer */}

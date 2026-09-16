@@ -20,11 +20,14 @@ export type StockJournalGodownProps = {
   stockUnits: StockUnit[]
   handleOnClickItemAddEntry: () => void
   stockJournalEntryForm: UseFormReturn<StockJournalEntryForm>
+  /** Opening Stock godown-wise filter — non-matching godown rows are dimmed.
+   * null = no filter. */
+  filterGodownId?: number | null
 }
 const StockJournalGodowns = (props: StockJournalGodownProps) => {
   // const stockJournalEntryForm = useFormContext<StockJournalEntryForm>();
   const { movementType } = usePos()
-  const { stockJournalEntryForm } = props
+  const { stockJournalEntryForm, filterGodownId = null } = props
   const {
     addGodownEntryButtonRef,
     addGodownButtonVisible,
@@ -190,6 +193,7 @@ const StockJournalGodowns = (props: StockJournalGodownProps) => {
             stockJournalEntryForm={stockJournalEntryForm}
             handleGodownEntryAdd={handleGodownEntryAdd}
             handleOnClickItemAddEntry={props.handleOnClickItemAddEntry}
+            filterGodownId={filterGodownId}
           />
         </div>
       ))}

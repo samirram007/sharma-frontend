@@ -83,3 +83,81 @@ export const groupedByLedgerSchema = z.object({
 })
 
 export type GroupedByLedger = z.infer<typeof groupedByLedgerSchema>
+
+// ── Opening Stock report (GET /stock_summaries/opening_stock) ──
+// The backend returns the SAME payload pre-grouped both ways:
+//   items[]  → item → godown → batch lines (item-wise view)
+//   godowns[] → godown → item → batch lines (godown-wise view)
+// plus the opening voucher reference and grand totals.
+
+const openingStockBatchSchema = z.object({
+  batchNo: z.string().nullable(),
+  mfgDate: z.string().nullable(),
+  expiryDate: z.string().nullable(),
+  quantity: z.number(),
+  rate: z.number(),
+  amount: z.number(),
+  remarks: z.string().nullable().optional(),
+})
+
+const openingStockItemInGodownSchema = z.object({
+  itemId: z.number(),
+  itemName: z.string(),
+  itemCode: z.string().nullable(),
+  unitCode: z.string().nullable(),
+  noOfDecimalPlaces: z.number(),
+  quantity: z.number(),
+  amount: z.number(),
+  batches: z.array(openingStockBatchSchema),
+})
+
+const openingStockItemSchema = z.object({
+  itemId: z.number(),
+  itemName: z.string(),
+  itemCode: z.string().nullable(),
+  unitCode: z.string().nullable(),
+  unitName: z.string().nullable(),
+  noOfDecimalPlaces: z.number(),
+  quantity: z.number(),
+  amount: z.number(),
+  godowns: z.array(
+    z.object({
+      godownId: z.number(),
+      godownName: z.string().nullable(),
+      godownCode: z.string().nullable(),
+      quantity: z.number(),
+      amount: z.number(),
+      batches: z.array(openingStockBatchSchema),
+    }),
+  ),
+})
+
+const openingStockGodownSchema = z.object({
+  godownId: z.number(),
+  godownName: z.string().nullable(),
+  godownCode: z.string().nullable(),
+  quantity: z.number(),
+  amount: z.number(),
+  items: z.array(openingStockItemInGodownSchema),
+})
+
+export const openingStockReportSchema = z.object({
+  openingVoucher: z
+    .object({
+      voucherId: z.number(),
+      voucherNo: z.string(),
+      voucherDate: z.string().nullable(),
+    })
+    .nullable(),
+  items: z.array(openingStockItemSchema),
+  godowns: z.array(openingStockGodownSchema),
+  totals: z.object({
+    itemCount: z.number(),
+    godownCount: z.number(),
+    totalQuantity: z.number(),
+    totalAmount: z.number(),
+  }),
+})
+
+export type OpeningStockReport = z.infer<typeof openingStockReportSchema>
+export type OpeningStockBatch = z.infer<typeof openingStockBatchSchema>

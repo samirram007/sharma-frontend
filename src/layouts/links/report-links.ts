@@ -134,6 +134,14 @@ export const reportLinks = [
         disabled: false,
       },
       {
+        title: 'Batch Balancing',
+        icon: IconTags,
+        href: '/reports/batch_balancing',
+        visible: true,
+        isActive: false,
+        disabled: false,
+      },
+      {
         title: 'Stock In Hand (Batch Wise)',
         icon: IconTags,
         href: '/reports/stock_summary/stock-in-hand-batch-wise',

@@ -53,6 +53,7 @@ import { Route as ProtectedReportsProfit_and_lossIndexRouteImport } from './rout
 import { Route as ProtectedReportsOpening_entryIndexRouteImport } from './routes/_protected/reports/opening_entry/index'
 import { Route as ProtectedReportsManufacturing_journal_reportIndexRouteImport } from './routes/_protected/reports/manufacturing_journal_report/index'
 import { Route as ProtectedReportsConversion_journal_reportIndexRouteImport } from './routes/_protected/reports/conversion_journal_report/index'
+import { Route as ProtectedReportsBatch_balancingIndexRouteImport } from './routes/_protected/reports/batch_balancing/index'
 import { Route as ProtectedReportsBalance_sheetIndexRouteImport } from './routes/_protected/reports/balance_sheet/index'
 import { Route as ProtectedauthProfileIndexRouteImport } from './routes/_protected/(auth)/profile/index'
 import { Route as ProtectedReportsStock_summaryLayoutRouteImport } from './routes/_protected/reports/stock_summary/_layout'
@@ -625,6 +626,12 @@ const ProtectedReportsConversion_journal_reportIndexRoute =
   ProtectedReportsConversion_journal_reportIndexRouteImport.update({
     id: '/reports/conversion_journal_report/',
     path: '/reports/conversion_journal_report/',
+    getParentRoute: () => ProtectedRoute,
+  } as any)
+const ProtectedReportsBatch_balancingIndexRoute =
+  ProtectedReportsBatch_balancingIndexRouteImport.update({
+    id: '/reports/batch_balancing/',
+    path: '/reports/batch_balancing/',
     getParentRoute: () => ProtectedRoute,
   } as any)
 const ProtectedReportsBalance_sheetIndexRoute =
@@ -2029,6 +2036,7 @@ export interface FileRoutesByFullPath {
   '/reports/stock_summary': typeof ProtectedReportsStock_summaryLayoutRouteWithChildren
   '/profile/': typeof ProtectedauthProfileIndexRoute
   '/reports/balance_sheet/': typeof ProtectedReportsBalance_sheetIndexRoute
+  '/reports/batch_balancing/': typeof ProtectedReportsBatch_balancingIndexRoute
   '/reports/conversion_journal_report/': typeof ProtectedReportsConversion_journal_reportIndexRoute
   '/reports/manufacturing_journal_report/': typeof ProtectedReportsManufacturing_journal_reportIndexRoute
   '/reports/opening_entry/': typeof ProtectedReportsOpening_entryIndexRoute
@@ -2279,6 +2287,7 @@ export interface FileRoutesByTo {
   '/reports/freight': typeof ProtectedReportsFreightLayoutRouteWithChildren
   '/profile': typeof ProtectedauthProfileIndexRoute
   '/reports/balance_sheet': typeof ProtectedReportsBalance_sheetIndexRoute
+  '/reports/batch_balancing': typeof ProtectedReportsBatch_balancingIndexRoute
   '/reports/conversion_journal_report': typeof ProtectedReportsConversion_journal_reportIndexRoute
   '/reports/manufacturing_journal_report': typeof ProtectedReportsManufacturing_journal_reportIndexRoute
   '/reports/opening_entry': typeof ProtectedReportsOpening_entryIndexRoute
@@ -2515,6 +2524,7 @@ export interface FileRoutesById {
   '/_protected/reports/stock_summary/_layout': typeof ProtectedReportsStock_summaryLayoutRouteWithChildren
   '/_protected/(auth)/profile/': typeof ProtectedauthProfileIndexRoute
   '/_protected/reports/balance_sheet/': typeof ProtectedReportsBalance_sheetIndexRoute
+  '/_protected/reports/batch_balancing/': typeof ProtectedReportsBatch_balancingIndexRoute
   '/_protected/reports/conversion_journal_report/': typeof ProtectedReportsConversion_journal_reportIndexRoute
   '/_protected/reports/manufacturing_journal_report/': typeof ProtectedReportsManufacturing_journal_reportIndexRoute
   '/_protected/reports/opening_entry/': typeof ProtectedReportsOpening_entryIndexRoute
@@ -2782,6 +2792,7 @@ export interface FileRouteTypes {
     | '/reports/stock_summary'
     | '/profile/'
     | '/reports/balance_sheet/'
+    | '/reports/batch_balancing/'
     | '/reports/conversion_journal_report/'
     | '/reports/manufacturing_journal_report/'
     | '/reports/opening_entry/'
@@ -3032,6 +3043,7 @@ export interface FileRouteTypes {
     | '/reports/freight'
     | '/profile'
     | '/reports/balance_sheet'
+    | '/reports/batch_balancing'
     | '/reports/conversion_journal_report'
     | '/reports/manufacturing_journal_report'
     | '/reports/opening_entry'
@@ -3267,6 +3279,7 @@ export interface FileRouteTypes {
     | '/_protected/reports/stock_summary/_layout'
     | '/_protected/(auth)/profile/'
     | '/_protected/reports/balance_sheet/'
+    | '/_protected/reports/batch_balancing/'
     | '/_protected/reports/conversion_journal_report/'
     | '/_protected/reports/manufacturing_journal_report/'
     | '/_protected/reports/opening_entry/'
@@ -3886,6 +3899,13 @@ declare module '@tanstack/react-router' {
       path: '/reports/conversion_journal_report'
       fullPath: '/reports/conversion_journal_report/'
       preLoaderRoute: typeof ProtectedReportsConversion_journal_reportIndexRouteImport
+      parentRoute: typeof ProtectedRoute
+    }
+    '/_protected/reports/batch_balancing/': {
+      id: '/_protected/reports/batch_balancing/'
+      path: '/reports/batch_balancing'
+      fullPath: '/reports/batch_balancing/'
+      preLoaderRoute: typeof ProtectedReportsBatch_balancingIndexRouteImport
       parentRoute: typeof ProtectedRoute
     }
     '/_protected/reports/balance_sheet/': {
@@ -6546,6 +6566,7 @@ interface ProtectedRouteChildren {
   ProtectedReportsStock_summaryLayoutRoute: typeof ProtectedReportsStock_summaryLayoutRouteWithChildren
   ProtectedauthProfileIndexRoute: typeof ProtectedauthProfileIndexRoute
   ProtectedReportsBalance_sheetIndexRoute: typeof ProtectedReportsBalance_sheetIndexRoute
+  ProtectedReportsBatch_balancingIndexRoute: typeof ProtectedReportsBatch_balancingIndexRoute
   ProtectedReportsConversion_journal_reportIndexRoute: typeof ProtectedReportsConversion_journal_reportIndexRoute
   ProtectedReportsManufacturing_journal_reportIndexRoute: typeof ProtectedReportsManufacturing_journal_reportIndexRoute
   ProtectedReportsOpening_entryIndexRoute: typeof ProtectedReportsOpening_entryIndexRoute
@@ -6613,6 +6634,8 @@ const ProtectedRouteChildren: ProtectedRouteChildren = {
   ProtectedauthProfileIndexRoute: ProtectedauthProfileIndexRoute,
   ProtectedReportsBalance_sheetIndexRoute:
     ProtectedReportsBalance_sheetIndexRoute,
+  ProtectedReportsBatch_balancingIndexRoute:
+    ProtectedReportsBatch_balancingIndexRoute,
   ProtectedReportsConversion_journal_reportIndexRoute:
     ProtectedReportsConversion_journal_reportIndexRoute,
   ProtectedReportsManufacturing_journal_reportIndexRoute:

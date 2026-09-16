@@ -1,8 +1,29 @@
 import FormInputField from '@/components/form-input-field'
 import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { IconCheck, IconHistory, IconLoader2, IconX } from '@tabler/icons-react'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
+  IconCheck,
+  IconDownload,
+  IconFilter,
+  IconHistory,
+  IconLoader2,
+  IconX,
+} from '@tabler/icons-react'
+import { FileSpreadsheet, FileText } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type { UseFormReturn } from 'react-hook-form'
 import type { OpeningStockVoucherForm } from '../../data/schema'
@@ -14,6 +35,18 @@ type PosHeaderProps = {
   onFetchPreviousClosing?: () => void
   closingInfo?: ClosingInfo | null
   onClearClosing?: () => void
+  /** Item-wise / godown-wise filter for the entry grid (view-only aid). */
+  itemOptions?: { label: string; value: string }[]
+  godownOptions?: { label: string; value: string }[]
+  filterItemId?: string
+  filterGodownId?: string
+  onFilterItemChange?: (value: string) => void
+  onFilterGodownChange?: (value: string) => void
+  /** Hidden rows exist when a filter is active — used to show the Clear chip. */
+  hasActiveFilter?: boolean
+  onExportExcel?: () => void
+  onExportPdf?: () => void
+  isExporting?: boolean
 }
 
 const PosHeader = ({
@@ -22,6 +55,16 @@ const PosHeader = ({
   onFetchPreviousClosing,
   closingInfo = null,
   onClearClosing,
+  itemOptions = [],
+  godownOptions = [],
+  filterItemId = 'all',
+  filterGodownId = 'all',
+  onFilterItemChange,
+  onFilterGodownChange,
+  hasActiveFilter = false,
+  onExportExcel,
+  onExportPdf,
+  isExporting = false,
 }: PosHeaderProps) => {
   const voucherDate = form.watch('voucherDate')
 
@@ -62,6 +105,93 @@ const PosHeader = ({
           </div>
         </div>
         <div className="flex flex-wrap items-start justify-end gap-x-4 gap-y-2 pr-4">
+          {/* Item-wise / godown-wise filter + export — view-only aids.
+              They never interfere with entry (they only dim rows), so they stay
+              available in edit mode too. */}
+          <div className="flex flex-wrap items-center justify-end gap-1.5">
+            <IconFilter className="h-3.5 w-3.5 text-muted-foreground" />
+            <Select
+              value={filterItemId}
+              onValueChange={(v) => onFilterItemChange?.(v)}
+            >
+              <SelectTrigger className="h-7 w-[170px] text-xs">
+                <SelectValue placeholder="All items" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All items</SelectItem>
+                {itemOptions.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select
+              value={filterGodownId}
+              onValueChange={(v) => onFilterGodownChange?.(v)}
+            >
+              <SelectTrigger className="h-7 w-[170px] text-xs">
+                <SelectValue placeholder="All godowns" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All godowns</SelectItem>
+                {godownOptions.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {hasActiveFilter && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-7 gap-1 px-2 text-xs text-muted-foreground"
+                onClick={() => {
+                  onFilterItemChange?.('all')
+                  onFilterGodownChange?.('all')
+                }}
+              >
+                <IconX className="h-3 w-3" />
+                Clear
+              </Button>
+            )}
+            {(onExportExcel || onExportPdf) && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-7 gap-1.5 text-xs"
+                    disabled={isExporting}
+                  >
+                    {isExporting ? (
+                      <IconLoader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <IconDownload className="h-3.5 w-3.5" />
+                    )}
+                    Export
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {onExportExcel && (
+                    <DropdownMenuItem onClick={onExportExcel}>
+                      <FileSpreadsheet className="mr-2 h-4 w-4" />
+                      Excel
+                    </DropdownMenuItem>
+                  )}
+                  {onExportPdf && (
+                    <DropdownMenuItem onClick={onExportPdf}>
+                      <FileText className="mr-2 h-4 w-4" />
+                      PDF
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+          </div>
           <div className="flex flex-col items-end gap-1.5">
             <div className="flex flex-wrap items-center justify-end gap-x-3 gap-y-1.5">
               <div className="text-right text-base leading-snug text-slate-500">

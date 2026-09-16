@@ -18,9 +18,18 @@ import { usePos } from '../../contexts/pos-context'
 
 type StockJournalProps = {
   stockJournalForm: UseFormReturn<StockJournalForm>
+  /** Opening Stock view aids (optional — only passed by the Opening Stock POS):
+   * entries NOT matching the item/godown filter are dimmed. null = no filter.
+   * Rows are never removed from the form, so saving is unaffected. */
+  filterItemId?: number | null
+  filterGodownId?: number | null
 }
 
-const StockJournal = ({ stockJournalForm }: StockJournalProps) => {
+const StockJournal = ({
+  stockJournalForm,
+  filterItemId = null,
+  filterGodownId = null,
+}: StockJournalProps) => {
   const { config } = useTransaction()
   // const stockJournalForm = useFormContext<StockJournalForm>();
 
@@ -62,7 +71,11 @@ const StockJournal = ({ stockJournalForm }: StockJournalProps) => {
         <div className="border-l-0!">Action</div>
       </div>
       <PosJournalEntryItemProvider>
-        <StockJournalEntriesSection stockJournalForm={stockJournalForm} />
+        <StockJournalEntriesSection
+          stockJournalForm={stockJournalForm}
+          filterItemId={filterItemId}
+          filterGodownId={filterGodownId}
+        />
       </PosJournalEntryItemProvider>
     </div>
   )
@@ -72,6 +85,8 @@ export default StockJournal
 
 const StockJournalEntriesSection = ({
   stockJournalForm,
+  filterItemId = null,
+  filterGodownId = null,
 }: StockJournalProps) => {
   // const stockJournalForm = useFormContext<StockJournalForm>();
 
@@ -144,6 +159,8 @@ const StockJournalEntriesSection = ({
             remove={remove}
             handleOnClickItemAddEntry={handleOnClickAddEntry}
             stockJournalForm={stockJournalForm}
+            filterItemId={filterItemId}
+            filterGodownId={filterGodownId}
           />
         </div>
       ))}

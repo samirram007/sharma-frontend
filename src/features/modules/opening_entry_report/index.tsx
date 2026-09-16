@@ -62,6 +62,7 @@ import {
   openingEntryReportQueryOptions,
   groupedByLedgerQueryOptions,
 } from './data/queryOptions'
+import OpeningStockReportView from './opening-stock-view'
 import { getNatureBadge } from '@/utils/nature-badge'
 import { useAuth } from '@/features/auth/contexts/AuthContext'
 import type { OpeningEntryReport } from './data/schema'
@@ -187,7 +188,10 @@ export default function OpeningEntryReport() {
     new Set(),
   )
   const [expandedEntries, setExpandedEntries] = useState<Set<number>>(new Set())
-  const [activeTab, setActiveTab] = useState('list')
+  const [activeTab, setActiveTab] = useState('by-stock')
+  // 'by-stock' lazily loads the opening stock report (item-wise + godown-wise)
+  // from /stock_summaries/opening_stock — mounted only when the tab is active.
+  const showStockView = activeTab === 'by-stock'
 
   const {
     data: reportData,
@@ -416,6 +420,9 @@ export default function OpeningEntryReport() {
               <SelectContent side="bottom" align="end">
                 <SelectItem value="list">📋 Voucher Details</SelectItem>
                 <SelectItem value="by-ledger">📒 By Ledger</SelectItem>
+                <SelectItem value="by-stock">
+                  📦 By Stock (Godown/Item)
+                </SelectItem>
               </SelectContent>
             </Select>
           )}
@@ -1185,6 +1192,13 @@ export default function OpeningEntryReport() {
               )}
             </TabsContent>
           </Tabs>
+
+          {/* ── Opening Stock view (item-wise / godown-wise) ── */}
+          {fiscalYearId && showStockView && (
+            <div className="mt-4">
+              <OpeningStockReportView />
+            </div>
+          )}
         </>
       )}
     </Main>

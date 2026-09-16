@@ -36,6 +36,9 @@ type StockJournalGodownEntryFormProps = {
   handleGodownEntryAdd: () => void
   handleOnClickItemAddEntry: () => void
   stockJournalEntryForm: UseFormReturn<StockJournalEntryForm>
+  /** Opening Stock godown-wise filter — non-matching rows are dimmed.
+   * null = no filter. */
+  filterGodownId?: number | null
 }
 function round2(value: number) {
   return Math.round(value * 100) / 100
@@ -60,6 +63,7 @@ const StockJournalGodownEntry = (props: StockJournalGodownEntryFormProps) => {
     handleGodownEntryAdd,
     handleOnClickItemAddEntry,
     stockJournalEntryForm,
+    filterGodownId = null,
   } = props
 
   const godownEntryRef = useRef<HTMLDivElement>(null)
@@ -183,9 +187,24 @@ const StockJournalGodownEntry = (props: StockJournalGodownEntryFormProps) => {
     stockJournalGodownEntryForm.watch('godownId'),
   ])
   // console.log("godowns", godowns)
+  // Opening Stock godown-wise filter — dim rows in other godowns (view aid
+  // only; the row stays in the form and saving is unaffected).
+  const watchedGodownId = stockJournalGodownEntryForm.watch('godownId')
+  const watchedGodown = stockJournalGodownEntryForm.watch('godown')
+  const matchesGodownFilter =
+    filterGodownId === null ||
+    watchedGodownId === filterGodownId ||
+    watchedGodown?.id === filterGodownId
+
   return (
     <Form {...stockJournalGodownEntryForm}>
-      <div className="w-full pl-1" ref={godownEntryRef}>
+      <div
+        className={cn(
+          'w-full pl-1 transition-opacity',
+          !matchesGodownFilter && 'opacity-35',
+        )}
+        ref={godownEntryRef}
+      >
         <div className="grid grid-cols-[1fr_280px_280px_130px_70px_70px_180px_120px]  ">
           <div className="flex flex-col items-stretch gap-1 pr-2">
             <GodownCombobox

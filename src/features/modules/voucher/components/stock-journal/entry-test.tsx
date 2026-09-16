@@ -6,6 +6,7 @@ import { fetchStockUnitService } from '@/features/modules/stock_unit/data/api'
 import type { StockUnit } from '@/features/modules/stock_unit/data/schema'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQueries } from '@tanstack/react-query'
+import { cn } from '@/lib/utils'
 import isEqual from 'lodash/isEqual'
 import { Loader } from 'lucide-react'
 import { useQuantityDecimals } from '@/hooks/use-quantity-decimals'
@@ -35,6 +36,9 @@ type StockJournalEntryProps = {
   handleOnClickItemAddEntry: () => void
   fieldsLength: number
   stockJournalForm: UseFormReturn<StockJournalForm>
+  /** Opening Stock view aids — see StockJournalProps. null = no filter. */
+  filterItemId?: number | null
+  filterGodownId?: number | null
 }
 
 export const StockJournalEntry = (props: StockJournalEntryProps) => {
@@ -44,6 +48,8 @@ export const StockJournalEntry = (props: StockJournalEntryProps) => {
     handleOnClickItemAddEntry,
     fieldsLength,
     stockJournalForm,
+    filterItemId = null,
+    filterGodownId = null,
   } = props
   const {
     remarksRef,
@@ -134,9 +140,31 @@ export const StockJournalEntry = (props: StockJournalEntryProps) => {
     selectedStockUnit?.noOfDecimalPlaces,
   )
 
+  // Opening Stock item-wise / godown-wise filter: an entry matches when the
+  // item id matches, or (godown filter) ANY of its godown rows carries the
+  // godown id. Non-matching entries are dimmed (opacity) — never removed.
+  const watchedEntry = stockJournalForm.watch(entryPath)
+  const matchesFilter =
+    (filterItemId === null && filterGodownId === null) ||
+    (filterItemId !== null &&
+      (watchedEntry?.stockItemId === filterItemId ||
+        watchedEntry?.stockItem?.id === filterItemId)) ||
+    (filterGodownId !== null &&
+      (watchedEntry?.stockJournalGodownEntries ?? []).some(
+        (ge) =>
+          ge &&
+          (ge.godownId === filterGodownId || ge.godown?.id === filterGodownId),
+      ))
+
   return (
     <Form {...stockJournalEntryForm}>
-      <div ref={itemEntryRef} className="w-full grid grid-rows-1">
+      <div
+        ref={itemEntryRef}
+        className={cn(
+          'w-full grid grid-rows-1 transition-opacity',
+          !matchesFilter && 'opacity-35',
+        )}
+      >
         <div
           className="grid grid-rows-1 grid-cols-[1fr_280px_130px_70px_70px_180px_120px] 
                                 text-center border-border justify-start items-start font-bold"
@@ -243,6 +271,7 @@ export const StockJournalEntry = (props: StockJournalEntryProps) => {
               stockUnits={stockUnits?.data?.data}
               handleOnClickItemAddEntry={handleOnClickItemAddEntry}
               stockJournalEntryForm={stockJournalEntryForm}
+              filterGodownId={filterGodownId}
             />
           </PosJournalEntryGodownProvider>
         )}
