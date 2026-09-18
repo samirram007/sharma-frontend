@@ -123,6 +123,7 @@ function flattenForExport(report: OpeningStockReport, viewMode: StockViewMode) {
             unit: item.unitCode ?? '',
             batchNo: batch.batchNo ?? '',
             expiryDate: formatDate(batch.expiryDate),
+            openingAsOnDate: formatDate(batch.openingAsOnDate),
             quantity: batch.quantity.toFixed(item.noOfDecimalPlaces),
             rate: formatAmt(batch.rate),
             amount: formatAmt(batch.amount),
@@ -171,6 +172,7 @@ function flattenForExport(report: OpeningStockReport, viewMode: StockViewMode) {
             unit: item.unitCode ?? '',
             batchNo: batch.batchNo ?? '',
             expiryDate: formatDate(batch.expiryDate),
+            openingAsOnDate: formatDate(batch.openingAsOnDate),
             quantity: batch.quantity.toFixed(item.noOfDecimalPlaces),
             rate: formatAmt(batch.rate),
             amount: formatAmt(batch.amount),
@@ -244,6 +246,8 @@ function buildFormattedPdfRows(
   const batchLabel = (batch: OpeningStockBatch | null): string => {
     if (!batch) return ''
     let label = `BatchNo: ${batch.batchNo || '—'}`
+    if (batch.openingAsOnDate)
+      label += `   as on ${formatDate(batch.openingAsOnDate)}`
     if (batch.expiryDate) label += `   exp ${formatDate(batch.expiryDate)}`
     return label
   }
@@ -343,6 +347,7 @@ const EXPORT_COLUMNS = [
   { header: 'Particulars', accessor: 'particulars' as const },
   { header: 'Batch No', accessor: 'batchNo' as const },
   { header: 'Expiry', accessor: 'expiryDate' as const },
+  { header: 'Opening As On', accessor: 'openingAsOnDate' as const },
   { header: 'Unit', accessor: 'unit' as const },
   { header: 'Quantity', accessor: 'quantity' as const },
   { header: 'Rate', accessor: 'rate' as const },
@@ -389,8 +394,8 @@ export default function OpeningStockReportView() {
   const companyName = userFiscalYear?.fiscalYear?.company?.name ?? ''
   const fyName = userFiscalYear?.fiscalYear?.name ?? ''
   const voucherRef = report?.openingVoucher
-    ? `Voucher ${report.openingVoucher.voucherNo} · ${formatDate(report.openingVoucher.voucherDate)}`
-    : ''
+    ? `Opening as on ${formatDate(report.openingVoucher.voucherDate)} · Voucher ${report.openingVoucher.voucherNo}`
+    : 'No opening voucher for this fiscal year'
 
   const toggle = (key: string) => {
     setExpandedKeys((prev) => {
@@ -661,11 +666,14 @@ export default function OpeningStockReportView() {
         <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
           <IconPackage className="h-4 w-4 text-emerald-500" />
           <span>
-            Opening voucher:{' '}
+            Opening as on{' '}
+            <strong className="text-foreground">
+              {formatDate(report.openingVoucher.voucherDate)}
+            </strong>{' '}
+            · Voucher{' '}
             <strong className="text-foreground">
               {report.openingVoucher.voucherNo}
-            </strong>{' '}
-            dated {formatDate(report.openingVoucher.voucherDate)}
+            </strong>
           </span>
         </div>
       )}
@@ -858,7 +866,7 @@ export default function OpeningStockReportView() {
    + godown via col-span-2) — no nested table drift.
    ────────────────────────────────────────────────────────────────────────── */
 const GRID_COLS =
-  'grid grid-cols-[minmax(0,1.7fr)_minmax(0,1.2fr)_150px_110px_150px]'
+  'grid grid-cols-[minmax(0,1.7fr)_minmax(0,1.2fr)_110px_150px_110px_150px]'
 const NUM = 'text-right font-mono tabular-nums whitespace-nowrap'
 
 function GridHeader() {
@@ -871,6 +879,7 @@ function GridHeader() {
     >
       {/* Name column spans both rails — child rows use col-span-2 too */}
       <div className="col-span-2 px-3 py-2.5 text-left">Particulars</div>
+      <div className="px-3 py-2.5 text-left">Opening as on</div>
       <div className="px-3 py-2.5 text-right">Qty</div>
       <div className="px-3 py-2.5 text-right">Rate</div>
       <div className="px-3 py-2.5 pr-4 text-right">Amount</div>
@@ -1021,6 +1030,11 @@ function ItemWiseTable({
                             )}
                             {batch && <BatchInline batch={batch} />}
                           </div>
+                          <div className="px-3 py-2 text-xs whitespace-nowrap text-muted-foreground">
+                            {batch?.openingAsOnDate
+                              ? formatDate(batch.openingAsOnDate)
+                              : '—'}
+                          </div>
                           <div
                             className={cn('px-3 py-2 max-md:text-[11px]', NUM)}
                           >
@@ -1066,10 +1080,12 @@ function ItemWiseTable({
             'border-t-2 border-primary/30 bg-primary/[0.04] font-semibold',
           )}
         >
-          {/* col-span-2 covers Item + Godown columns, then Qty / Rate / Amount */}
+          {/* col-span-2 covers Item + Godown columns, then Opening-as-on /
+              Qty / Rate / Amount */}
           <div className="col-span-2 px-3 py-2.5 text-primary">
             Total ({items.length} items)
           </div>
+          <div />
           <div className={cn('px-3 py-2.5', NUM)}>{fmtQty(totalQty)}</div>
           <div />
           <div className={cn('px-3 py-2.5 pr-4', NUM)}>
@@ -1196,6 +1212,11 @@ function GodownWiseTable({
                               </span>
                             )}
                             {batch && <BatchInline batch={batch} />}
+                          </div>
+                          <div className="px-3 py-2 text-xs whitespace-nowrap text-muted-foreground">
+                            {batch?.openingAsOnDate
+                              ? formatDate(batch.openingAsOnDate)
+                              : '—'}
                           </div>
                           <div
                             className={cn('px-3 py-2 max-md:text-[11px]', NUM)}

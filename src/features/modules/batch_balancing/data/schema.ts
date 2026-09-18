@@ -49,18 +49,43 @@ export const batchBalanceSchema = z.object({
   openingMovements: z.array(batchOpeningMovementSchema).default([]),
 })
 
-export const batchBalancingReportSchema = z.object({
-  batches: z.array(batchBalanceSchema),
-  totals: z.object({
-    batchCount: z.number(),
-    totalOpening: z.number(),
-    totalOpeningAsPerJournal: z.number().catch(0),
-    totalPrePeriodNet: z.number().catch(0),
-    totalInward: z.number(),
-    totalOutward: z.number(),
-    totalClosing: z.number(),
-  }),
-})
+export const batchBalancingReportSchema = z
+  .object({
+    // The 9010 / OPNSK opening voucher's date — the FY first day (e.g.
+    // 1-Apr). The canonical "opening stock as on" date for the opening row.
+    asOnDate: z.string().nullable().catch(null),
+    // Movement window actually used by the backend: the explicit from/to
+    // filters, or the fiscal-year bounds when no reporting period is set.
+    fromDate: z.string().nullable().catch(null),
+    toDate: z.string().nullable().catch(null),
+    batches: z.array(batchBalanceSchema),
+    totals: z.object({
+      batchCount: z.number(),
+      totalOpening: z.number(),
+      totalOpeningAsPerJournal: z.number().catch(0),
+      totalPrePeriodNet: z.number().catch(0),
+      totalInward: z.number(),
+      totalOutward: z.number(),
+      totalClosing: z.number(),
+    }),
+  })
+  .catch({
+    // Older backends without the new fields still parse — labels fall back
+    // to the reporting-period / FY-bounds wording.
+    asOnDate: null,
+    fromDate: null,
+    toDate: null,
+    batches: [],
+    totals: {
+      batchCount: 0,
+      totalOpening: 0,
+      totalOpeningAsPerJournal: 0,
+      totalPrePeriodNet: 0,
+      totalInward: 0,
+      totalOutward: 0,
+      totalClosing: 0,
+    },
+  })
 
 export type BatchMovement = z.infer<typeof batchMovementSchema>
 export type BatchOpeningMovement = z.infer<typeof batchOpeningMovementSchema>

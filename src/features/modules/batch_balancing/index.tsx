@@ -50,6 +50,12 @@ import {
   Search,
 } from 'lucide-react'
 import { formatQty } from '@/utils/format-num'
+import {
+  buildCsv,
+  EXPORT_COLUMNS,
+  flattenForExport,
+  formatDate,
+} from './export-utils'
 import { FilterSheetSelect } from './filter-sheet-select'
 import { useItemStockMeta } from './use-item-stock-meta'
 import {
@@ -69,18 +75,6 @@ function formatAmt(val: number | null | undefined): string {
   })
 }
 
-function formatDate(val: string | null | undefined): string {
-  if (!val) return '—'
-  const d = new Date(val)
-  return isNaN(d.getTime())
-    ? val
-    : d.toLocaleDateString('en-IN', {
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric',
-      })
-}
-
 /** Local yyyy-MM-dd for the backend (avoids the UTC day-shift of toISOString). */
 function toDbDate(value?: Date | string | null): string | null {
   if (!value) return null
@@ -89,64 +83,6 @@ function toDbDate(value?: Date | string | null): string | null {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(
     d.getDate(),
   ).padStart(2, '0')}`
-}
-
-/** One flat row per movement for CSV/Excel/PDF export. */
-function flattenForExport(report: BatchBalancingReport) {
-  const rows: Record<string, string>[] = []
-  for (const batch of report.batches) {
-    rows.push({
-      itemName: batch.itemName,
-      itemCode: batch.itemCode ?? '',
-      godownName: batch.godownName ?? '',
-      batchNo: batch.batchNo,
-      serialNo: '',
-      movement: 'OPENING',
-      voucherNo: '',
-      voucherDate: '',
-      detail: '',
-      inward: '',
-      outward: '',
-      balance: batch.openingQuantity.toFixed(batch.noOfDecimalPlaces),
-    })
-    for (const mv of batch.movements) {
-      rows.push({
-        itemName: batch.itemName,
-        itemCode: batch.itemCode ?? '',
-        godownName: batch.godownName ?? '',
-        batchNo: batch.batchNo,
-        serialNo: mv.serialNo ?? '',
-        movement: mv.movementType === 'in' ? 'INWARD' : 'OUTWARD',
-        voucherNo: mv.voucherNo ?? '',
-        voucherDate: formatDate(mv.voucherDate),
-        detail: mv.voucherTypeName ?? '',
-        inward:
-          mv.movementType === 'in'
-            ? mv.quantity.toFixed(batch.noOfDecimalPlaces)
-            : '',
-        outward:
-          mv.movementType === 'out'
-            ? mv.quantity.toFixed(batch.noOfDecimalPlaces)
-            : '',
-        balance: mv.runningBalance.toFixed(batch.noOfDecimalPlaces),
-      })
-    }
-    rows.push({
-      itemName: batch.itemName,
-      itemCode: batch.itemCode ?? '',
-      godownName: batch.godownName ?? '',
-      batchNo: batch.batchNo,
-      serialNo: '',
-      movement: 'CLOSING',
-      voucherNo: '',
-      voucherDate: '',
-      detail: '',
-      inward: '',
-      outward: '',
-      balance: batch.closingQuantity.toFixed(batch.noOfDecimalPlaces),
-    })
-  }
-  return rows
 }
 
 /**
@@ -209,21 +145,6 @@ function groupBatches(
 
   return [...groups.values()]
 }
-
-const EXPORT_COLUMNS = [
-  { header: 'Item', accessor: 'itemName' as const },
-  { header: 'Item Code', accessor: 'itemCode' as const },
-  { header: 'Godown', accessor: 'godownName' as const },
-  { header: 'Batch No', accessor: 'batchNo' as const },
-  { header: 'Serial No', accessor: 'serialNo' as const },
-  { header: 'Movement', accessor: 'movement' as const },
-  { header: 'Voucher No', accessor: 'voucherNo' as const },
-  { header: 'Date', accessor: 'voucherDate' as const },
-  { header: 'Voucher Type', accessor: 'detail' as const },
-  { header: 'Inward Qty', accessor: 'inward' as const },
-  { header: 'Outward Qty', accessor: 'outward' as const },
-  { header: 'Balance', accessor: 'balance' as const },
-]
 
 export default function BatchBalancingReport() {
   // Applied filters — the query only refetches when these change. The report
@@ -363,6 +284,12 @@ export default function BatchBalancingReport() {
 
   const report = data?.data as BatchBalancingReport | undefined
 
+  // "Opening as on" label — the reporting-period start when set (the true
+  // opening position), else the 9010 opening voucher's date (the FY first
+  // day, e.g. 1-Apr) reported by the backend as asOnDate.
+  const openingAsOnDate =
+    fromDate ?? report?.asOnDate ?? report?.fromDate ?? null
+
   // Auto-expand everything when a fresh result arrives.
   useEffect(() => {
     if (!report) return
@@ -405,15 +332,7 @@ export default function BatchBalancingReport() {
       if (rows.length === 0) return
 
       if (format === 'csv') {
-        const headers = EXPORT_COLUMNS.map((c) => c.header)
-        const flat = rows.map((r) =>
-          EXPORT_COLUMNS.map(
-            (c) => `"${String(r[c.accessor] ?? '').replace(/"/g, '""')}"`,
-          ),
-        )
-        const csv =
-          '\uFEFF' +
-          [headers.join(','), ...flat.map((r) => r.join(','))].join('\n')
+        const csv = buildCsv(report)
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
         const url = URL.createObjectURL(blob)
         const a = document.createElement('a')
@@ -842,7 +761,7 @@ export default function BatchBalancingReport() {
                   onToggle={() =>
                     toggle(`${batch.itemId}-${batch.godownId}-${batch.batchNo}`)
                   }
-                  fromDate={fromDate}
+                  openingAsOnDate={openingAsOnDate}
                 />
               ))}
             </div>
@@ -902,7 +821,7 @@ export default function BatchBalancingReport() {
                           `${batch.itemId}-${batch.godownId}-${batch.batchNo}`,
                         )
                       }
-                      fromDate={fromDate}
+                      openingAsOnDate={openingAsOnDate}
                     />
                   ))}
                 </div>
@@ -923,13 +842,17 @@ function BatchCard({
   batch,
   expanded,
   onToggle,
-  fromDate,
+  openingAsOnDate,
 }: {
   batch: BatchBalance
   expanded: boolean
   onToggle: () => void
-  /** Reporting-period start (yyyy-MM-dd) — labels the opening summary row. */
-  fromDate?: string | null
+  /**
+   * "Opening as on" date (yyyy-MM-dd) — the 9010 opening voucher's date (the
+   * FY first day, e.g. 1-Apr), falling back to the reporting-period start.
+   * Labels the opening summary row.
+   */
+  openingAsOnDate?: string | null
 }) {
   const dp = batch.noOfDecimalPlaces
   // Serial column appears only when this batch's movements actually carry
@@ -1044,7 +967,19 @@ function BatchCard({
                 ).map((om, idx) => (
                   <tr key={`open-${idx}`} className="border-b bg-muted/20">
                     <td className="px-4 py-2 whitespace-nowrap text-muted-foreground">
-                      {idx === 0 ? 'Opening' : ''}
+                      {/* Journal (9010) row carries the "Opening as on 1-Apr"
+                          label; pre-period trail rows show their own dates;
+                          the carried-forward placeholder falls back to the
+                          reporting-period / FY-start date. */}
+                      {om?.voucherDate
+                        ? idx === 0 && om.kind === 'journal'
+                          ? `Opening as on ${formatDate(om.voucherDate)}`
+                          : formatDate(om.voucherDate)
+                        : idx === 0
+                          ? openingAsOnDate
+                            ? `Opening as on ${formatDate(openingAsOnDate)}`
+                            : 'Opening'
+                          : ''}
                     </td>
                     <td className="px-3 py-2 font-mono text-xs text-muted-foreground">
                       {om?.voucherNo ?? '—'}
@@ -1101,23 +1036,9 @@ function BatchCard({
                     </td>
                   </tr>
                 ))}
-                {/* Opening summary row — the balance as on the reporting
-                    period start (what the period's movements start from). */}
-                <tr className="border-b border-primary/20 bg-primary/[0.03] font-medium">
-                  <td
-                    className="px-4 py-2 text-primary/80"
-                    colSpan={hasSerials ? 4 : 3}
-                  >
-                    Opening as on{' '}
-                    {fromDate ? formatDate(fromDate) : 'period start'}
-                  </td>
-                  <td className="px-3 py-2" />
-                  <td className="px-3 py-2" />
-                  <td className="px-3 py-2 text-right font-mono tabular-nums whitespace-nowrap text-foreground">
-                    {formatQty(batch.openingQuantity, dp, batch.unitCode)}
-                  </td>
-                  <td className="px-3 py-2" colSpan={3} />
-                </tr>
+                {/* The opening trail's last row already shows the opening
+                    balance as on the period start (balanceAfter) — no extra
+                    summary row, it would just repeat the same number. */}
                 {batch.movements.map((mv, idx) => (
                   <MovementRow
                     key={idx}

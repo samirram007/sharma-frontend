@@ -94,6 +94,9 @@ const openingStockBatchSchema = z.object({
   batchNo: z.string().nullable(),
   mfgDate: z.string().nullable(),
   expiryDate: z.string().nullable(),
+  // The opening voucher's date (normally the FY first day, 1-Apr) — the
+  // "Opening as on" date for this batch row. Older backends omit it.
+  openingAsOnDate: z.string().nullable().catch(null),
   quantity: z.number(),
   rate: z.number(),
   amount: z.number(),
