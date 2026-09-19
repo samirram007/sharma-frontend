@@ -18,8 +18,7 @@ interface Props {
 
 const sectionClass =
   'space-y-4 rounded-md border border-slate-200/70 bg-white p-3 sm:p-4 dark:border-white/[0.07] dark:bg-white/[0.06]'
-const headingClass =
-  'text-sm font-semibold text-slate-800 dark:text-slate-200'
+const headingClass = 'text-sm font-semibold text-slate-800 dark:text-slate-200'
 const subHeadingClass = 'text-xs text-slate-500 dark:text-slate-400'
 
 export function FormAction({ currentRow }: Props) {
@@ -128,8 +127,8 @@ export function FormAction({ currentRow }: Props) {
           <div className="space-y-1">
             <h3 className={headingClass}>Status</h3>
             <p className={subHeadingClass}>
-              Inactive users can no longer sign in, but their historical
-              entries are preserved.
+              Inactive users can no longer sign in, but their historical entries
+              are preserved.
             </p>
           </div>
           <div className="space-y-4">

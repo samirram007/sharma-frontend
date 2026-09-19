@@ -189,8 +189,7 @@ export async function guardMenuRoutes(
     // Visible (permission + is_visible filtered) tree for the current user.
     const visible = await queryClient.ensureQueryData(menuTreeQueryOptions())
     const visibleRoutes = collectMenuRoutes(
-      ((visible as MenuTreeResponse | undefined)?.data ??
-        []) as MenuTreeItem[],
+      ((visible as MenuTreeResponse | undefined)?.data ?? []) as MenuTreeItem[],
     )
 
     if (isBlockedMenuPath(pathname, allRoutes, visibleRoutes)) {

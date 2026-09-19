@@ -40,7 +40,10 @@ export default function StockItemDetails(props: StockItemProps) {
 
         {/* Form */}
         <div className="mx-auto w-full max-w-5xl pb-8">
-          <ActionPages currentRow={data} key={`stock_items-${data?.id ?? 'add'}`} />
+          <ActionPages
+            currentRow={data}
+            key={`stock_items-${data?.id ?? 'add'}`}
+          />
         </div>
       </div>
     </Main>

@@ -8,9 +8,9 @@ import { transporterQueryOptions } from '@/features/modules/transporter/data/que
 import Freight from '@/features/modules/voucher/freight'
 import { freightQueryOptions } from '@/features/modules/voucher/freight/data/queryOptions'
 
-import { useQuery, useSuspenseQuery } from '@tanstack/react-query'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { Suspense, useEffect } from 'react'
+import { useEffect } from 'react'
 import { z } from 'zod'
 
 // Define search params schema for filters and pagination
@@ -77,9 +77,17 @@ export const Route = createFileRoute(
       amount_max: search.amountTo,
     }
 
-    const { data: freightResponse } = useSuspenseQuery(
-      freightQueryOptions('delivery_note', undefined, queryParams),
-    )
+    // Non-suspense query with keepPreviousData: the filter panel and table
+    // chrome stay mounted while only the data rows refetch (previous rows
+    // remain visible under a loading state instead of a full-page skeleton).
+    const {
+      data: freightResponse,
+      isPending,
+      isFetching,
+    } = useQuery({
+      ...freightQueryOptions('delivery_note', undefined, queryParams),
+      placeholderData: keepPreviousData,
+    })
 
     const overallTotalFare = freightResponse?.aggregates?.total_fare
     // Only pass the minimal pagination meta down (current_page, last_page, per_page, total)
@@ -98,27 +106,29 @@ export const Route = createFileRoute(
     }, [freightResponse?.data, search.page, navigate])
 
     return (
-      <Suspense fallback={<FullPageSkeleton />}>
-        <Freight
-          data={freightResponse?.data ?? []}
-          paginationMeta={paginationMeta}
-          totalFareOverall={overallTotalFare}
-          deliveryVehicles={deliveryVehicles}
-          deliveryPlaces={deliveryPlaces}
-          transporter={transporter}
-          zones={zones}
-          exportParams={queryParams}
-          search={search}
-          onSearchChange={(newSearch) => {
-            navigate({
-              to: '.',
-              search: (prev) => ({ ...prev, ...newSearch }),
-            })
-          }}
-        />
-      </Suspense>
+      <Freight
+        data={freightResponse?.data ?? []}
+        isLoading={(isPending || isFetching) && !freightResponse}
+        isFetching={isFetching}
+        paginationMeta={paginationMeta}
+        totalFareOverall={overallTotalFare}
+        deliveryVehicles={deliveryVehicles}
+        deliveryPlaces={deliveryPlaces}
+        transporter={transporter}
+        zones={zones}
+        exportParams={queryParams}
+        search={search}
+        onSearchChange={(newSearch) => {
+          navigate({
+            to: '.',
+            search: (prev) => ({ ...prev, ...newSearch }),
+          })
+        }}
+      />
     )
   },
   errorComponent: () => <div>Error loading freight data.</div>,
+  // Only shown while the loader preloads static data — the freight list itself
+  // no longer suspends (keepPreviousData keeps the panel mounted instead).
   pendingComponent: () => <FullPageSkeleton />,
 })

@@ -32,7 +32,10 @@ export default function CountryDetails(props: CountryProps) {
 
         {/* Form */}
         <div className="mx-auto w-full max-w-3xl pb-8">
-          <ActionPages currentRow={data} key={`countries-${data?.id ?? 'add'}`} />
+          <ActionPages
+            currentRow={data}
+            key={`countries-${data?.id ?? 'add'}`}
+          />
         </div>
       </div>
     </Main>

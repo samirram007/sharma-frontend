@@ -30,8 +30,8 @@ export const Route = createFileRoute(
   errorComponent: () => (
     <div className="flex h-60 flex-col items-center justify-center gap-3">
       <p className="text-sm font-medium text-destructive">
-        Failed to load distributor data. The record may not exist or you may
-        not have access.
+        Failed to load distributor data. The record may not exist or you may not
+        have access.
       </p>
     </div>
   ),

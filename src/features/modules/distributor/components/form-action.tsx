@@ -80,140 +80,140 @@ export function FormAction({ currentRow }: Props) {
         className="space-y-5"
       >
         <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-2">
-              <div className="space-y-4 sm:space-y-5">
-          <div className="space-y-5">
-            <section className="space-y-4 rounded-md border border-slate-200/70 bg-white p-3 sm:p-4 dark:border-white/[0.07] dark:bg-white/[0.06]">
-              <div className="space-y-1">
-                <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">
-                  Basic Information
-                </h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Core distributor identity and tax details used in sales and
-                  accounting workflows.
-                </p>
-              </div>
-              <div className="space-y-4">
-                <FormInputField
-                  type="text"
-                  gapClass={labelLayoutClass}
-                  form={form}
-                  name="name"
-                  label="Name"
-                  tabIndex={0}
-                />
-                <FormInputField
-                  type="text"
-                  gapClass={labelLayoutClass}
-                  form={form}
-                  name="code"
-                  label="Code"
-                />
-                <FormInputField
-                  type="text"
-                  gapClass={labelLayoutClass}
-                  form={form}
-                  name="gstin"
-                  label="GST Number"
-                />
-                <FormInputField
-                  type="text"
-                  gapClass={labelLayoutClass}
-                  form={form}
-                  name="pan"
-                  label="PAN Number"
-                />
-              </div>
-            </section>
-            <section className="space-y-4 rounded-md border border-slate-200/70 bg-white p-3 sm:p-4 dark:border-white/[0.07] dark:bg-white/[0.06]">
-              <div className="space-y-1">
-                <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">
-                  Contact Information
-                </h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Store the primary distributor contact details used for order
-                  coordination.
-                </p>
-              </div>
-              <div className="space-y-4">
-                <FormInputField
-                  type="text"
-                  gapClass={labelLayoutClass}
-                  form={form}
-                  name="contactPerson"
-                  label="Contact Person"
-                />
-                <FormInputField
-                  type="text"
-                  gapClass={labelLayoutClass}
-                  form={form}
-                  name="contactNo"
-                  label="Contact Number"
-                />
-                <FormInputField
-                  type="text"
-                  gapClass={labelLayoutClass}
-                  form={form}
-                  name="phone"
-                  label="Phone Number"
-                />
-                <FormInputField
-                  type="text"
-                  gapClass={labelLayoutClass}
-                  form={form}
-                  name="email"
-                  label="Email"
-                />
-              </div>
-            </section>
-          </div>
-          <div className="space-y-5">
-            <AddressForm form={form} labelLayoutClass={labelLayoutClass} />
-            <section className="space-y-4 rounded-md border border-slate-200/70 bg-white p-3 sm:p-4 dark:border-white/[0.07] dark:bg-white/[0.06]">
-              <div className="space-y-1">
-                <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">
-                  Accounting
-                </h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Link the distributor to the correct account group and control
-                  record activity.
-                </p>
-              </div>
-              <div className="space-y-4">
-                {isEdit && form.getValues('accountLedger') ? (
-                  <div
-                    className={cn(
-                      'grid grid-cols-1 items-start gap-x-4 gap-y-2 sm:grid-cols-[150px_1fr] sm:items-center sm:gap-y-1',
-                    )}
-                  >
-                    <div className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                      Ledger A/c
-                    </div>
-                    <div className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-700 dark:border-white/[0.07] dark:bg-secondary dark:text-slate-200">
-                      {form.getValues('accountLedger')?.name}
-                    </div>
-                  </div>
-                ) : (
-                  <AccountGroupDropdown
-                    form={form}
+          <div className="space-y-4 sm:space-y-5">
+            <div className="space-y-5">
+              <section className="space-y-4 rounded-md border border-slate-200/70 bg-white p-3 sm:p-4 dark:border-white/[0.07] dark:bg-white/[0.06]">
+                <div className="space-y-1">
+                  <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+                    Basic Information
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    Core distributor identity and tax details used in sales and
+                    accounting workflows.
+                  </p>
+                </div>
+                <div className="space-y-4">
+                  <FormInputField
+                    type="text"
                     gapClass={labelLayoutClass}
+                    form={form}
+                    name="name"
+                    label="Name"
+                    tabIndex={0}
                   />
-                )}
-                <FormInputField
-                  type="checkbox"
-                  gapClass={labelLayoutClass}
-                  form={form}
-                  name="status"
-                  label="Status"
-                  options={[
-                    { label: 'Active', value: 'active' },
-                    { label: 'Inactive', value: 'inactive' },
-                  ]}
-                />
-              </div>
-            </section>
+                  <FormInputField
+                    type="text"
+                    gapClass={labelLayoutClass}
+                    form={form}
+                    name="code"
+                    label="Code"
+                  />
+                  <FormInputField
+                    type="text"
+                    gapClass={labelLayoutClass}
+                    form={form}
+                    name="gstin"
+                    label="GST Number"
+                  />
+                  <FormInputField
+                    type="text"
+                    gapClass={labelLayoutClass}
+                    form={form}
+                    name="pan"
+                    label="PAN Number"
+                  />
+                </div>
+              </section>
+              <section className="space-y-4 rounded-md border border-slate-200/70 bg-white p-3 sm:p-4 dark:border-white/[0.07] dark:bg-white/[0.06]">
+                <div className="space-y-1">
+                  <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+                    Contact Information
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    Store the primary distributor contact details used for order
+                    coordination.
+                  </p>
+                </div>
+                <div className="space-y-4">
+                  <FormInputField
+                    type="text"
+                    gapClass={labelLayoutClass}
+                    form={form}
+                    name="contactPerson"
+                    label="Contact Person"
+                  />
+                  <FormInputField
+                    type="text"
+                    gapClass={labelLayoutClass}
+                    form={form}
+                    name="contactNo"
+                    label="Contact Number"
+                  />
+                  <FormInputField
+                    type="text"
+                    gapClass={labelLayoutClass}
+                    form={form}
+                    name="phone"
+                    label="Phone Number"
+                  />
+                  <FormInputField
+                    type="text"
+                    gapClass={labelLayoutClass}
+                    form={form}
+                    name="email"
+                    label="Email"
+                  />
+                </div>
+              </section>
+            </div>
+            <div className="space-y-5">
+              <AddressForm form={form} labelLayoutClass={labelLayoutClass} />
+              <section className="space-y-4 rounded-md border border-slate-200/70 bg-white p-3 sm:p-4 dark:border-white/[0.07] dark:bg-white/[0.06]">
+                <div className="space-y-1">
+                  <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+                    Accounting
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    Link the distributor to the correct account group and
+                    control record activity.
+                  </p>
+                </div>
+                <div className="space-y-4">
+                  {isEdit && form.getValues('accountLedger') ? (
+                    <div
+                      className={cn(
+                        'grid grid-cols-1 items-start gap-x-4 gap-y-2 sm:grid-cols-[150px_1fr] sm:items-center sm:gap-y-1',
+                      )}
+                    >
+                      <div className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                        Ledger A/c
+                      </div>
+                      <div className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-700 dark:border-white/[0.07] dark:bg-secondary dark:text-slate-200">
+                        {form.getValues('accountLedger')?.name}
+                      </div>
+                    </div>
+                  ) : (
+                    <AccountGroupDropdown
+                      form={form}
+                      gapClass={labelLayoutClass}
+                    />
+                  )}
+                  <FormInputField
+                    type="checkbox"
+                    gapClass={labelLayoutClass}
+                    form={form}
+                    name="status"
+                    label="Status"
+                    options={[
+                      { label: 'Active', value: 'active' },
+                      { label: 'Inactive', value: 'inactive' },
+                    ]}
+                  />
+                </div>
+              </section>
+            </div>
           </div>
         </div>
-      </div>
 
         {/* Footer actions */}
         <div className="flex items-center justify-end gap-2 border-t border-slate-200/70 pt-4 dark:border-white/[0.07]">

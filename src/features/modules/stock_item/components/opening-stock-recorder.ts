@@ -34,12 +34,19 @@ type OpeningStockInput = {
 export async function recordOpeningStockForItem(
   input: OpeningStockInput,
 ): Promise<void> {
-  const { itemId, quantity, rate, godownId, stockUnitId, fyStartDate, currentFyId } =
-    input
+  const {
+    itemId,
+    quantity,
+    rate,
+    godownId,
+    stockUnitId,
+    fyStartDate,
+    currentFyId,
+  } = input
 
   if (!quantity || quantity <= 0 || !godownId) return
 
-  const amount = Math.round((quantity * (rate ?? 0)) * 100) / 100
+  const amount = Math.round(quantity * (rate ?? 0) * 100) / 100
 
   // Resolve the OPNSK voucher type id at runtime (not stable across DBs).
   const typeEnvelope = await fetchOpeningStockVoucherTypeService()

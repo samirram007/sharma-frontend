@@ -3,70 +3,118 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import {
   Command,
   CommandGroup,
   CommandItem,
   CommandList,
 } from '@/components/ui/command'
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { Switch } from '@/components/ui/switch'
+import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
+  IconActivity,
+  IconAlertTriangle,
+  IconBookmark,
+  IconBookmarkPlus,
   IconBuildingWarehouse,
   IconCalendarMonth,
   IconChevronDown,
-  IconChevronRight,
+  IconChevronUp,
+  IconClockHour4,
+  IconCoins,
   IconFilter,
   IconPackage,
+  IconPrinter,
   IconRefresh,
+  IconRuler,
+  IconScale,
+  IconSearch,
+  IconSortAscending,
+  IconSortDescending,
+  IconStack2,
   IconTags,
   IconX,
 } from '@tabler/icons-react'
 import { useQuery } from '@tanstack/react-query'
+import {
+  CheckIcon,
+  Download,
+  FileSpreadsheet,
+  FileText,
+  Loader2,
+} from 'lucide-react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { fetchGodownService } from '@/features/modules/godown/data/api'
 import { fetchStockItemService } from '@/features/modules/stock_item/data/api'
 import { Main } from '@/layouts/components/main'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/features/auth/contexts/AuthContext'
-import { useEffect, useMemo, useState } from 'react'
-import {
-  CheckIcon,
-  ChevronDown,
-  ChevronUp,
-  Download,
-  FileSpreadsheet,
-  FileText,
-  Loader2,
-  Search,
-} from 'lucide-react'
 import { formatQty } from '@/utils/format-num'
-import {
-  buildCsv,
-  EXPORT_COLUMNS,
-  flattenForExport,
-  formatDate,
-} from './export-utils'
+import { BatchCard } from './batch-card'
+import { BatchGrid } from './batch-grid'
+import { BatchInspector } from './batch-inspector'
+import { BatchPivot } from './batch-pivot'
+import { BatchRanked } from './batch-ranked'
 import { FilterSheetSelect } from './filter-sheet-select'
 import { useItemStockMeta } from './use-item-stock-meta'
 import {
+  batchBalancesQueryOptions,
   batchBalancingQueryOptions,
+  batchDetailQueryOptions,
   batchSuggestionsQueryOptions,
 } from './data/queryOptions'
-import type {
-  BatchBalance,
-  BatchBalancingReport,
-  BatchMovement,
-} from './data/schema'
+import {
+  EMPTY_FILTERS,
+  activeFilterCount,
+  normaliseFilters,
+  readPresets,
+  removePreset,
+  savePreset,
+} from './presets'
+import type { BatchFilterState, FilterPreset } from './presets'
+import {
+  BATCH_VIEWS,
+  ISSUE_FILTERS,
+  ISSUE_META,
+  SORT_OPTIONS,
+  countByIssue,
+  groupBatches,
+  groupByVoucherType,
+  viewLayout,
+} from './views'
+import type { BatchGroup, BatchViewId, BatchGroupTone } from './views'
+import { buildCsv, EXPORT_COLUMNS, flattenForExport } from './export-utils'
+import { formatCompactInr, formatDate } from './format'
+import type { BatchBalance, BatchBalancingReport } from './data/schema'
+import type { BatchSortBy, BatchSortDir } from './data/api'
+
+const PER_PAGE_OPTIONS = [25, 50, 100, 250, 'all'] as const
+
+const TONE_HEADER_CLASSES: Record<BatchGroupTone, string> = {
+  neutral: 'border-border bg-muted/40',
+  success: 'border-emerald-500/40 bg-emerald-500/[0.06]',
+  warning: 'border-amber-500/40 bg-amber-500/[0.06]',
+  danger: 'border-destructive/40 bg-destructive/[0.06]',
+}
 
 function formatAmt(val: number | null | undefined): string {
   return (val ?? 0).toLocaleString('en-IN', {
@@ -85,102 +133,30 @@ function toDbDate(value?: Date | string | null): string | null {
   ).padStart(2, '0')}`
 }
 
-/**
- * Groups batch rows for the item-wise / godown-wise views — preserves the
- * report's item-name ordering within each group and sums O/I/O/C subtotals.
- */
-function groupBatches(
-  batches: BatchBalance[],
-  view: 'item-wise' | 'godown-wise',
-): Array<{
-  key: string
-  name: string
-  unit: string | null
-  opening: number
-  inward: number
-  outward: number
-  closing: number
-  batches: BatchBalance[]
-}> {
-  const groups = new Map<
-    string,
-    {
-      key: string
-      name: string
-      unit: string | null
-      opening: number
-      inward: number
-      outward: number
-      closing: number
-      batches: BatchBalance[]
-    }
-  >()
-
-  for (const b of batches) {
-    const key = view === 'item-wise' ? `i-${b.itemId}` : `g-${b.godownId}`
-    const name =
-      view === 'item-wise'
-        ? b.itemName
-        : (b.godownName ?? `Godown #${b.godownId}`)
-    let g = groups.get(key)
-    if (!g) {
-      g = {
-        key,
-        name,
-        unit: b.unitCode,
-        opening: 0,
-        inward: 0,
-        outward: 0,
-        closing: 0,
-        batches: [],
-      }
-      groups.set(key, g)
-    }
-    g.opening += b.openingQuantity
-    g.inward += b.inwardQuantity
-    g.outward += b.outwardQuantity
-    g.closing += b.closingQuantity
-    g.batches.push(b)
-  }
-
-  return [...groups.values()]
-}
-
 export default function BatchBalancingReport() {
-  // Applied filters — the query only refetches when these change. The report
-  // always uses the GLOBAL fiscal period (no date filters here).
-  const [applied, setApplied] = useState<{
-    search: string
-    itemId: string
-    godownId: string
-    batchNo: string
-  }>({
-    search: '',
-    itemId: 'all',
-    godownId: 'all',
-    batchNo: '',
-  })
-  // Draft inputs — applied on "Apply" / Enter so typing doesn't refetch.
-  // One merged field drives both free search AND exact batch pick: typed text
-  // applies as `search`; picking a suggestion applies as exact `batchNo`.
-  const [searchDraft, setSearchDraft] = useState('')
-  const [batchNoDraft, setBatchNoDraft] = useState('')
-  const [itemIdDraft, setItemIdDraft] = useState('all')
-  const [godownIdDraft, setGodownIdDraft] = useState('all')
+  // Applied filters — the query only refetches once these change.
+  const [filters, setFilters] = useState<BatchFilterState>(EMPTY_FILTERS)
+  // Draft inputs, applied on "Apply" / Enter so typing doesn't refetch.
+  const [draft, setDraft] = useState<BatchFilterState>(EMPTY_FILTERS)
+  const [showAdvanced, setShowAdvanced] = useState(false)
+  const [presets, setPresets] = useState<FilterPreset[]>([])
+  const [presetName, setPresetName] = useState('')
 
-  // Date window = the user's global reporting period (the header "Period"
-  // dialog, Alt+P). No date inputs on this page — changing the period
-  // refetches. When unset the backend falls back to fiscal-year bounds.
-  const { period } = useAuth()
+  // Sorting + paging are server-side (the backend sorts and pages whole
+  // result sets, not just the loaded page).
+  const [sortBy, setSortBy] = useState<BatchSortBy>('item')
+  const [sortDir, setSortDir] = useState<BatchSortDir>('asc')
+  const [page, setPage] = useState(1)
+  const [perPage, setPerPage] = useState<number | 'all'>(100)
 
+  const [view, setView] = useState<BatchViewId>('batch-wise')
   const [expandedKeys, setExpandedKeys] = useState<Set<string>>(new Set())
+  const [inspected, setInspected] = useState<BatchBalance | null>(null)
+  const [inspectorOpen, setInspectorOpen] = useState(false)
+  // Ranked / pivot rows come from a balances-only payload, so the inspector
+  // fetches that batch's movement trail on demand.
+  const [inspectorNeedsTrail, setInspectorNeedsTrail] = useState(false)
   const [isExporting, setIsExporting] = useState(false)
-
-  // View grouping — batch-wise (default, one card per batch), item-wise
-  // (cards grouped under their item) or godown-wise (grouped under godown).
-  const [view, setView] = useState<'batch-wise' | 'item-wise' | 'godown-wise'>(
-    'batch-wise',
-  )
 
   // Batch No autocomplete — suggestions from /stock_summaries/batch_list as
   // the user types (debounced); picking one sets the EXACT batch_no filter.
@@ -188,17 +164,28 @@ export default function BatchBalancingReport() {
   const [debouncedBatchQuery, setDebouncedBatchQuery] = useState('')
   useEffect(() => {
     const t = window.setTimeout(
-      () => setDebouncedBatchQuery(batchNoDraft.trim()),
+      () => setDebouncedBatchQuery(draft.search.trim()),
       300,
     )
     return () => window.clearTimeout(t)
-  }, [batchNoDraft])
+  }, [draft.search])
+
+  useEffect(() => {
+    setPresets(readPresets())
+  }, [])
+
+  const { period } = useAuth()
+  // The reporting window always follows the global reporting period (the
+  // header's Period dialog, Alt+P) — it is not a per-report filter.
+  const fromDate = toDbDate(period?.startDate)
+  const toDate = toDbDate(period?.endDate)
 
   // Suggestions mirror the item/godown DRAFT filters so the list only shows
   // batches that actually exist within the currently chosen item/godown.
-  const suggestionItemId = itemIdDraft !== 'all' ? Number(itemIdDraft) : null
+  const suggestionItemId =
+    draft.itemId !== 'all' ? Number(draft.itemId) : null
   const suggestionGodownId =
-    godownIdDraft !== 'all' ? Number(godownIdDraft) : null
+    draft.godownId !== 'all' ? Number(draft.godownId) : null
 
   const { data: batchSuggestions, isFetching: suggestionsFetching } = useQuery({
     ...batchSuggestionsQueryOptions(
@@ -209,63 +196,88 @@ export default function BatchBalancingReport() {
     enabled: batchOpen,
   })
 
-  const hasDraftFilters =
-    !!searchDraft.trim() ||
-    !!batchNoDraft.trim() ||
-    itemIdDraft !== 'all' ||
-    godownIdDraft !== 'all'
-
   // The reporting period is NOT a "filter" for this gate — it's always on, so
   // requiring it would dump every batch of the period on first paint.
-  const hasAppliedFilters =
-    !!applied.search.trim() ||
-    !!applied.batchNo.trim() ||
-    applied.itemId !== 'all' ||
-    applied.godownId !== 'all'
+  const hasAppliedFilters = activeFilterCount(filters) > 0
+  const draftFilterCount = activeFilterCount(draft)
 
-  const applyFilters = () => {
-    const batch = batchNoDraft.trim()
-    setApplied({
+  const applyFilters = useCallback(
+    (next?: BatchFilterState) => {
+      const source = next ?? draft
       // An exact batch pick wins over the free-search text.
-      search: batch ? '' : searchDraft.trim(),
-      itemId: itemIdDraft,
-      godownId: godownIdDraft,
-      batchNo: batch,
-    })
-  }
+      const batch = source.batchNo.trim()
+      setFilters(
+        normaliseFilters({
+          ...source,
+          batchNo: batch,
+          search: batch ? '' : source.search.trim(),
+        }),
+      )
+      setPage(1)
+    },
+    [draft],
+  )
 
   const clearFilters = () => {
-    setSearchDraft('')
-    setBatchNoDraft('')
-    setItemIdDraft('all')
-    setGodownIdDraft('all')
-    setApplied({
-      search: '',
-      itemId: 'all',
-      godownId: 'all',
-      batchNo: '',
-    })
+    setDraft(EMPTY_FILTERS)
+    setFilters(EMPTY_FILTERS)
+    setPage(1)
   }
 
-  const fromDate = toDbDate(period?.startDate)
-  const toDate = toDbDate(period?.endDate)
+  const applyPreset = (preset: FilterPreset) => {
+    const restored = normaliseFilters(preset.filters)
+    setDraft(restored)
+    setFilters(restored)
+    setPage(1)
+  }
+
+  const hasDraftFilters = draftFilterCount > 0
 
   const params = useMemo(
     () => ({
-      search: applied.search || undefined,
-      itemId: applied.itemId !== 'all' ? Number(applied.itemId) : null,
-      godownId: applied.godownId !== 'all' ? Number(applied.godownId) : null,
-      batchNo: applied.batchNo || null,
+      search: filters.search || undefined,
+      itemId: filters.itemId !== 'all' ? Number(filters.itemId) : null,
+      godownId: filters.godownId !== 'all' ? Number(filters.godownId) : null,
+      batchNo: filters.batchNo || null,
+      voucherTypeId:
+        filters.voucherTypeId !== 'all' ? Number(filters.voucherTypeId) : null,
       fromDate,
       toDate,
+      inStockOnly: filters.inStockOnly,
+      issue: filters.issue,
+      sortBy,
+      sortDir,
+      page,
+      perPage,
+      // The cards and the inspector both render the trail.
+      includeMovements: true,
     }),
-    [applied, fromDate, toDate],
+    [filters, fromDate, toDate, sortBy, sortDir, page, perPage],
+  )
+
+  /**
+   * Ranked and pivot are whole-result-set views: they load every matching
+   * batch (balances only) instead of the report's page, so a rank or a share
+   * is never quietly scoped to "whatever happened to be on page 1".
+   */
+  const isAggregateView = view === 'ranked' || view === 'pivot'
+
+  const aggregateParams = useMemo(
+    () => ({
+      ...params,
+      perPage: 'all' as const,
+      includeMovements: false,
+    }),
+    [params],
   )
 
   const { data, isLoading, isError, isFetching, refetch } = useQuery({
-    ...batchBalancingQueryOptions(params),
+    ...(isAggregateView
+      ? batchBalancesQueryOptions(aggregateParams)
+      : batchBalancingQueryOptions(params)),
     // Don't dump the whole database on first paint — require at least one
-    // criterion (search text, batch no, item, godown, or a date window).
+    // criterion (search text, batch no, item, godown, issue or a stock-only
+    // filter).
     enabled: hasAppliedFilters,
   })
 
@@ -283,14 +295,19 @@ export default function BatchBalancingReport() {
   const itemStockMeta = useItemStockMeta(batchOpen)
 
   const report = data?.data as BatchBalancingReport | undefined
+  const batches = report?.batches ?? []
+  const totals = report?.totals
+  const pagination = report?.pagination
+  const totalsUnit = batches[0]?.unitCode
 
   // "Opening as on" label — the reporting-period start when set (the true
   // opening position), else the 9010 opening voucher's date (the FY first
   // day, e.g. 1-Apr) reported by the backend as asOnDate.
-  const openingAsOnDate =
-    fromDate ?? report?.asOnDate ?? report?.fromDate ?? null
+  const openingAsOnDate = fromDate ?? report?.asOnDate ?? report?.fromDate ?? null
 
-  // Auto-expand everything when a fresh result arrives.
+  const layout = viewLayout(view)
+
+  // Auto-expand everything when a fresh page of results arrives.
   useEffect(() => {
     if (!report) return
     const keys = report.batches.map(
@@ -309,30 +326,106 @@ export default function BatchBalancingReport() {
   }
 
   const allExpanded =
-    !!report &&
-    report.batches.length > 0 &&
-    expandedKeys.size >= report.batches.length
+    batches.length > 0 && expandedKeys.size >= batches.length
 
   const toggleAll = () => {
-    if (!report) return
     setExpandedKeys(
       allExpanded
         ? new Set()
-        : new Set(
-            report.batches.map((b) => `${b.itemId}-${b.godownId}-${b.batchNo}`),
-          ),
+        : new Set(batches.map((b) => `${b.itemId}-${b.godownId}-${b.batchNo}`)),
     )
   }
 
+  const inspect = (
+    batch: BatchBalance,
+    options?: { needsTrail?: boolean },
+  ) => {
+    setInspected(batch)
+    setInspectorNeedsTrail(options?.needsTrail === true)
+    setInspectorOpen(true)
+  }
+
+  // The trail for a balances-only row, loaded lazily by the inspector. The
+  // batch filters make this a single-row query.
+  const trailParams = useMemo(
+    () => ({
+      search: undefined,
+      itemId: inspected?.itemId ?? null,
+      godownId: inspected?.godownId ?? null,
+      batchNo: inspected?.batchNo ?? null,
+      fromDate,
+      toDate,
+      page: 1,
+      perPage: 1,
+      includeMovements: true,
+    }),
+    [inspected, fromDate, toDate],
+  )
+
+  const { data: trailData } = useQuery({
+    ...batchDetailQueryOptions(trailParams),
+    enabled: inspectorOpen && inspectorNeedsTrail && !!inspected,
+  })
+
+  const inspectedBatch = useMemo(() => {
+    if (!inspectorNeedsTrail) return inspected
+    const detail = (trailData?.data as BatchBalancingReport | undefined)
+      ?.batches?.[0]
+    return detail ?? inspected
+  }, [inspectorNeedsTrail, inspected, trailData])
+
+  const handleSort = (column: BatchSortBy) => {
+    if (column === sortBy) {
+      setSortDir((prev) => (prev === 'asc' ? 'desc' : 'asc'))
+    } else {
+      setSortBy(column)
+      setSortDir('asc')
+    }
+    setPage(1)
+  }
+
+  /** Filter straight from a summary tile (the chip becomes the filter). */
+  const focusIssue = (issue: BatchFilterState['issue']) => {
+    const next = normaliseFilters({
+      ...filters,
+      issue: filters.issue === issue ? 'all' : issue,
+    })
+    setFilters(next)
+    setDraft(next)
+    setPage(1)
+  }
+
+  const exportOptions = useMemo(
+    () => ({
+      groupBy:
+        view === 'item-wise'
+          ? ('item' as const)
+          : view === 'godown-wise'
+            ? ('godown' as const)
+            : ('none' as const),
+      totals: true,
+    }),
+    [view],
+  )
+
+  // The trail exports write one row per movement, and the aggregate views do
+  // not load movements — so they point at the trail views instead of writing a
+  // hollow file.
+  const exportDisabled =
+    !report || isExporting || batches.length === 0 || isAggregateView
+  const exportHint = isAggregateView
+    ? 'Switch to a card or grid view to export the movement trail'
+    : undefined
+
   const handleExport = async (format: 'csv' | 'excel' | 'pdf') => {
-    if (!report || isExporting) return
+    if (exportDisabled) return
     setIsExporting(true)
     try {
-      const rows = flattenForExport(report)
+      const rows = flattenForExport(report, exportOptions)
       if (rows.length === 0) return
 
       if (format === 'csv') {
-        const csv = buildCsv(report)
+        const csv = buildCsv(report, exportOptions)
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
         const url = URL.createObjectURL(blob)
         const a = document.createElement('a')
@@ -346,8 +439,9 @@ export default function BatchBalancingReport() {
       }
 
       if (format === 'excel') {
-        const { default: exportTableToExcel } =
-          await import('@/utils/export-table-excel')
+        const { default: exportTableToExcel } = await import(
+          '@/utils/export-table-excel'
+        )
         await exportTableToExcel({
           title: 'Batch Balancing Report',
           columnData: EXPORT_COLUMNS,
@@ -355,8 +449,9 @@ export default function BatchBalancingReport() {
           fileName: 'batch-balancing-report.xlsx',
         })
       } else {
-        const { default: exportTableToPdf } =
-          await import('@/utils/export-table-pdf')
+        const { default: exportTableToPdf } = await import(
+          '@/utils/export-table-pdf'
+        )
         exportTableToPdf({
           title: 'Batch Balancing Report',
           columnData: EXPORT_COLUMNS,
@@ -372,8 +467,42 @@ export default function BatchBalancingReport() {
     }
   }
 
-  const totals = report?.totals
-  const totalsUnit = report?.batches[0]?.unitCode
+  /**
+   * Print the table: the grid is the print-friendly shape (no expansion
+   * needed), so switch to it and let the browser repaint before printing.
+   */
+  const handlePrint = () => {
+    setView('grid')
+    window.setTimeout(() => window.print(), 250)
+  }
+
+  const groups: BatchGroup[] =
+    layout === 'grouped'
+      ? groupBatches(batches, view, {
+          // The backend's own expiring-soon threshold (its default is 90 days).
+          expiryWithinDays: report?.expiryWithinDays,
+          ageingAsOnDate: report?.ageingAsOnDate ?? null,
+        })
+      : []
+  const contributions =
+    layout === 'voucher-types' ? groupByVoucherType(batches) : []
+  const issueCounts = countByIssue(batches)
+
+  const renderBatch = (batch: BatchBalance) => {
+    const key = `${batch.itemId}-${batch.godownId}-${batch.batchNo}`
+    return (
+      <BatchCard
+        key={key}
+        batch={batch}
+        expanded={expandedKeys.has(key)}
+        onToggle={() => toggle(key)}
+        onInspect={() => inspect(batch)}
+        openingAsOnDate={openingAsOnDate}
+      />
+    )
+  }
+
+  const showExpandControls = layout === 'flat' || layout === 'grouped'
 
   return (
     <Main className="min-w-full space-y-4">
@@ -388,7 +517,8 @@ export default function BatchBalancingReport() {
           </div>
           <p className="text-sm text-muted-foreground">
             Batch-wise opening → inward → outward → closing balance with the
-            full movement trail per item, godown and batch
+            full movement trail, valuation, ageing and reconciliation checks per
+            item, godown and batch
           </p>
           {(fromDate || toDate) && (
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
@@ -401,31 +531,102 @@ export default function BatchBalancingReport() {
               <span className="text-[11px]">
                 (reporting period — pre-period movements roll into Opening)
               </span>
+              {report?.ageingAsOnDate && (
+                <span className="text-[11px]">
+                  · ageing as on {formatDate(report.ageingAsOnDate)}
+                </span>
+              )}
             </div>
           )}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 print:hidden">
           {isFetching && !isLoading && (
             <IconRefresh className="h-4 w-4 animate-spin text-muted-foreground" />
+          )}
+          <Select
+            value={view}
+            onValueChange={(value) => setView(value as BatchViewId)}
+          >
+            <SelectTrigger className="h-9 w-[220px]" aria-label="Report view">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {BATCH_VIEWS.map((option) => (
+                <SelectItem
+                  key={option.id}
+                  value={option.id}
+                  title={option.hint}
+                >
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select
+            value={sortBy}
+            onValueChange={(value) => {
+              setSortBy(value as BatchSortBy)
+              setPage(1)
+            }}
+          >
+            <SelectTrigger className="h-9 w-[170px]" aria-label="Sort batches by">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {SORT_OPTIONS.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  Sort: {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-9 w-9"
+            title={sortDir === 'asc' ? 'Ascending' : 'Descending'}
+            aria-label={`Sort ${sortDir === 'asc' ? 'ascending' : 'descending'}`}
+            onClick={() => {
+              setSortDir((prev) => (prev === 'asc' ? 'desc' : 'asc'))
+              setPage(1)
+            }}
+          >
+            {sortDir === 'asc' ? (
+              <IconSortAscending className="h-4 w-4" />
+            ) : (
+              <IconSortDescending className="h-4 w-4" />
+            )}
+          </Button>
+          {showExpandControls && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={toggleAll}
+              disabled={batches.length === 0}
+            >
+              {allExpanded ? (
+                <IconChevronUp className="mr-1 h-4 w-4" />
+              ) : (
+                <IconChevronDown className="mr-1 h-4 w-4" />
+              )}
+              {allExpanded ? 'Collapse all' : 'Expand all'}
+            </Button>
           )}
           <Button
             variant="outline"
             size="sm"
-            onClick={toggleAll}
-            disabled={!report || report.batches.length === 0}
+            onClick={handlePrint}
+            disabled={batches.length === 0}
           >
-            {allExpanded ? (
-              <ChevronUp className="mr-1 h-4 w-4" />
-            ) : (
-              <ChevronDown className="mr-1 h-4 w-4" />
-            )}
-            {allExpanded ? 'Collapse all' : 'Expand all'}
+            <IconPrinter className="mr-1 h-4 w-4" />
+            Print
           </Button>
           <Button
             variant="outline"
             size="sm"
             onClick={() => handleExport('csv')}
-            disabled={!report || isExporting}
+            disabled={exportDisabled}
+            title={exportHint}
           >
             <Download className="mr-1 h-4 w-4" />
             CSV
@@ -434,7 +635,8 @@ export default function BatchBalancingReport() {
             variant="outline"
             size="sm"
             onClick={() => handleExport('excel')}
-            disabled={!report || isExporting}
+            disabled={exportDisabled}
+            title={exportHint}
           >
             <FileSpreadsheet className="mr-1 h-4 w-4 text-emerald-600" />
             Excel
@@ -443,7 +645,8 @@ export default function BatchBalancingReport() {
             variant="outline"
             size="sm"
             onClick={() => handleExport('pdf')}
-            disabled={!report || isExporting}
+            disabled={exportDisabled}
+            title={exportHint}
           >
             <FileText className="mr-1 h-4 w-4 text-red-600" />
             PDF
@@ -451,9 +654,10 @@ export default function BatchBalancingReport() {
         </div>
       </div>
 
-      {/* Filters — single inline row: label · search · item · godown · apply */}
-      <Card>
-        <CardContent className="p-3">
+      {/* Filters — primary row plus an advanced drawer for the inspection
+          filters (voucher type, issue, expiry, stock-only, date window). */}
+      <Card className="print:hidden">
+        <CardContent className="space-y-3 p-3">
           <form
             onSubmit={(e) => {
               e.preventDefault()
@@ -480,23 +684,26 @@ export default function BatchBalancingReport() {
               <Popover open={batchOpen} onOpenChange={setBatchOpen}>
                 <PopoverTrigger asChild>
                   <div className="relative">
-                    <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                    <IconSearch className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
                     <Input
                       role="combobox"
                       aria-expanded={batchOpen}
                       placeholder="Search batch no / item…"
-                      value={batchNoDraft || searchDraft}
+                      value={draft.batchNo || draft.search}
                       onChange={(e) => {
                         // One query drives both modes: picking a suggestion
                         // sets the exact batch; typing only and pressing Apply
                         // falls back to free-text search.
-                        setBatchNoDraft('')
-                        setSearchDraft(e.target.value)
+                        setDraft((prev) => ({
+                          ...prev,
+                          batchNo: '',
+                          search: e.target.value,
+                        }))
                         if (!batchOpen) setBatchOpen(true)
                       }}
                       className="h-9 pr-8 pl-8"
                     />
-                    {batchNoDraft || searchDraft ? (
+                    {draft.batchNo || draft.search ? (
                       <span
                         role="button"
                         tabIndex={0}
@@ -506,15 +713,17 @@ export default function BatchBalancingReport() {
                           // mousedown so the input doesn't steal focus first
                           e.preventDefault()
                           e.stopPropagation()
-                          setBatchNoDraft('')
-                          setSearchDraft('')
+                          setDraft((prev) => ({ ...prev, batchNo: '', search: '' }))
                         }}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter' || e.key === ' ') {
                             e.stopPropagation()
                             e.preventDefault()
-                            setBatchNoDraft('')
-                            setSearchDraft('')
+                            setDraft((prev) => ({
+                              ...prev,
+                              batchNo: '',
+                              search: '',
+                            }))
                           }
                         }}
                       >
@@ -547,14 +756,17 @@ export default function BatchBalancingReport() {
                               // make cmdk render every twin as "selected".
                               const value = `${s.batchNo}|${s.itemId}|${s.godownId}|${idx}`
                               const selected =
-                                batchNoDraft === s.batchNo && !searchDraft
+                                draft.batchNo === s.batchNo && !draft.search
                               return (
                                 <CommandItem
                                   key={value}
                                   value={value}
                                   onSelect={() => {
-                                    setBatchNoDraft(s.batchNo)
-                                    setSearchDraft('')
+                                    setDraft((prev) => ({
+                                      ...prev,
+                                      batchNo: s.batchNo,
+                                      search: '',
+                                    }))
                                     setBatchOpen(false)
                                   }}
                                   className="gap-2"
@@ -589,8 +801,8 @@ export default function BatchBalancingReport() {
               label="Item"
               placeholder="Search Item"
               allLabel="All items"
-              value={itemIdDraft}
-              onChange={setItemIdDraft}
+              value={draft.itemId}
+              onChange={(itemId) => setDraft((prev) => ({ ...prev, itemId }))}
               hideLabel
               options={(itemList?.data ?? []).map((i: any) => ({
                 id: String(i.id),
@@ -603,8 +815,10 @@ export default function BatchBalancingReport() {
               label="Godown"
               placeholder="Search Godown"
               allLabel="All godowns"
-              value={godownIdDraft}
-              onChange={setGodownIdDraft}
+              value={draft.godownId}
+              onChange={(godownId) =>
+                setDraft((prev) => ({ ...prev, godownId }))
+              }
               hideLabel
               options={(godownList?.data ?? []).map((g: any) => ({
                 id: String(g.id),
@@ -612,23 +826,22 @@ export default function BatchBalancingReport() {
                 description: g.code ?? null,
               }))}
             />
-            <div className="mx-1 h-6 w-px shrink-0 bg-border" />
-            <Select
-              value={view}
-              onValueChange={(v) => setView(v as typeof view)}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-9 gap-1.5"
+              aria-expanded={showAdvanced}
+              onClick={() => setShowAdvanced((prev) => !prev)}
             >
-              <SelectTrigger
-                className="h-9 w-[150px]"
-                aria-label="Group results by"
-              >
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="batch-wise">Batch-wise</SelectItem>
-                <SelectItem value="item-wise">Item-wise</SelectItem>
-                <SelectItem value="godown-wise">Godown-wise</SelectItem>
-              </SelectContent>
-            </Select>
+              <IconFilter className="h-3.5 w-3.5" />
+              More filters
+              {draftFilterCount > 0 && (
+                <Badge variant="outline" className="px-1.5 py-0 text-[10px]">
+                  {draftFilterCount}
+                </Badge>
+              )}
+            </Button>
             <Button
               type="submit"
               size="sm"
@@ -637,7 +850,171 @@ export default function BatchBalancingReport() {
             >
               Apply
             </Button>
+
+            {/* Presets */}
+            <DropdownMenu modal={false}>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="h-9 gap-1.5"
+                >
+                  <IconBookmark className="h-3.5 w-3.5" />
+                  Presets
+                  {presets.length > 0 && (
+                    <Badge variant="outline" className="px-1.5 py-0 text-[10px]">
+                      {presets.length}
+                    </Badge>
+                  )}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-64">
+                <DropdownMenuLabel className="text-xs font-medium">
+                  Saved filters
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {presets.length === 0 ? (
+                  <div className="px-2 py-3 text-xs text-muted-foreground">
+                    Nothing saved yet — set the filters you use often and save
+                    them below.
+                  </div>
+                ) : (
+                  presets.map((preset) => (
+                    <DropdownMenuItem
+                      key={preset.name}
+                      className="justify-between gap-2"
+                      onSelect={() => applyPreset(preset)}
+                    >
+                      <span className="truncate">{preset.name}</span>
+                      <span
+                        role="button"
+                        tabIndex={0}
+                        aria-label={`Delete preset ${preset.name}`}
+                        className="text-muted-foreground hover:text-destructive"
+                        onClick={(event) => {
+                          event.preventDefault()
+                          event.stopPropagation()
+                          setPresets(removePreset(preset.name))
+                        }}
+                        onKeyDown={(event) => {
+                          if (event.key === 'Enter' || event.key === ' ') {
+                            event.preventDefault()
+                            event.stopPropagation()
+                            setPresets(removePreset(preset.name))
+                          }
+                        }}
+                      >
+                        <IconX className="h-3 w-3" />
+                      </span>
+                    </DropdownMenuItem>
+                  ))
+                )}
+                <DropdownMenuSeparator />
+                <div className="flex items-center gap-1.5 p-2">
+                  <Input
+                    value={presetName}
+                    placeholder="Preset name"
+                    className="h-8"
+                    onChange={(event) => setPresetName(event.target.value)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter') {
+                        event.preventDefault()
+                        setPresets(savePreset(presetName, draft))
+                        setPresetName('')
+                      }
+                    }}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    className="h-8 w-8 shrink-0"
+                    title="Save current filters as a preset"
+                    disabled={!presetName.trim() || draftFilterCount === 0}
+                    onClick={() => {
+                      setPresets(savePreset(presetName, draft))
+                      setPresetName('')
+                    }}
+                  >
+                    <IconBookmarkPlus className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </form>
+
+          {showAdvanced && (
+            <div className="flex flex-wrap items-center gap-2 border-t pt-3">
+              <Select
+                value={draft.voucherTypeId}
+                onValueChange={(voucherTypeId) =>
+                  setDraft((prev) => ({ ...prev, voucherTypeId }))
+                }
+              >
+                <SelectTrigger
+                  className="h-9 w-[190px]"
+                  aria-label="Voucher type"
+                >
+                  <SelectValue placeholder="Voucher type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All voucher types</SelectItem>
+                  {(report?.voucherTypes ?? [])
+                    .filter((type) => type.id != null)
+                    .map((type) => (
+                      <SelectItem key={type.id} value={String(type.id)}>
+                        {type.name ?? type.code ?? `Type ${type.id}`} (
+                        {type.lineCount})
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+
+              <Select
+                value={draft.issue}
+                onValueChange={(issue) =>
+                  setDraft((prev) => ({
+                    ...prev,
+                    issue: issue as BatchFilterState['issue'],
+                  }))
+                }
+              >
+                <SelectTrigger className="h-9 w-[190px]" aria-label="Integrity filter">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {ISSUE_FILTERS.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <label className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Switch
+                  checked={draft.inStockOnly}
+                  onCheckedChange={(checked) =>
+                    setDraft((prev) => ({ ...prev, inStockOnly: checked }))
+                  }
+                  aria-label="Only batches with stock"
+                />
+                In stock only
+              </label>
+
+              <p className="text-[11px] text-muted-foreground">
+                The reporting window follows the global period.{' '}
+                {(fromDate || toDate) && (
+                  <span className="font-medium text-foreground">
+                    {fromDate ? formatDate(fromDate) : 'beginning'} →{' '}
+                    {toDate ? formatDate(toDate) : 'today'}
+                  </span>
+                )}
+                {' '}Change it from the header's Period control (Alt+P).
+              </p>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -672,29 +1049,31 @@ export default function BatchBalancingReport() {
             <IconFilter className="mx-auto mb-3 h-12 w-12 opacity-40" />
             <p className="text-lg font-medium">Set at least one filter</p>
             <p className="mt-1 text-sm">
-              Search a batch number or item, or pick an item / godown, then
-              apply.
+              Search a batch number or item, pick an item / godown, or narrow by
+              issue or expiry, then apply.
             </p>
           </CardContent>
         </Card>
-      ) : !report || report.batches.length === 0 ? (
+      ) : batches.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center text-muted-foreground">
             <IconPackage className="mx-auto mb-3 h-12 w-12 opacity-40" />
             <p className="text-lg font-medium">No batch movements found</p>
             <p className="mt-1 text-sm">
-              No batches match the current filters for this fiscal year.
+              No batches match the current filters for this reporting window.
             </p>
           </CardContent>
         </Card>
       ) : (
         <>
-          {/* Summary cards */}
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+          {/* Summary — totals cover every matching batch, not just the page. */}
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
             <Card>
               <CardContent className="p-3">
                 <div className="text-xl font-bold">{totals?.batchCount}</div>
-                <div className="text-xs text-muted-foreground">Batches</div>
+                <div className="text-xs text-muted-foreground">
+                  Batches (all matches)
+                </div>
               </CardContent>
             </Card>
             <Card>
@@ -728,6 +1107,9 @@ export default function BatchBalancingReport() {
                   {formatQty(totals?.totalInward ?? 0, null, totalsUnit)}
                 </div>
                 <div className="text-xs text-muted-foreground">Inward</div>
+                <div className="mt-0.5 text-[10px] tabular-nums text-muted-foreground/80">
+                  {formatCompactInr(totals?.totalInwardValue ?? 0)}
+                </div>
               </CardContent>
             </Card>
             <Card>
@@ -736,6 +1118,9 @@ export default function BatchBalancingReport() {
                   {formatQty(totals?.totalOutward ?? 0, null, totalsUnit)}
                 </div>
                 <div className="text-xs text-muted-foreground">Outward</div>
+                <div className="mt-0.5 text-[10px] tabular-nums text-muted-foreground/80">
+                  {formatCompactInr(totals?.totalOutwardValue ?? 0)}
+                </div>
               </CardContent>
             </Card>
             <Card>
@@ -743,426 +1128,333 @@ export default function BatchBalancingReport() {
                 <div className="text-xl font-bold tabular-nums text-primary">
                   {formatQty(totals?.totalClosing ?? 0, null, totalsUnit)}
                 </div>
-                <div className="text-xs text-muted-foreground">Closing</div>
+                <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <IconCoins className="h-3 w-3" />
+                  Closing value
+                </div>
+                <div className="mt-0.5 text-[10px] tabular-nums text-muted-foreground/80">
+                  {formatAmt(totals?.totalClosingValue ?? 0)}
+                </div>
+              </CardContent>
+            </Card>
+            {/* Integrity tiles double as filters — click to isolate the issue
+                (on this page's batches, with the server-side filter applied). */}
+            <Card>
+              <CardContent className="space-y-1 p-3">
+                <div className="text-xs text-muted-foreground">
+                  Reconciliation (page)
+                </div>
+                <IssueChip
+                  label={ISSUE_META.negativeClosing.label}
+                  count={issueCounts.negativeClosing}
+                  tone="danger"
+                  active={filters.issue === 'negative'}
+                  onClick={() => focusIssue('negative')}
+                />
+                <IssueChip
+                  label={ISSUE_META.carryForwardOpening.label}
+                  count={issueCounts.carryForwardOpening}
+                  tone="warning"
+                  active={filters.issue === 'carry_forward'}
+                  onClick={() => focusIssue('carry_forward')}
+                />
+                <IssueChip
+                  label={ISSUE_META.journalVariance.label}
+                  count={issueCounts.journalVariance}
+                  tone="warning"
+                  active={filters.issue === 'journal_variance'}
+                  onClick={() => focusIssue('journal_variance')}
+                />
+                <div className="pt-1 text-[10px] text-muted-foreground">
+                  Expired {totals?.expiredCount ?? 0} · expiring{' '}
+                  {totals?.expiringCount ?? 0} · no movement{' '}
+                  {totals?.noMovementCount ?? 0}
+                </div>
               </CardContent>
             </Card>
           </div>
 
-          {/* Batch cards — flat, or grouped by item / godown per the view */}
-          {view === 'batch-wise' ? (
-            <div className="space-y-3">
-              {report.batches.map((batch) => (
-                <BatchCard
-                  key={`${batch.itemId}-${batch.godownId}-${batch.batchNo}`}
-                  batch={batch}
-                  expanded={expandedKeys.has(
-                    `${batch.itemId}-${batch.godownId}-${batch.batchNo}`,
-                  )}
-                  onToggle={() =>
-                    toggle(`${batch.itemId}-${batch.godownId}-${batch.batchNo}`)
-                  }
-                  openingAsOnDate={openingAsOnDate}
-                />
-              ))}
+          {/* Ranked / pivot read the whole result set, so paging is moot. */}
+          {isAggregateView && (
+            <p className="rounded-md border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
+              This view reads{' '}
+              <span className="font-medium text-foreground">
+                all {pagination?.total ?? batches.length} matching batch(es)
+              </span>{' '}
+              — not just the first page — so ranks, shares and the pivot matrix
+              cover every match of the current filters.
+            </p>
+          )}
+
+          {/* Pagination — the backend pages batches, so the page stays fast
+              however deep the ledger is. */}
+          {pagination && !isAggregateView && (
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <span className="text-xs text-muted-foreground">
+                {pagination.total === 0
+                  ? 'No batches'
+                  : `Batches ${
+                      (pagination.page - 1) * (pagination.perPage || 0) + 1
+                    }–${
+                      pagination.perPage
+                        ? Math.min(
+                            pagination.page * pagination.perPage,
+                            pagination.total,
+                          )
+                        : pagination.total
+                    } of ${pagination.total}`}
+                {filters.issue !== 'all' && ` · ${ISSUE_FILTERS.find((option) => option.value === filters.issue)?.label}`}
+              </span>
+              <div className="flex items-center gap-2">
+                <Select
+                  value={String(perPage)}
+                  onValueChange={(value) => {
+                    setPerPage(value === 'all' ? 'all' : Number(value))
+                    setPage(1)
+                  }}
+                >
+                  <SelectTrigger className="h-8 w-[130px]" aria-label="Batches per page">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PER_PAGE_OPTIONS.map((option) => (
+                      <SelectItem key={String(option)} value={String(option)}>
+                        {option === 'all' ? 'All batches' : `${option} / page`}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8"
+                  disabled={pagination.page <= 1}
+                  onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+                >
+                  Previous
+                </Button>
+                <span className="text-xs text-muted-foreground">
+                  Page {pagination.page} of {pagination.totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8"
+                  disabled={!pagination.hasMore}
+                  onClick={() => setPage((prev) => prev + 1)}
+                >
+                  Next
+                </Button>
+              </div>
             </div>
-          ) : (
+          )}
+
+          {/* Views */}
+          {layout === 'grid' ? (
+            <BatchGrid
+              batches={batches}
+              sortBy={sortBy}
+              sortDir={sortDir}
+              onSort={handleSort}
+              onInspect={(batch) => inspect(batch)}
+            />
+          ) : layout === 'voucher-types' ? (
             <div className="space-y-4">
-              {groupBatches(report.batches, view).map((group) => (
+              {contributions.length === 0 ? (
+                <Card>
+                  <CardContent className="py-10 text-center text-sm text-muted-foreground">
+                    No movement trail on this page — try the batch-wise view or
+                    widen the filters.
+                  </CardContent>
+                </Card>
+              ) : (
+                contributions.map((contribution) => (
+                  <div key={contribution.key} className="space-y-2">
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-md border bg-muted/40 px-3 py-2">
+                      <div className="flex min-w-0 items-center gap-2 text-sm font-semibold">
+                        <IconTags className="h-4 w-4 shrink-0 text-primary" />
+                        <span className="break-words">
+                          {contribution.label}
+                        </span>
+                        <span className="text-xs font-normal text-muted-foreground">
+                          {contribution.movementCount} line(s) ·{' '}
+                          {contribution.batches.length} batch(es)
+                        </span>
+                      </div>
+                      <div className="ml-auto flex flex-wrap items-center gap-x-4 gap-y-0.5 font-mono text-xs tabular-nums">
+                        <span className="text-emerald-600">
+                          In{' '}
+                          <strong>
+                            +{formatQty(contribution.inward, null, contribution.unit)}
+                          </strong>{' '}
+                          · {formatAmt(contribution.inwardValue)}
+                        </span>
+                        <span className="text-orange-600">
+                          Out{' '}
+                          <strong>
+                            -{formatQty(contribution.outward, null, contribution.unit)}
+                          </strong>{' '}
+                          · {formatAmt(contribution.outwardValue)}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      {contribution.batches.map(renderBatch)}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          ) : layout === 'grouped' ? (
+            <div className="space-y-4">
+              {groups.map((group) => (
                 <div key={group.key} className="space-y-2">
-                  {/* Group header with subtotals */}
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-md border bg-muted/40 px-3 py-2">
-                    <div className="flex min-w-0 items-center gap-2 text-sm font-semibold">
+                  <div
+                    className={cn(
+                      'flex flex-wrap items-center gap-x-4 gap-y-1 rounded-md border px-3 py-2',
+                      TONE_HEADER_CLASSES[group.tone],
+                    )}
+                  >
+                    <div className="flex min-w-0 flex-wrap items-center gap-2 text-sm font-semibold">
                       {view === 'item-wise' ? (
                         <IconPackage className="h-4 w-4 shrink-0 text-emerald-500" />
-                      ) : (
+                      ) : view === 'godown-wise' ? (
                         <IconBuildingWarehouse className="h-4 w-4 shrink-0 text-blue-500" />
+                      ) : view === 'issue-wise' ? (
+                        <IconAlertTriangle className="h-4 w-4 shrink-0" />
+                      ) : view === 'ageing-wise' ? (
+                        <IconClockHour4 className="h-4 w-4 shrink-0 text-amber-500" />
+                      ) : view === 'velocity-wise' ? (
+                        <IconActivity className="h-4 w-4 shrink-0 text-blue-500" />
+                      ) : view === 'consumption-wise' ? (
+                        <IconStack2 className="h-4 w-4 shrink-0 text-emerald-500" />
+                      ) : view === 'variance-wise' ? (
+                        <IconScale className="h-4 w-4 shrink-0 text-fuchsia-500" />
+                      ) : view === 'unit-wise' ? (
+                        <IconRuler className="h-4 w-4 shrink-0 text-orange-500" />
+                      ) : (
+                        <IconCalendarMonth className="h-4 w-4 shrink-0" />
                       )}
-                      <span className="shrink-0 font-mono text-[11px] font-normal uppercase text-muted-foreground">
-                        {view === 'item-wise' ? 'Item:' : 'Godown:'}
+                      <span className="break-words">{group.label}</span>
+                      {group.sublabel && (
+                        <span className="font-mono text-[11px] font-normal text-muted-foreground">
+                          {group.sublabel}
+                        </span>
+                      )}
+                      <span className="text-xs font-normal text-muted-foreground">
+                        {group.totals.batchCount} batch(es)
                       </span>
-                      <span className="break-words">{group.name}</span>
                     </div>
                     <div className="ml-auto flex flex-wrap items-center gap-x-4 gap-y-0.5 font-mono text-xs tabular-nums">
                       <span className="text-muted-foreground">
                         Open{' '}
                         <strong className="text-foreground">
-                          {formatQty(group.opening, null, group.unit)}
+                          {formatQty(
+                            group.totals.opening,
+                            null,
+                            group.totals.unit,
+                          )}
                         </strong>
                       </span>
                       <span className="text-emerald-600">
                         In{' '}
                         <strong>
-                          +{formatQty(group.inward, null, group.unit)}
+                          +{formatQty(group.totals.inward, null, group.totals.unit)}
                         </strong>
                       </span>
                       <span className="text-orange-600">
                         Out{' '}
                         <strong>
-                          -{formatQty(group.outward, null, group.unit)}
+                          -{formatQty(group.totals.outward, null, group.totals.unit)}
                         </strong>
                       </span>
                       <span className="text-primary">
                         Close{' '}
                         <strong>
-                          {formatQty(group.closing, null, group.unit)}
+                          {formatQty(group.totals.closing, null, group.totals.unit)}
+                        </strong>
+                      </span>
+                      <span className="text-muted-foreground">
+                        Value{' '}
+                        <strong className="text-foreground">
+                          {formatCompactInr(group.totals.closingValue)}
                         </strong>
                       </span>
                     </div>
+                    {group.note && (
+                      <p className="w-full text-[11px] text-muted-foreground">
+                        {group.note}
+                      </p>
+                    )}
                   </div>
-                  {group.batches.map((batch) => (
-                    <BatchCard
-                      key={`${batch.itemId}-${batch.godownId}-${batch.batchNo}`}
-                      batch={batch}
-                      expanded={expandedKeys.has(
-                        `${batch.itemId}-${batch.godownId}-${batch.batchNo}`,
-                      )}
-                      onToggle={() =>
-                        toggle(
-                          `${batch.itemId}-${batch.godownId}-${batch.batchNo}`,
-                        )
-                      }
-                      openingAsOnDate={openingAsOnDate}
-                    />
-                  ))}
+                  <div className="space-y-2">{group.batches.map(renderBatch)}</div>
                 </div>
               ))}
             </div>
+          ) : layout === 'ranked' ? (
+            <BatchRanked
+              batches={batches}
+              onInspect={(batch) => inspect(batch, { needsTrail: true })}
+            />
+          ) : layout === 'pivot' ? (
+            <BatchPivot
+              batches={batches}
+              onInspect={(batch) => inspect(batch, { needsTrail: true })}
+            />
+          ) : (
+            <div className="space-y-3">{batches.map(renderBatch)}</div>
           )}
         </>
       )}
+
+      <BatchInspector
+        batch={inspectedBatch}
+        open={inspectorOpen}
+        onOpenChange={(open) => {
+          setInspectorOpen(open)
+          if (!open) {
+            setInspected(null)
+            setInspectorNeedsTrail(false)
+          }
+        }}
+        openingAsOnDate={openingAsOnDate}
+        ageingAsOnDate={report?.ageingAsOnDate ?? null}
+      />
     </Main>
   )
 }
 
-/* ────────────────────────────────────────────────────────────────────────
-   Batch card — header (item/godown/batch + O/I/O/C balances) and the
-   expandable chronological movement table with a running balance column.
-   ──────────────────────────────────────────────────────────────────────── */
-function BatchCard({
-  batch,
-  expanded,
-  onToggle,
-  openingAsOnDate,
-}: {
-  batch: BatchBalance
-  expanded: boolean
-  onToggle: () => void
-  /**
-   * "Opening as on" date (yyyy-MM-dd) — the 9010 opening voucher's date (the
-   * FY first day, e.g. 1-Apr), falling back to the reporting-period start.
-   * Labels the opening summary row.
-   */
-  openingAsOnDate?: string | null
-}) {
-  const dp = batch.noOfDecimalPlaces
-  // Serial column appears only when this batch's movements actually carry
-  // serial numbers — no vertical space wasted otherwise.
-  const hasSerials =
-    batch.movements.some((m) => !!m.serialNo) ||
-    (batch.openingMovements?.some((m) => !!m.serialNo) ?? false)
-
-  return (
-    <Card className="overflow-hidden">
-      {/* Summary row */}
-      <button
-        onClick={onToggle}
-        className="flex w-full flex-wrap items-center justify-between gap-3 p-4 text-left transition-colors hover:bg-muted/40"
-      >
-        <div className="flex min-w-0 flex-wrap items-center gap-2">
-          {expanded ? (
-            <IconChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
-          ) : (
-            <IconChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
-          )}
-          <IconPackage className="h-4 w-4 shrink-0 text-emerald-500" />
-          <span className="shrink-0 font-mono text-[11px] font-normal uppercase text-muted-foreground">
-            Item:
-          </span>
-          <span className="min-w-0 break-words font-semibold">
-            {batch.itemName}
-          </span>
-          {batch.itemCode && (
-            <span className="shrink-0 font-mono text-xs font-normal text-muted-foreground">
-              {batch.itemCode}
-            </span>
-          )}
-          <span className="flex min-w-0 shrink-0 items-center gap-1 text-sm">
-            <IconBuildingWarehouse className="h-3.5 w-3.5 text-blue-500" />
-            <span className="font-mono text-[11px] font-normal uppercase text-muted-foreground">
-              Godown:
-            </span>
-            <span className="break-words">
-              {batch.godownName ?? `Godown #${batch.godownId}`}
-            </span>
-          </span>
-          <Badge variant="outline" className="shrink-0 font-mono text-[11px]">
-            BatchNo: {batch.batchNo}
-          </Badge>
-          {batch.expiryDate && (
-            <span className="shrink-0 text-xs text-muted-foreground">
-              exp {formatDate(batch.expiryDate)}
-            </span>
-          )}
-        </div>
-        <div className="flex shrink-0 flex-wrap items-center gap-x-5 gap-y-1 text-sm">
-          <MiniStat
-            label="Open"
-            value={batch.openingQuantity}
-            dp={dp}
-            unit={batch.unitCode}
-          />
-          <MiniStat
-            label="In"
-            value={batch.inwardQuantity}
-            dp={dp}
-            unit={batch.unitCode}
-            className="text-emerald-600"
-          />
-          <MiniStat
-            label="Out"
-            value={batch.outwardQuantity}
-            dp={dp}
-            unit={batch.unitCode}
-            className="text-orange-600"
-          />
-          <MiniStat
-            label="Close"
-            value={batch.closingQuantity}
-            dp={dp}
-            unit={batch.unitCode}
-            className="font-semibold text-primary"
-          />
-        </div>
-      </button>
-
-      {/* Movement table */}
-      {expanded && (
-        <div className="border-t">
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[760px] text-sm">
-              <thead>
-                <tr className="border-b bg-muted/50 text-xs uppercase tracking-wide text-muted-foreground">
-                  <th className="px-4 py-2 text-left font-medium">Date</th>
-                  <th className="px-3 py-2 text-left font-medium">Voucher</th>
-                  <th className="px-3 py-2 text-left font-medium">Type</th>
-                  {hasSerials && (
-                    <th className="px-3 py-2 text-left font-medium">Serial</th>
-                  )}
-                  <th className="px-3 py-2 text-right font-medium">Inward</th>
-                  <th className="px-3 py-2 text-right font-medium">Outward</th>
-                  <th className="px-3 py-2 text-right font-medium">Balance</th>
-                  <th className="px-3 py-2 text-right font-medium">Rate</th>
-                  <th className="px-3 py-2 text-right font-medium">Amount</th>
-                  <th className="px-4 py-2 text-left font-medium">Remarks</th>
-                </tr>
-              </thead>
-              <tbody>
-                {/* Opening rows — one per current-FY opening row (opening-stock
-                    journal and/or pre-period movements), each tagged with its
-                    kind and a running balanceAfter; else a single
-                    carried-forward Opening balance row. */}
-                {(batch.openingMovements?.length
-                  ? batch.openingMovements
-                  : [null]
-                ).map((om, idx) => (
-                  <tr key={`open-${idx}`} className="border-b bg-muted/20">
-                    <td className="px-4 py-2 whitespace-nowrap text-muted-foreground">
-                      {/* Journal (9010) row carries the "Opening as on 1-Apr"
-                          label; pre-period trail rows show their own dates;
-                          the carried-forward placeholder falls back to the
-                          reporting-period / FY-start date. */}
-                      {om?.voucherDate
-                        ? idx === 0 && om.kind === 'journal'
-                          ? `Opening as on ${formatDate(om.voucherDate)}`
-                          : formatDate(om.voucherDate)
-                        : idx === 0
-                          ? openingAsOnDate
-                            ? `Opening as on ${formatDate(openingAsOnDate)}`
-                            : 'Opening'
-                          : ''}
-                    </td>
-                    <td className="px-3 py-2 font-mono text-xs text-muted-foreground">
-                      {om?.voucherNo ?? '—'}
-                    </td>
-                    <td className="px-3 py-2 text-xs text-muted-foreground">
-                      {om
-                        ? om.kind === 'journal'
-                          ? 'Opening journal'
-                          : 'Pre-period'
-                        : 'Opening balance'}
-                    </td>
-                    {hasSerials && (
-                      <td className="px-3 py-2 font-mono text-xs text-muted-foreground">
-                        {om?.serialNo ?? '—'}
-                      </td>
-                    )}
-                    <td className="px-3 py-2 text-right font-mono tabular-nums whitespace-nowrap text-emerald-600">
-                      {om
-                        ? om.movementType === 'in'
-                          ? `+${formatQty(om.quantity, dp, batch.unitCode)}`
-                          : '—'
-                        : '—'}
-                    </td>
-                    <td className="px-3 py-2 text-right font-mono tabular-nums whitespace-nowrap text-orange-600">
-                      {om
-                        ? om.movementType === 'out'
-                          ? `-${formatQty(om.quantity, dp, batch.unitCode)}`
-                          : '—'
-                        : '—'}
-                    </td>
-                    <td
-                      className={cn(
-                        'px-3 py-2 text-right font-mono tabular-nums font-semibold whitespace-nowrap',
-                        idx === (batch.openingMovements?.length ?? 0) - 1 ||
-                          !batch.openingMovements?.length
-                          ? 'text-foreground'
-                          : 'text-muted-foreground',
-                      )}
-                    >
-                      {formatQty(
-                        om ? om.balanceAfter : batch.openingQuantity,
-                        dp,
-                        batch.unitCode,
-                      )}
-                    </td>
-                    <td className="px-3 py-2 text-right font-mono tabular-nums whitespace-nowrap text-muted-foreground">
-                      {om && om.rate > 0 ? formatAmt(om.rate) : '—'}
-                    </td>
-                    <td className="px-3 py-2 text-right font-mono tabular-nums whitespace-nowrap text-muted-foreground">
-                      {om ? formatAmt(om.amount) : '—'}
-                    </td>
-                    <td className="px-4 py-2 text-xs text-muted-foreground">
-                      {om?.remarks ?? (idx === 0 ? 'Brought forward' : '')}
-                    </td>
-                  </tr>
-                ))}
-                {/* The opening trail's last row already shows the opening
-                    balance as on the period start (balanceAfter) — no extra
-                    summary row, it would just repeat the same number. */}
-                {batch.movements.map((mv, idx) => (
-                  <MovementRow
-                    key={idx}
-                    mv={mv}
-                    dp={dp}
-                    unit={batch.unitCode}
-                    showSerial={hasSerials}
-                  />
-                ))}
-                {/* Closing row */}
-                <tr className="border-t-2 border-primary/30 bg-primary/[0.04] font-semibold">
-                  <td className="px-4 py-2 text-primary" colSpan={3}>
-                    Closing balance
-                  </td>
-                  {hasSerials && <td className="px-3 py-2" />}
-                  <td className="px-3 py-2 text-right font-mono tabular-nums whitespace-nowrap text-emerald-600">
-                    {batch.inwardQuantity > 0
-                      ? `+${formatQty(batch.inwardQuantity, dp, batch.unitCode)}`
-                      : '—'}
-                  </td>
-                  <td className="px-3 py-2 text-right font-mono tabular-nums whitespace-nowrap text-orange-600">
-                    {batch.outwardQuantity > 0
-                      ? `-${formatQty(batch.outwardQuantity, dp, batch.unitCode)}`
-                      : '—'}
-                  </td>
-                  <td className="px-3 py-2 text-right font-mono tabular-nums whitespace-nowrap text-primary">
-                    {formatQty(batch.closingQuantity, dp, batch.unitCode)}
-                  </td>
-                  <td className="px-3 py-2" colSpan={3} />
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          {batch.movements.length === 0 && (
-            <div className="px-4 py-3 text-sm text-muted-foreground">
-              No movements in the selected window — balance carried from
-              opening.
-            </div>
-          )}
-        </div>
-      )}
-    </Card>
-  )
-}
-
-function MiniStat({
+function IssueChip({
   label,
-  value,
-  dp,
-  unit,
-  className,
+  count,
+  tone,
+  active,
+  onClick,
 }: {
   label: string
-  value: number
-  dp: number
-  unit: string | null
-  className?: string
+  count: number
+  tone: BatchGroupTone
+  active: boolean
+  onClick: () => void
 }) {
   return (
-    <div className={cn('text-right', className)}>
-      <span className="mr-1 text-xs text-muted-foreground">{label}</span>
-      <span className="font-mono tabular-nums">
-        {formatQty(value, dp, unit)}
-      </span>
-    </div>
-  )
-}
-
-function MovementRow({
-  mv,
-  dp,
-  unit,
-  showSerial,
-}: {
-  mv: BatchMovement
-  dp: number
-  unit: string | null
-  showSerial: boolean
-}) {
-  const isIn = mv.movementType === 'in'
-  return (
-    <tr className="border-b last:border-0 hover:bg-muted/20">
-      <td className="px-4 py-2 whitespace-nowrap">
-        {formatDate(mv.voucherDate)}
-      </td>
-      <td className="px-3 py-2 font-medium">{mv.voucherNo ?? '—'}</td>
-      <td className="px-3 py-2">
-        <Badge variant="outline" className="text-[11px]">
-          {mv.voucherTypeName ?? 'Voucher'}
-        </Badge>
-      </td>
-      {showSerial && (
-        <td className="px-3 py-2 font-mono text-xs text-muted-foreground">
-          {mv.serialNo ?? '—'}
-        </td>
+    <button
+      type="button"
+      onClick={onClick}
+      // Named for the action so it can never be confused with the batch cards
+      // that show the same issue label.
+      aria-label={`Filter by ${label}`}
+      aria-pressed={active}
+      className={cn(
+        'flex w-full items-center justify-between gap-2 rounded border px-1.5 py-0.5 text-left text-[11px] transition-colors',
+        count === 0
+          ? 'border-transparent text-muted-foreground/70'
+          : TONE_HEADER_CLASSES[tone],
+        active && 'ring-1 ring-primary',
       )}
-      <td
-        className={cn(
-          'px-3 py-2 text-right font-mono tabular-nums whitespace-nowrap',
-          isIn ? 'text-emerald-600' : 'text-muted-foreground',
-        )}
-      >
-        {isIn ? `+${formatQty(mv.quantity, dp, unit)}` : '—'}
-      </td>
-      <td
-        className={cn(
-          'px-3 py-2 text-right font-mono tabular-nums whitespace-nowrap',
-          !isIn ? 'text-orange-600' : 'text-muted-foreground',
-        )}
-      >
-        {!isIn ? `-${formatQty(mv.quantity, dp, unit)}` : '—'}
-      </td>
-      <td className="px-3 py-2 text-right font-mono tabular-nums whitespace-nowrap font-semibold">
-        {formatQty(mv.runningBalance, dp, unit)}
-      </td>
-      <td className="px-3 py-2 text-right font-mono tabular-nums whitespace-nowrap text-muted-foreground">
-        {mv.rate > 0 ? formatAmt(mv.rate) : '—'}
-      </td>
-      <td className="px-3 py-2 text-right font-mono tabular-nums text-muted-foreground">
-        {mv.amount > 0 ? formatAmt(mv.amount) : '—'}
-      </td>
-      <td className="max-w-[220px] truncate px-4 py-2 text-muted-foreground">
-        {mv.remarks ?? '—'}
-      </td>
-    </tr>
+    >
+      <span className="truncate">{label}</span>
+      <span className="font-mono tabular-nums">{count}</span>
+    </button>
   )
 }

@@ -33,7 +33,10 @@ export default function CurrencyDetails(props: CurrencyProps) {
 
         {/* Form */}
         <div className="mx-auto w-full max-w-3xl pb-8">
-          <ActionPages currentRow={data} key={`currencies-${data?.id ?? 'add'}`} />
+          <ActionPages
+            currentRow={data}
+            key={`currencies-${data?.id ?? 'add'}`}
+          />
         </div>
       </div>
     </Main>

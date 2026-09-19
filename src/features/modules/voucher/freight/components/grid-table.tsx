@@ -8,6 +8,7 @@ import {
 import { rankItem } from '@tanstack/match-sorter-utils'
 import { MixerHorizontalIcon } from '@radix-ui/react-icons'
 import { useEffect, useMemo, useRef, useState } from 'react'
+import type { ReactNode } from 'react'
 import { ChevronDown, ChevronUp, Search } from 'lucide-react'
 import type {
   ColumnDef,
@@ -33,6 +34,7 @@ import {
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Skeleton } from '@/components/ui/skeleton'
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -90,6 +92,11 @@ interface DataTableProps {
   /** API query params for the list — reused by the export to fetch ALL
    *  matching records (current filters applied) instead of just this page. */
   exportParams?: FreightQueryParams
+  /** True while the data rows are being fetched — the toolbar and table header
+   *  stay mounted and the body shows skeleton rows instead. */
+  isLoading?: boolean
+  /** Rendered inside the table body when there is nothing to show. */
+  emptyState?: ReactNode
 }
 
 /**
@@ -318,6 +325,8 @@ export function GridTable({
   amountTo,
   onAmountChange,
   exportParams,
+  isLoading = false,
+  emptyState,
 }: DataTableProps) {
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [sorting, setSorting] = useState<SortingState>([])
@@ -824,7 +833,52 @@ export function GridTable({
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows.length ? (
+            {isLoading ? (
+              // Skeleton rows keep the toolbar + table header mounted while
+              // only the data rows are being fetched.
+              Array.from({ length: Math.max(localPageSize, 1) }).map((_, i) => (
+                <TableRow
+                  key={`skeleton-row-${i}`}
+                  className="border-b border-border/60"
+                >
+                  {table.getVisibleLeafColumns().map((column, colIdx) => (
+                    <TableCell
+                      key={`skeleton-cell-${i}-${column.id}`}
+                      style={{
+                        width: column.getSize(),
+                        minWidth: column.columnDef.minSize,
+                        maxWidth: column.columnDef.maxSize,
+                      }}
+                      className={cn(
+                        'px-3 py-2.5',
+                        column.columnDef.meta?.className ?? '',
+                        column.id === 'actions' &&
+                          'sticky right-0 z-10 bg-background',
+                      )}
+                    >
+                      <Skeleton
+                        className="h-3.5"
+                        style={{
+                          width:
+                            colIdx === 0
+                              ? '40%'
+                              : `${45 + ((i * 7 + colIdx * 13) % 45)}%`,
+                        }}
+                      />
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : !table.getRowModel().rows.length && emptyState ? (
+              <TableRow>
+                <TableCell
+                  colSpan={table.getVisibleLeafColumns().length}
+                  className="p-0"
+                >
+                  {emptyState}
+                </TableCell>
+              </TableRow>
+            ) : table.getRowModel().rows.length ? (
               table.getRowModel().rows.map((row, rowIdx) => (
                 <TableRow
                   key={row.id}

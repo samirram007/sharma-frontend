@@ -257,10 +257,7 @@ export function FormAction({ currentRow }: Props) {
                 </div>
               </div>
             ) : (
-              <CurrentLiabilityGroupsDropdown
-                form={form}
-                gapClass={gapClass}
-              />
+              <CurrentLiabilityGroupsDropdown form={form} gapClass={gapClass} />
             )}
             <FormInputField
               type="checkbox"

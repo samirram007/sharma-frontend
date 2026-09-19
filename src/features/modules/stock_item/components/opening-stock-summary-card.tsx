@@ -237,10 +237,7 @@ export default function OpeningStockSummaryCard({
         </div>
         <Button asChild size="sm" variant="outline">
           {voucher?.id ? (
-            <Link
-              to={OPENING_STOCK_VOUCHER_ROUTE}
-              params={{ id: voucher.id }}
-            >
+            <Link to={OPENING_STOCK_VOUCHER_ROUTE} params={{ id: voucher.id }}>
               Edit in Opening Stock
               <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
             </Link>

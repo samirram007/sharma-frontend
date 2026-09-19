@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { BatchBalance, BatchBalancingReport } from './data/schema'
-import { buildCsv, flattenForExport } from './export-utils'
+import { buildCsv, EXPORT_COLUMNS, flattenForExport } from './export-utils'
 
 function makeBatch(overrides: Partial<BatchBalance> = {}): BatchBalance {
   return {
@@ -21,6 +21,24 @@ function makeBatch(overrides: Partial<BatchBalance> = {}): BatchBalance {
     inwardQuantity: 0,
     outwardQuantity: 0,
     closingQuantity: 0.45,
+    openingValue: 0,
+    inwardValue: 0,
+    outwardValue: 0,
+    closingValue: 0,
+    averageRate: 0,
+    daysSinceMfg: null,
+    daysToExpiry: null,
+    expiryStatus: 'none',
+    movementCount: 0,
+    firstMovementDate: null,
+    lastMovementDate: null,
+    flags: {
+      carryForwardOpening: false,
+      journalVariance: false,
+      negativeClosing: false,
+      noMovement: false,
+    },
+    issues: [],
     movements: [],
     openingMovements: [
       {
@@ -46,6 +64,8 @@ function makeReport(batches: BatchBalance[]): BatchBalancingReport {
     asOnDate: '2026-04-01',
     fromDate: '2026-04-01',
     toDate: '2027-03-31',
+    ageingAsOnDate: '2027-03-31',
+    expiryWithinDays: 90,
     batches,
     totals: {
       batchCount: batches.length,
@@ -55,8 +75,64 @@ function makeReport(batches: BatchBalance[]): BatchBalancingReport {
       totalInward: 0,
       totalOutward: 0,
       totalClosing: 0.45,
+      totalOpeningValue: 0,
+      totalInwardValue: 0,
+      totalOutwardValue: 0,
+      totalClosingValue: 0,
+      carryForwardCount: 0,
+      journalVarianceCount: 0,
+      negativeCount: 0,
+      noMovementCount: 0,
+      zeroClosingCount: 0,
+      expiredCount: 0,
+      expiringCount: 0,
     },
+    pagination: { page: 1, perPage: 100, total: batches.length, totalPages: 1, hasMore: false },
+    sort: { by: 'item', dir: 'asc' },
+    voucherTypes: [],
   }
+}
+
+/** A batch with a real trail — used by the valuation / flag assertions. */
+function makeTradingBatch(overrides: Partial<BatchBalance> = {}) {
+  return makeBatch({
+    inwardQuantity: 20,
+    outwardQuantity: 5,
+    openingValue: 100,
+    inwardValue: 240,
+    outwardValue: 60,
+    closingValue: 280,
+    averageRate: 11.2,
+    movementCount: 2,
+    lastMovementDate: '2026-08-10',
+    movements: [
+      {
+        voucherId: 2,
+        voucherNo: 'PURC-2',
+        voucherDate: '2026-08-01',
+        voucherTypeName: 'Purchase',
+        movementType: 'in',
+        quantity: 20,
+        rate: 12,
+        amount: 240,
+        remarks: null,
+        runningBalance: 140,
+      },
+      {
+        voucherId: 3,
+        voucherNo: 'SALE-2',
+        voucherDate: '2026-08-10',
+        voucherTypeName: 'Sales',
+        movementType: 'out',
+        quantity: 5,
+        rate: 12,
+        amount: 60,
+        remarks: null,
+        runningBalance: 135,
+      },
+    ],
+    ...overrides,
+  })
 }
 
 describe('batch balancing export', () => {
@@ -138,5 +214,91 @@ describe('batch balancing export', () => {
     // 2 batches × (OPENING + CLOSING) = 4 lines carrying the 0.45 balance.
     const balanceLines = lines.filter((l) => l.includes('"0.45"'))
     expect(balanceLines).toHaveLength(4)
+  })
+
+  it('exports rate, value, ageing and the batch flags on every row', () => {
+    const batch = makeTradingBatch({
+      expiryDate: '2027-03-01',
+      daysToExpiry: -30,
+      expiryStatus: 'expired',
+      flags: {
+        carryForwardOpening: true,
+        journalVariance: true,
+        negativeClosing: false,
+        noMovement: false,
+      },
+    })
+    const rows = flattenForExport(makeReport([batch]))
+    const headers = EXPORT_COLUMNS.map((c) => c.header)
+
+    expect(headers).toContain('Value')
+    expect(headers).toContain('Days To Expiry')
+    expect(headers).toContain('Flags')
+
+    // Movement rows carry their own rate / value.
+    const inward = rows.find((r) => r.movement === 'INWARD')!
+    expect(inward.rate).toBe('12.00')
+    expect(inward.value).toBe('240.00')
+
+    // The closing row carries the batch valuation.
+    const closing = rows.find((r) => r.movement === 'CLOSING')!
+    expect(closing.rate).toBe('11.20')
+    expect(closing.value).toBe('280.00')
+
+    // Batch-level context repeats on every row so spreadsheet filters work.
+    for (const row of rows) {
+      expect(row.expiryDate).toBe('01 Mar 2027')
+      expect(row.daysToExpiry).toBe('-30')
+      expect(row.flags).toBe('No opening voucher; Opening variance')
+    }
+  })
+
+  it('adds SUBTOTAL rows per item and an optional TOTAL row', () => {
+    const report = makeReport([
+      makeTradingBatch({ itemId: 1, itemName: 'Item A', batchNo: 'A1' }),
+      makeTradingBatch({
+        itemId: 1,
+        itemName: 'Item A',
+        batchNo: 'A2',
+        inwardValue: 100,
+        inwardQuantity: 10,
+      }),
+      makeTradingBatch({ itemId: 2, itemName: 'Item B', batchNo: 'B1' }),
+    ])
+
+    // Default: flat, one row per movement, no subtotals.
+    expect(
+      flattenForExport(report).filter((r) => r.movement === 'SUBTOTAL'),
+    ).toHaveLength(0)
+
+    const grouped = flattenForExport(report, { groupBy: 'item' })
+    const subtotals = grouped.filter((r) => r.movement === 'SUBTOTAL')
+    expect(subtotals).toHaveLength(2)
+    expect(subtotals[0].itemName).toBe('Item A')
+    expect(subtotals[0].detail).toContain('2 batch(es)')
+    // Item A: inward 20 + 10 = 30 (counted from the batch aggregates).
+    expect(subtotals[0].inward).toBe('30.00')
+    expect(subtotals[1].itemName).toBe('Item B')
+
+    const withTotals = flattenForExport(
+      makeReport([makeTradingBatch({ inwardValue: 240 })]),
+      { totals: true },
+    )
+    const total = withTotals.at(-1)!
+    expect(total.movement).toBe('TOTAL')
+    expect(total.detail).toBe('1 batch(es)')
+  })
+
+  it('groups godown subtotals by godown name', () => {
+    const report = makeReport([
+      makeTradingBatch({ batchNo: 'A1', godownId: 1, godownName: 'Main' }),
+      makeTradingBatch({ batchNo: 'A2', godownId: 2, godownName: 'Store' }),
+    ])
+
+    const subtotals = flattenForExport(report, { groupBy: 'godown' }).filter(
+      (r) => r.movement === 'SUBTOTAL',
+    )
+
+    expect(subtotals.map((r) => r.godownName)).toEqual(['Main', 'Store'])
   })
 })

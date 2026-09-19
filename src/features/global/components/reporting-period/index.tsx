@@ -275,19 +275,29 @@ export const PeriodDetailsDialog = ({
 
   const handleSubmit = () => {
     form.handleSubmit((data) => {
-      if (data.startDate && typeof data.startDate === 'string') {
-        data.startDate = new Date(data.startDate)
+      // Send plain Y-m-d strings — JS Date objects serialize to ISO-UTC over
+      // axios, which a backend in a non-UTC timezone would shift by ±1 day
+      // when casting into a DATE column.
+      const toYmd = (value: unknown): string | null => {
+        if (!value) return null
+        const d = value instanceof Date ? value : new Date(String(value))
+        return isNaN(d.getTime())
+          ? null
+          : `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`
       }
-      if (data.endDate && typeof data.endDate === 'string') {
-        data.endDate = new Date(data.endDate)
+      const startDate = toYmd(data.startDate)
+      const endDate = toYmd(data.endDate)
+      if (!startDate || !endDate) {
+        toast.error('Start and end dates are required')
+        return
       }
-      if (data.startDate && data.endDate && data.startDate > data.endDate) {
+      if (startDate > endDate) {
         toast.error('Start date cannot be after end date')
         return
       }
 
       saveReportingPeriod(
-        { ...data },
+        { startDate, endDate },
         {
           onSuccess: () => {
             toast.success('Reporting period updated successfully')

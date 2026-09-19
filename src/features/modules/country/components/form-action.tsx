@@ -119,7 +119,11 @@ export function FormAction({ currentRow }: Props) {
           </Button>
           <Button type="submit" disabled={isPending}>
             {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {isPending ? 'Saving...' : isEdit ? 'Save Changes' : 'Create Country'}
+            {isPending
+              ? 'Saving...'
+              : isEdit
+                ? 'Save Changes'
+                : 'Create Country'}
           </Button>
         </div>
       </form>

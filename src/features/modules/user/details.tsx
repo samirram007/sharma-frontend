@@ -41,7 +41,9 @@ export default function UserDetails(props: UserProps) {
               </Link>
             </Button>
             <Avatar className="size-10 border border-slate-200/70 dark:border-white/10">
-              {data?.avatar && <AvatarImage src={data.avatar} alt={data.name} />}
+              {data?.avatar && (
+                <AvatarImage src={data.avatar} alt={data.name} />
+              )}
               <AvatarFallback className="font-medium">
                 {initials || '?'}
               </AvatarFallback>
@@ -74,7 +76,10 @@ export default function UserDetails(props: UserProps) {
 
         {/* Form */}
         <div className="mx-auto w-full max-w-3xl pb-8">
-          <ActionPages currentRow={data} key={isEdit ? `user-edit-${data.id}` : 'user-add'} />
+          <ActionPages
+            currentRow={data}
+            key={isEdit ? `user-edit-${data.id}` : 'user-add'}
+          />
         </div>
       </div>
     </Main>

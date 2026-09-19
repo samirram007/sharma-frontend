@@ -119,10 +119,7 @@ export function FormAction({ currentRow }: Props) {
               label="Mailing Name"
             />
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <CompanyTypeDropdown
-                form={form}
-                gapClass={labelLayoutClass}
-              />
+              <CompanyTypeDropdown form={form} gapClass={labelLayoutClass} />
               <CurrencyDropdown form={form} gapClass={labelLayoutClass} />
             </div>
             <FormInputField
@@ -238,7 +235,11 @@ export function FormAction({ currentRow }: Props) {
           </Button>
           <Button type="submit" disabled={isPending}>
             {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {isPending ? 'Saving...' : isEdit ? 'Save Changes' : 'Create Company'}
+            {isPending
+              ? 'Saving...'
+              : isEdit
+                ? 'Save Changes'
+                : 'Create Company'}
           </Button>
         </div>
       </form>

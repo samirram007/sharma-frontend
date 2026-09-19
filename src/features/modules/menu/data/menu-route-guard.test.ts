@@ -247,9 +247,7 @@ describe('guardMenuRoutes fail-open behavior', () => {
     // Backend down / 500 on the full menu list: the guard must swallow the
     // error instead of crashing the navigation into the global 500 page.
     vi.mocked(fetchMenuService).mockRejectedValue(new Error('network down'))
-    vi.mocked(fetchMenuTreeService).mockRejectedValue(
-      new Error('network down'),
-    )
+    vi.mocked(fetchMenuTreeService).mockRejectedValue(new Error('network down'))
 
     await expect(
       guardMenuRoutes(context, '/reports/day_book', 'enter'),

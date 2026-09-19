@@ -17,7 +17,10 @@ import type { PaginationMeta } from './data/schema'
 import { Main } from '@/layouts/components/main'
 interface FreightProps {
   data: DeliveryNoteList
+  /** True only before the first page of data has arrived. */
   isLoading?: boolean
+  /** True while any freight query is in flight (incl. background refetches). */
+  isFetching?: boolean
   paginationMeta?: PaginationMeta
   totalFareOverall?: number
   deliveryPlaces?: DeliveryPlaceList
@@ -32,6 +35,7 @@ interface FreightProps {
 export default function Freight({
   data: freightListSchema,
   isLoading,
+  isFetching,
   paginationMeta,
   totalFareOverall,
   zones,
@@ -202,45 +206,47 @@ export default function Freight({
       <div className="min-h-0 flex-1 overflow-auto rounded-xl border border-border bg-card shadow-xs p-4">
         {isLoading ? (
           <SkeletonTable rowCount={10} colCount={6} />
-        ) : freightListSchema.length === 0 ? (
-          <div className="flex flex-col items-center justify-center px-4 py-16 text-center sm:py-24">
-            {/* Empty state illustration */}
-            <div className="mb-5 rounded-full bg-muted p-6 shadow-inner">
-              <PackageOpen className="h-12 w-12 text-muted-foreground" />
-            </div>
-
-            {/* Title */}
-            <h3 className="text-lg font-semibold text-foreground">
-              No delivery notes available
-            </h3>
-
-            {/* Description */}
-            <p className="mt-2 max-w-sm text-sm leading-relaxed text-muted-foreground">
-              {localFreightStatus === 'prepared'
-                ? 'No delivery notes with fare entered found in this period.'
-                : localFreightStatus === 'all'
-                  ? 'No delivery notes found in this period.'
-                  : 'All delivery notes in this period have their fare entered. New delivery notes will appear here once their dispatch details are filled in.'}
-            </p>
-
-            {(localSearch ||
-              localZoneId ||
-              localAmountFrom !== '' ||
-              localAmountTo !== '' ||
-              localFreightStatus !== 'pending') && (
-              <button
-                onClick={handleReset}
-                className="mt-4 rounded-lg border border-border bg-background px-4 py-2 text-xs font-medium text-muted-foreground shadow-xs transition-colors hover:bg-accent hover:text-accent-foreground"
-              >
-                Clear filters
-              </button>
-            )}
-          </div>
         ) : (
           <FreightProvider>
             <GridTable
               columns={columns}
               data={freightListSchema as any}
+              isLoading={isFetching}
+              emptyState={
+                <div className="flex flex-col items-center justify-center px-4 py-16 text-center sm:py-24">
+                  {/* Empty state illustration */}
+                  <div className="mb-5 rounded-full bg-muted p-6 shadow-inner">
+                    <PackageOpen className="h-12 w-12 text-muted-foreground" />
+                  </div>
+
+                  {/* Title */}
+                  <h3 className="text-lg font-semibold text-foreground">
+                    No delivery notes available
+                  </h3>
+
+                  {/* Description */}
+                  <p className="mt-2 max-w-sm text-sm leading-relaxed text-muted-foreground">
+                    {localFreightStatus === 'prepared'
+                      ? 'No delivery notes with fare entered found in this period.'
+                      : localFreightStatus === 'all'
+                        ? 'No delivery notes found in this period.'
+                        : 'All delivery notes in this period have their fare entered. New delivery notes will appear here once their dispatch details are filled in.'}
+                  </p>
+
+                  {(localSearch ||
+                    localZoneId ||
+                    localAmountFrom !== '' ||
+                    localAmountTo !== '' ||
+                    localFreightStatus !== 'pending') && (
+                    <button
+                      onClick={handleReset}
+                      className="mt-4 rounded-lg border border-border bg-background px-4 py-2 text-xs font-medium text-muted-foreground shadow-xs transition-colors hover:bg-accent hover:text-accent-foreground"
+                    >
+                      Clear filters
+                    </button>
+                  )}
+                </div>
+              }
               pageCount={pageCount}
               pageIndex={pageIndex}
               pageSize={pageSize}
