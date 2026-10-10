@@ -148,6 +148,58 @@ test('ranked, pivot and ageing views render the new inspection layouts', async (
   await expect(page.getByText(/Manufacturing age/).first()).toBeVisible()
 })
 
+test('voucher-type-wise view lists each batch with its batch no and godown', async ({
+  page,
+}) => {
+  await page.goto('/reports/batch_balancing')
+  await expectNoErrorState(page)
+
+  await page.getByPlaceholder('Search batch no / item').fill('ULTRATECH')
+  await page.getByRole('button', { name: 'Apply' }).click()
+  await expect(page.getByText('Batches (all matches)')).toBeVisible({
+    timeout: 20_000,
+  })
+
+  await page.getByLabel('Report view').click()
+  await page.getByRole('option', { name: 'Voucher-type-wise' }).click()
+
+  // One block per voucher type, each a table of the batches behind it — the
+  // batch no and godown are columns, not just a card header.
+  await expect(
+    page.getByText(/each row is one batch's lines/),
+  ).toBeVisible({ timeout: 20_000 })
+  await expect(
+    page.getByRole('columnheader', { name: 'Batch no' }).first(),
+  ).toBeVisible()
+  await expect(
+    page.getByRole('columnheader', { name: 'Godown' }).first(),
+  ).toBeVisible()
+
+  const rows = page.locator('tbody tr')
+  expect(await rows.count()).toBeGreaterThan(0)
+
+  // Every row is identified by its batch no and godown (the first two cells).
+  const cells = rows.first().locator('td')
+  expect((await cells.nth(0).innerText()).trim().length).toBeGreaterThan(0)
+  expect((await cells.nth(1).innerText()).trim().length).toBeGreaterThan(0)
+
+  // A row still opens the batch's movement trail in the inspector, which
+  // repeats the same two columns on every trail row.
+  await rows.first().click()
+  await expect(page.getByRole('tab', { name: 'Trail' })).toBeVisible()
+  await expect(
+    page.getByRole('tabpanel').getByRole('columnheader', { name: 'Batch no' }),
+  ).toBeVisible({ timeout: 20_000 })
+  await expect(
+    page.getByRole('tabpanel').getByRole('columnheader', { name: 'Godown' }),
+  ).toBeVisible()
+  await expect(
+    page.getByRole('tabpanel').getByText('Closing balance'),
+  ).toBeVisible({ timeout: 20_000 })
+
+  await expectNoErrorState(page)
+})
+
 test('filters can be saved as a preset and re-applied after a reload', async ({
   page,
 }) => {

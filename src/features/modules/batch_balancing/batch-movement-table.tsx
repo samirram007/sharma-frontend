@@ -22,6 +22,7 @@ export function BatchMovementTable({
   openingAsOnDate?: string | null
 }) {
   const dp = batch.noOfDecimalPlaces
+  const godownLabel = batch.godownName ?? `Godown #${batch.godownId}`
 
   // The serial column only appears when this batch's rows actually carry
   // serial numbers — no vertical space wasted otherwise.
@@ -31,9 +32,13 @@ export function BatchMovementTable({
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full min-w-[760px] text-sm">
+      <table className="w-full min-w-[980px] text-sm">
         <thead>
           <tr className="border-b bg-muted/50 text-xs uppercase tracking-wide text-muted-foreground">
+            {/* Batch no + godown repeat on every row so a printed or pasted
+                trail stays self-describing (and sorts/filters by batch). */}
+            <th className="px-4 py-2 text-left font-medium">Batch no</th>
+            <th className="px-3 py-2 text-left font-medium">Godown</th>
             <th className="px-4 py-2 text-left font-medium">Date</th>
             <th className="px-3 py-2 text-left font-medium">Voucher</th>
             <th className="px-3 py-2 text-left font-medium">Type</th>
@@ -56,6 +61,12 @@ export function BatchMovementTable({
           {(batch.openingMovements?.length ? batch.openingMovements : [null]).map(
             (om, idx) => (
               <tr key={`open-${idx}`} className="border-b bg-muted/20">
+                <td className="px-4 py-2 font-mono text-xs font-medium whitespace-nowrap">
+                  {batch.batchNo}
+                </td>
+                <td className="px-3 py-2 whitespace-nowrap">
+                  {godownLabel}
+                </td>
                 <td className="px-4 py-2 whitespace-nowrap text-muted-foreground">
                   {/* Journal (9010) row carries the "Opening as on 1-Apr"
                       label; pre-period trail rows show their own dates; the
@@ -137,10 +148,12 @@ export function BatchMovementTable({
               dp={dp}
               unit={batch.unitCode}
               showSerial={hasSerials}
+              batchNo={batch.batchNo}
+              godown={godownLabel}
             />
           ))}
           <tr className="border-t-2 border-primary/30 bg-primary/[0.04] font-semibold">
-            <td className="px-4 py-2 text-primary" colSpan={3}>
+            <td className="px-4 py-2 text-primary" colSpan={5}>
               Closing balance
             </td>
             {hasSerials && <td className="px-3 py-2" />}
@@ -181,15 +194,23 @@ function MovementRow({
   dp,
   unit,
   showSerial,
+  batchNo,
+  godown,
 }: {
   mv: BatchMovement
   dp: number
   unit: string | null
   showSerial: boolean
+  batchNo: string
+  godown: string
 }) {
   const isIn = mv.movementType === 'in'
   return (
     <tr className="border-b last:border-0 hover:bg-muted/20">
+      <td className="px-4 py-2 font-mono text-xs font-medium whitespace-nowrap">
+        {batchNo}
+      </td>
+      <td className="px-3 py-2 whitespace-nowrap">{godown}</td>
       <td className="px-4 py-2 whitespace-nowrap">
         {formatDate(mv.voucherDate)}
       </td>

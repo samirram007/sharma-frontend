@@ -706,7 +706,7 @@ export default function BatchLifelineReport() {
             <LifelineTimeline
               rows={rows}
               years={years}
-              showBucket={multipleBuckets && bucketKey === ALL_BUCKETS}
+              showItem={multipleBuckets && bucketKey === ALL_BUCKETS}
               asOnDate={lifeline.asOnDate}
               seedRowCount={lifeline.meta.seedRowCount}
             />

@@ -709,6 +709,70 @@ describe('groupByVoucherType', () => {
     expect(byLabel['Purchase'].batches.map((b) => b.batchNo)).toEqual(['B1'])
   })
 
+  it('breaks each voucher type down into per-batch rows carrying batch no and godown', () => {
+    const batchA = makeBatch({
+      itemId: 1,
+      itemName: 'Item A',
+      batchNo: 'B1',
+      godownId: 1,
+      godownName: 'Main Godown',
+      movements: [
+        movement({ voucherTypeName: 'Purchase', movementType: 'in', quantity: 20, amount: 240 }),
+        movement({ voucherTypeName: 'Sales', movementType: 'out', quantity: 5, amount: 60 }),
+      ],
+    })
+    const batchB = makeBatch({
+      itemId: 2,
+      itemName: 'Item B',
+      batchNo: 'B2',
+      godownId: 7,
+      godownName: null,
+      movements: [
+        movement({ voucherTypeName: 'Purchase', movementType: 'in', quantity: 4, amount: 48 }),
+        movement({ voucherTypeName: 'Purchase', movementType: 'in', quantity: 6, amount: 72 }),
+      ],
+    })
+
+    const byLabel = Object.fromEntries(
+      groupByVoucherType([batchA, batchB]).map((g) => [g.label, g]),
+    )
+
+    // One row per batch, in report order, with its own line count.
+    expect(byLabel['Purchase'].rows.map((r) => r.batchNo)).toEqual(['B1', 'B2'])
+    expect(byLabel['Purchase'].rows.map((r) => r.godownName)).toEqual([
+      'Main Godown',
+      null,
+    ])
+    expect(byLabel['Purchase'].rows.map((r) => r.lineCount)).toEqual([1, 2])
+    expect(byLabel['Purchase'].rows.map((r) => r.batch)).toEqual([
+      batchA,
+      batchB,
+    ])
+
+    // A batch's lines aggregate into a single row (B2 booked twice).
+    const second = byLabel['Purchase'].rows[1]
+    expect(second.inward).toBe(10)
+    expect(second.inwardValue).toBe(120)
+    expect(second.godownId).toBe(7)
+
+    // Rows reconcile with the group's own totals.
+    const purchase = byLabel['Purchase']
+    expect(purchase.rows.reduce((sum, r) => sum + r.inward, 0)).toBe(
+      purchase.inward,
+    )
+    expect(purchase.rows.reduce((sum, r) => sum + r.inwardValue, 0)).toBe(
+      purchase.inwardValue,
+    )
+    expect(purchase.rows.reduce((sum, r) => sum + r.lineCount, 0)).toBe(
+      purchase.movementCount,
+    )
+
+    // Out-only voucher types still get their row.
+    expect(byLabel['Sales'].rows.map((r) => r.batchNo)).toEqual(['B1'])
+    expect(byLabel['Sales'].rows[0].outward).toBe(5)
+    expect(byLabel['Sales'].rows[0].inward).toBe(0)
+  })
+
   it('returns nothing for batches without any trail', () => {
     expect(groupByVoucherType([makeBatch()])).toEqual([])
   })

@@ -971,6 +971,29 @@ export function groupBatches(
    Voucher-type contribution view
    ──────────────────────────────────────────────────────────────────────── */
 
+/**
+ * One batch's slice of a voucher type — the voucher type's table row. The
+ * quantity / value figures cover only that batch's lines booked under this
+ * voucher type, so the rows sum back to the group's totals.
+ */
+export interface VoucherTypeBatchRow {
+  /** Batch identity — item + godown + batch no, unique within the report. */
+  key: string
+  batch: BatchBalance
+  batchNo: string
+  itemId: number
+  itemName: string
+  itemCode: string | null
+  godownId: number
+  godownName: string | null
+  /** Voucher lines this batch contributed to the voucher type. */
+  lineCount: number
+  inward: number
+  outward: number
+  inwardValue: number
+  outwardValue: number
+}
+
 export interface VoucherTypeContribution {
   key: string
   label: string
@@ -981,6 +1004,8 @@ export interface VoucherTypeContribution {
   movementCount: number
   unit: string | null
   batches: BatchBalance[]
+  /** Per-batch breakdown behind `batches`, in report order. */
+  rows: VoucherTypeBatchRow[]
 }
 
 type MovementLike = Pick<
@@ -998,6 +1023,8 @@ export function groupByVoucherType(
   batches: BatchBalance[],
 ): VoucherTypeContribution[] {
   const groups = new Map<string, VoucherTypeContribution>()
+  // Per-voucher-type row index so a batch's rows are found without scanning.
+  const rowIndex = new Map<string, Map<string, VoucherTypeBatchRow>>()
 
   const push = (batch: BatchBalance, movement: MovementLike) => {
     const label = movement.voucherTypeName ?? 'Unclassified'
@@ -1013,8 +1040,10 @@ export function groupByVoucherType(
         movementCount: 0,
         unit: batch.unitCode,
         batches: [],
+        rows: [],
       }
       groups.set(label, group)
+      rowIndex.set(label, new Map())
     }
 
     if (movement.movementType === 'in') {
@@ -1026,6 +1055,39 @@ export function groupByVoucherType(
     }
     group.movementCount += 1
     if (!group.batches.includes(batch)) group.batches.push(batch)
+
+    // Batch identity: item + godown + batch no (the report's own key).
+    const rowKey = `${batch.itemId}-${batch.godownId}-${batch.batchNo}`
+    const rowsOfGroup = rowIndex.get(label)!
+    let row = rowsOfGroup.get(rowKey)
+    if (!row) {
+      row = {
+        key: rowKey,
+        batch,
+        batchNo: batch.batchNo,
+        itemId: batch.itemId,
+        itemName: batch.itemName,
+        itemCode: batch.itemCode,
+        godownId: batch.godownId,
+        godownName: batch.godownName,
+        lineCount: 0,
+        inward: 0,
+        outward: 0,
+        inwardValue: 0,
+        outwardValue: 0,
+      }
+      rowsOfGroup.set(rowKey, row)
+      group.rows.push(row)
+    }
+
+    if (movement.movementType === 'in') {
+      row.inward += movement.quantity
+      row.inwardValue += movement.amount
+    } else {
+      row.outward += movement.quantity
+      row.outwardValue += movement.amount
+    }
+    row.lineCount += 1
   }
 
   for (const batch of batches) {
@@ -1040,6 +1102,15 @@ export function groupByVoucherType(
       outward: round(group.outward, 4),
       inwardValue: round(group.inwardValue, 2),
       outwardValue: round(group.outwardValue, 2),
+      // Rows keep their first-appearance (report) order; the batch no and
+      // godown are repeated on every row so spreadsheet-style filtering works.
+      rows: group.rows.map((row) => ({
+        ...row,
+        inward: round(row.inward, 4),
+        outward: round(row.outward, 4),
+        inwardValue: round(row.inwardValue, 2),
+        outwardValue: round(row.outwardValue, 2),
+      })),
     }))
     .sort(
       (a, b) =>

@@ -128,7 +128,7 @@ export function BatchLifelinePanel({
         <LifelineTimeline
           rows={lifeline.rows}
           years={lifeline.years}
-          showBucket={multipleBuckets}
+          showItem={multipleBuckets}
           compact
           asOnDate={lifeline.asOnDate}
           seedRowCount={lifeline.meta.seedRowCount}

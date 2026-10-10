@@ -65,31 +65,36 @@ const BatchSelection = (props: BatchSelectionProps) => {
     stockItem?.stockUnit?.noOfDecimalPlaces,
   )
 
-  const frameworks =
-    batches.data?.map((batch: BatchData) => {
-      // An empty batch no leaves the CommandItem with an empty value,
-      // which cmdk can't reach with the up/down arrow keys. Fall back
-      // to a displayable placeholder so keyboard navigation still works.
-      // batchNo must be a string: older cached responses (or a PHP
-      // numeric-key cast) can deliver it as a number, and .trim() on a
-      // number crashes this component (and with it the whole voucher page).
-      const batchNo =
-        (typeof batch.batchNo === 'string'
-          ? batch.batchNo.trim()
-          : batch.batchNo != null
-            ? String(batch.batchNo)
-            : '') || 'Unknown'
-      return {
-        label: batchNo,
-        value: batchNo,
-        stockInHand: batch.stockInHand,
-        stockUnitLabel: stockItem?.stockUnit
-          ? capitalizeAllWords(stockItem.stockUnit.code!)
-          : '',
-        className: 'min-w-full hover:bg-blue-300',
-        stockInHandFormatted: batch.stockInHand?.toFixed(noOfDecimalPlaces),
-      }
-    }) || []
+ const frameworks = [
+  {
+    label: 'Select Batch',
+    value: '',
+    stockInHand: undefined,
+    stockUnitLabel: '',
+    className: 'min-w-full hover:bg-blue-300',
+    stockInHandFormatted: '',
+  },
+
+  ...(batches.data?.map((batch: BatchData) => {
+    const batchNo =
+      (typeof batch.batchNo === 'string'
+        ? batch.batchNo.trim()
+        : batch.batchNo != null
+          ? String(batch.batchNo)
+          : '') || 'Unknown'
+
+    return {
+      label: batchNo,
+      value: batchNo,
+      stockInHand: batch.stockInHand,
+      stockUnitLabel: stockItem?.stockUnit
+        ? capitalizeAllWords(stockItem.stockUnit.code!)
+        : '',
+      className: 'min-w-full hover:bg-blue-300',
+      stockInHandFormatted: batch.stockInHand?.toFixed(noOfDecimalPlaces),
+    }
+  }) ?? []),
+]
 
   const handleSelect = (value: string) => {
     form.setValue(`batchNo`, String(value))
@@ -131,6 +136,7 @@ const BatchSelection = (props: BatchSelectionProps) => {
 
   const selectedLabel = (
     <div className="flex flex-row justify-between w-full">
+    
       {selected ? (
         <>
           <div>{selected?.label}</div>{' '}

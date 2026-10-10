@@ -29,15 +29,19 @@ const KIND_META: Record<
 export function LifelineTimeline({
   rows,
   years,
-  showBucket = false,
+  showItem = false,
   compact = false,
   asOnDate = null,
   seedRowCount = 0,
 }: {
   rows: LifelineRow[]
   years: LifelineYear[]
-  /** Item + godown columns — needed once a batch number spans several buckets. */
-  showBucket?: boolean
+  /**
+   * Item column — needed once a batch number spans several item/godown
+   * buckets. The batch no and godown columns are always shown, because every
+   * line of a lifeline is identified by the batch it belongs to.
+   */
+  showItem?: boolean
   /** Drops the serial / remarks columns for the inspector's narrow panel. */
   compact?: boolean
   asOnDate?: string | null
@@ -58,17 +62,24 @@ export function LifelineTimeline({
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full min-w-[900px] text-sm">
+      <table
+        className={cn(
+          'w-full text-sm',
+          compact ? 'min-w-[880px]' : 'min-w-[1080px]',
+        )}
+      >
         <thead>
           <tr className="border-b bg-muted/50 text-xs uppercase tracking-wide text-muted-foreground">
+            {/* Batch no + godown repeat on every row (as in the movement trail
+                and the exports), so the timeline stays self-describing on
+                paper and when filtered in a spreadsheet. */}
+            <th className="px-4 py-2 text-left font-medium">Batch no</th>
+            <th className="px-3 py-2 text-left font-medium">Godown</th>
             <th className="px-4 py-2 text-left font-medium">Date</th>
             <th className="px-3 py-2 text-left font-medium">Voucher</th>
             <th className="px-3 py-2 text-left font-medium">Type</th>
-            {showBucket && (
-              <>
-                <th className="px-3 py-2 text-left font-medium">Item</th>
-                <th className="px-3 py-2 text-left font-medium">Godown</th>
-              </>
+            {showItem && (
+              <th className="px-3 py-2 text-left font-medium">Item</th>
             )}
             {!compact && (
               <th className="px-3 py-2 text-left font-medium">Serial</th>
@@ -98,20 +109,22 @@ export function LifelineTimeline({
                   showSeedNote={
                     seedRowCount > 0 && seenYears.size === 1 ? seedRowCount : 0
                   }
-                  columns={
-                    3 +
-                    (showBucket ? 2 : 0) +
-                    (compact ? 0 : 1) +
-                    5 +
-                    (compact ? 0 : 1)
-                  }
+                  // Batch no + godown + date/voucher/type = 5 leading columns,
+                  // + item, + serial & remarks when not compact, + the 5 value
+                  // columns.
+                  columns={10 + (showItem ? 1 : 0) + (compact ? 0 : 2)}
                   asOnDate={asOnDate}
                 />,
               )
             }
 
             nodes.push(
-              <LifelineLine key={row.key} row={row} showBucket={showBucket} compact={compact} />,
+              <LifelineLine
+                key={row.key}
+                row={row}
+                showItem={showItem}
+                compact={compact}
+              />,
             )
 
             return nodes
@@ -209,17 +222,18 @@ function YearMarker({
 
 function LifelineLine({
   row,
-  showBucket,
+  showItem,
   compact,
 }: {
   row: LifelineRow
-  showBucket: boolean
+  showItem: boolean
   compact: boolean
 }) {
   const dp = row.noOfDecimalPlaces
   const kind = KIND_META[row.kind]
   const isIn = row.movementType === 'in'
   const snapshot = row.kind === 'closing'
+  const godownLabel = row.godownName ?? `Godown #${row.godownId}`
 
   return (
     <tr
@@ -230,6 +244,12 @@ function LifelineLine({
         !row.applied && 'opacity-90',
       )}
     >
+      <td className="whitespace-nowrap px-4 py-2 font-mono text-xs font-medium">
+        {row.batchNo}
+      </td>
+      <td className="max-w-[180px] truncate px-3 py-2 text-muted-foreground whitespace-nowrap">
+        {godownLabel}
+      </td>
       <td className="whitespace-nowrap px-4 py-2">
         {row.voucherDate ? formatDate(row.voucherDate) : '—'}
       </td>
@@ -270,13 +290,8 @@ function LifelineLine({
           )}
         </div>
       </td>
-      {showBucket && (
-        <>
-          <td className="max-w-[200px] truncate px-3 py-2">{row.itemName}</td>
-          <td className="max-w-[180px] truncate px-3 py-2 text-muted-foreground">
-            {row.godownName ?? `Godown #${row.godownId}`}
-          </td>
-        </>
+      {showItem && (
+        <td className="max-w-[200px] truncate px-3 py-2">{row.itemName}</td>
       )}
       {!compact && (
         <td className="px-3 py-2 font-mono text-xs text-muted-foreground">

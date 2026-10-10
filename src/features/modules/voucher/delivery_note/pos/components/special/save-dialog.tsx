@@ -33,7 +33,7 @@ const SaveDialog = ({ mainForm, isSaving, setSaving }: SaveDialogProps) => {
   const [checking, setChecking] = useState(true)
   const [valid, setValid] = useState(false) // for success animation
   const handleSaving = () => {
-    // console.log('Form submitted', mainForm.getValues());
+    console.log('Form submitted', mainForm.getValues());
 
     createDeliveryNote(mainForm.getValues())
   }
@@ -180,6 +180,14 @@ const SaveDialog = ({ mainForm, isSaving, setSaving }: SaveDialogProps) => {
               `Entry #${entryIndex + 1}, Godown #${gIndex + 1}: Amount must be > 0.`,
             )
           }
+
+        if (!g.batchNo) {
+            newErrors.push(
+                `Entry #${entryIndex + 1}, Godown #${gIndex + 1}: Batch number is required.`
+            );
+        }
+
+
         })
       })
 

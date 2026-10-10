@@ -74,6 +74,7 @@ import { BatchGrid } from './batch-grid'
 import { BatchInspector } from './batch-inspector'
 import { BatchPivot } from './batch-pivot'
 import { BatchRanked } from './batch-ranked'
+import { BatchVoucherTypes } from './batch-voucher-types'
 import { FilterSheetSelect } from './filter-sheet-select'
 import { useItemStockMeta } from './use-item-stock-meta'
 import {
@@ -1259,52 +1260,10 @@ export default function BatchBalancingReport() {
               onInspect={(batch) => inspect(batch)}
             />
           ) : layout === 'voucher-types' ? (
-            <div className="space-y-4">
-              {contributions.length === 0 ? (
-                <Card>
-                  <CardContent className="py-10 text-center text-sm text-muted-foreground">
-                    No movement trail on this page — try the batch-wise view or
-                    widen the filters.
-                  </CardContent>
-                </Card>
-              ) : (
-                contributions.map((contribution) => (
-                  <div key={contribution.key} className="space-y-2">
-                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-md border bg-muted/40 px-3 py-2">
-                      <div className="flex min-w-0 items-center gap-2 text-sm font-semibold">
-                        <IconTags className="h-4 w-4 shrink-0 text-primary" />
-                        <span className="break-words">
-                          {contribution.label}
-                        </span>
-                        <span className="text-xs font-normal text-muted-foreground">
-                          {contribution.movementCount} line(s) ·{' '}
-                          {contribution.batches.length} batch(es)
-                        </span>
-                      </div>
-                      <div className="ml-auto flex flex-wrap items-center gap-x-4 gap-y-0.5 font-mono text-xs tabular-nums">
-                        <span className="text-emerald-600">
-                          In{' '}
-                          <strong>
-                            +{formatQty(contribution.inward, null, contribution.unit)}
-                          </strong>{' '}
-                          · {formatAmt(contribution.inwardValue)}
-                        </span>
-                        <span className="text-orange-600">
-                          Out{' '}
-                          <strong>
-                            -{formatQty(contribution.outward, null, contribution.unit)}
-                          </strong>{' '}
-                          · {formatAmt(contribution.outwardValue)}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      {contribution.batches.map(renderBatch)}
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
+            <BatchVoucherTypes
+              contributions={contributions}
+              onInspect={(batch) => inspect(batch)}
+            />
           ) : layout === 'grouped' ? (
             <div className="space-y-4">
               {groups.map((group) => (
