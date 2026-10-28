@@ -1,6 +1,11 @@
 import { useNavigate } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
-import { IconEdit, IconLoader2 } from '@tabler/icons-react'
+import {
+  IconEdit,
+  IconLoader2,
+  IconLock,
+  IconLockOpen,
+} from '@tabler/icons-react'
 import { useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -16,6 +21,10 @@ import {
 import { deliveryNoteQueryOptions } from '@/features/modules/voucher/delivery_note/data/queryOptions'
 import DispatchDetailsButton from '@/features/modules/voucher/freight/components/dispatch-details-button'
 import { resolveDispatchWeight } from '@/features/modules/voucher/shared/dispatch-defaults'
+import {
+  deliveryLockSummary,
+  deliveryUnlockSummary,
+} from '@/features/modules/voucher/shared/delivery-lock'
 import { EstimatedHint } from '@/features/modules/voucher/shared/EstimatedHint'
 import { cn } from '@/lib/utils'
 import { formatLocale, formatQty } from '@/utils/format-num'
@@ -268,6 +277,35 @@ const SummaryBody = ({
             : ''}{' '}
           — click the voucher no to edit.
         </DialogDescription>
+
+        {/* Delivery lock history — reason, moment and user for both the
+            postponement and (once released) the unlock. */}
+        {data.deliveryLocked && (
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <Badge
+              variant="outline"
+              className="gap-1 text-xs text-rose-700 border-rose-300 bg-rose-50/60 dark:text-rose-300 dark:border-rose-800 dark:bg-rose-950/30"
+            >
+              <IconLock className="h-3 w-3" /> Postponed
+            </Badge>
+            <span className="text-xs text-muted-foreground">
+              {deliveryLockSummary(data)}
+            </span>
+          </div>
+        )}
+        {!data.deliveryLocked && data.deliveryUnlockedAt && (
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <Badge
+              variant="outline"
+              className="gap-1 text-xs text-emerald-700 border-emerald-300 bg-emerald-50/60 dark:text-emerald-300 dark:border-emerald-800 dark:bg-emerald-950/30"
+            >
+              <IconLockOpen className="h-3 w-3" /> Released
+            </Badge>
+            <span className="text-xs text-muted-foreground">
+              {deliveryUnlockSummary(data)}
+            </span>
+          </div>
+        )}
       </DialogHeader>
 
       <div className="space-y-4">

@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { PackageOpen } from 'lucide-react'
+import { Lock, PackageOpen } from 'lucide-react'
 import { SkeletonTable } from '@/components/skeleton'
 import { GridTable } from './components/grid-table'
 import { columns } from './components/columns'
 import FreightProvider from './contexts/freight-context'
+import { Dialogs } from './components/dialogs'
 import type { FreightSearchParams } from '@/routes/_protected/transactions/_provider/freight/_layout/index'
 import type { TransporterList } from '../../transporter/data/schema'
 import type { DeliveryVehicleList } from '../../delivery_vehicle/data/schema'
@@ -13,6 +14,7 @@ import type { DeliveryNoteList } from '../delivery_note/data/schema'
 import type { GodownList } from '@/features/modules/godown/data/schema'
 import type { FreightQueryParams } from './data/api'
 import type { PaginationMeta } from './data/schema'
+import type { SortingState } from '@tanstack/react-table'
 
 import { Main } from '@/layouts/components/main'
 interface FreightProps {
@@ -23,6 +25,8 @@ interface FreightProps {
   isFetching?: boolean
   paginationMeta?: PaginationMeta
   totalFareOverall?: number
+  /** Postponed (locked) deliveries in the current scope — header counter. */
+  postponedCount?: number
   deliveryPlaces?: DeliveryPlaceList
   deliveryVehicles?: DeliveryVehicleList
   transporter?: TransporterList
@@ -35,9 +39,9 @@ interface FreightProps {
 export default function Freight({
   data: freightListSchema,
   isLoading,
-  isFetching,
   paginationMeta,
   totalFareOverall,
+  postponedCount,
   zones,
   exportParams,
   search,
@@ -51,11 +55,33 @@ export default function Freight({
   const [localZoneId, setLocalZoneId] = useState<number | undefined>(
     search?.zoneId,
   )
-  const [localAmountFrom, setLocalAmountFrom] = useState<string>(
-    search?.amountFrom != null ? String(search.amountFrom) : '',
-  )
-  const [localAmountTo, setLocalAmountTo] = useState<string>(
-    search?.amountTo != null ? String(search.amountTo) : '',
+
+  // Server-side sort: the URL carries the API field (snake_case), the table
+  // expects the column id — map back so the header shows the active arrow.
+  const sortFieldReverseMap: Record<string, string> = {
+    voucher_date: 'voucherDate',
+    voucher_no: 'voucherNo',
+    party: 'partyName',
+  }
+  const sorting: SortingState = search?.sortBy
+    ? [
+        {
+          id: sortFieldReverseMap[search.sortBy] ?? search.sortBy,
+          desc: search.sortOrder === 'desc',
+        },
+      ]
+    : []
+
+  const handleSortChange = useCallback(
+    (sortBy: string, sortOrder: string) => {
+      onSearchChange?.({
+        sortBy: sortBy || undefined,
+        sortOrder:
+          sortOrder === 'asc' || sortOrder === 'desc' ? sortOrder : undefined,
+        page: 1,
+      })
+    },
+    [onSearchChange],
   )
 
   // Server-side pagination values from API response meta
@@ -79,17 +105,7 @@ export default function Freight({
     setLocalSearch(search?.search ?? '')
     setLocalFreightStatus(search?.freightStatus ?? 'pending')
     setLocalZoneId(search?.zoneId)
-    setLocalAmountFrom(
-      search?.amountFrom != null ? String(search.amountFrom) : '',
-    )
-    setLocalAmountTo(search?.amountTo != null ? String(search.amountTo) : '')
-  }, [
-    search?.search,
-    search?.freightStatus,
-    search?.zoneId,
-    search?.amountFrom,
-    search?.amountTo,
-  ])
+  }, [search?.search, search?.freightStatus, search?.zoneId])
 
   // Debounced auto-search: committing the text search as the user types (they
   // no longer need to press Enter). Status/zone filters commit
@@ -106,55 +122,16 @@ export default function Freight({
     return () => clearTimeout(timer)
   }, [localSearch, search?.search, onSearchChange])
 
-  // Fare range follows the same debounced pattern as search: committing on
-  // every keystroke made the URL update race the typing, and the sync-back
-  // effect clobbered in-progress input ("1000" degenerated to "1").
-  useEffect(() => {
-    const urlFrom = search?.amountFrom
-    const urlTo = search?.amountTo
-    const fromNum =
-      localAmountFrom !== '' && !isNaN(Number(localAmountFrom))
-        ? Number(localAmountFrom)
-        : undefined
-    const toNum =
-      localAmountTo !== '' && !isNaN(Number(localAmountTo))
-        ? Number(localAmountTo)
-        : undefined
-    if (fromNum === urlFrom && toNum === urlTo) return
-    const timer = setTimeout(() => {
-      onSearchChange?.({
-        amountFrom: fromNum,
-        amountTo: toNum,
-        page: 1,
-      })
-    }, 400)
-    return () => clearTimeout(timer)
-  }, [
-    localAmountFrom,
-    localAmountTo,
-    search?.amountFrom,
-    search?.amountTo,
-    onSearchChange,
-  ])
-
-  const handleAmountChange = useCallback((from: string, to: string) => {
-    // Local-only while typing — the debounced effect commits to the URL.
-    setLocalAmountFrom(from)
-    setLocalAmountTo(to)
-  }, [])
-
   const handleReset = useCallback(() => {
     setLocalSearch('')
     setLocalFreightStatus('pending')
     setLocalZoneId(undefined)
-    setLocalAmountFrom('')
-    setLocalAmountTo('')
     onSearchChange?.({
       search: undefined,
       freightStatus: undefined,
       zoneId: undefined,
-      amountFrom: undefined,
-      amountTo: undefined,
+      sortBy: undefined,
+      sortOrder: undefined,
       page: 1,
     })
   }, [onSearchChange])
@@ -189,15 +166,42 @@ export default function Freight({
           <h2 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
             Freight
           </h2>
-          <p className="text-xs text-muted-foreground sm:text-sm">
-            {meta?.total !== undefined
-              ? `${meta.total} delivery note${meta.total !== 1 ? 's' : ''} ${localFreightStatus === 'prepared' ? 'with fare entered' : localFreightStatus === 'all' ? 'found' : 'awaiting fare entry'}`
-              : localFreightStatus === 'prepared'
-                ? 'Delivery notes with fare entered'
-                : localFreightStatus === 'all'
-                  ? 'All delivery notes'
-                  : 'Delivery notes awaiting fare entry'}
-          </p>
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="text-xs text-muted-foreground sm:text-sm">
+              {meta?.total !== undefined
+                ? `${meta.total} delivery note${meta.total !== 1 ? 's' : ''} ${
+                    localFreightStatus === 'prepared'
+                      ? 'with fare entered'
+                      : localFreightStatus === 'locked'
+                        ? 'postponed'
+                        : localFreightStatus === 'all'
+                          ? 'found'
+                          : 'awaiting fare entry'
+                  }`
+                : localFreightStatus === 'prepared'
+                  ? 'Delivery notes with fare entered'
+                  : localFreightStatus === 'locked'
+                    ? 'Postponed (locked) delivery notes'
+                    : localFreightStatus === 'all'
+                      ? 'All delivery notes'
+                      : 'Delivery notes awaiting fare entry'}
+            </p>
+
+            {/* Postponed counter — click to jump to the Postponed filter. */}
+            {postponedCount !== undefined && postponedCount > 0 && (
+              <button
+                type="button"
+                onClick={() =>
+                  onSearchChange?.({ freightStatus: 'locked', page: 1 })
+                }
+                title="Show postponed (locked) deliveries"
+                className="inline-flex items-center gap-1 rounded-full border border-rose-200 bg-rose-50 px-2 py-0.5 text-[11px] font-semibold text-rose-700 transition-colors hover:bg-rose-100 dark:border-rose-900 dark:bg-rose-950/40 dark:text-rose-300 dark:hover:bg-rose-950/70"
+              >
+                <Lock className="h-3 w-3" />
+                {postponedCount} postponed
+              </button>
+            )}
+          </div>
         </div>
         <div className="flex items-center gap-2"></div>
       </div>
@@ -211,7 +215,12 @@ export default function Freight({
             <GridTable
               columns={columns}
               data={freightListSchema as any}
-              isLoading={isFetching}
+              // Rows are intentionally NOT skeletonized during background
+              // refetches: the route query uses keepPreviousData, so the
+              // previous rows stay accurate while the refetch runs. Swapping
+              // the body for skeletons unmounted BillCell and threw away the
+              // Freight Bill print dialog it had just opened (the mutation's
+              // own invalidation triggers that refetch).
               emptyState={
                 <div className="flex flex-col items-center justify-center px-4 py-16 text-center sm:py-24">
                   {/* Empty state illustration */}
@@ -228,15 +237,15 @@ export default function Freight({
                   <p className="mt-2 max-w-sm text-sm leading-relaxed text-muted-foreground">
                     {localFreightStatus === 'prepared'
                       ? 'No delivery notes with fare entered found in this period.'
-                      : localFreightStatus === 'all'
-                        ? 'No delivery notes found in this period.'
-                        : 'All delivery notes in this period have their fare entered. New delivery notes will appear here once their dispatch details are filled in.'}
+                      : localFreightStatus === 'locked'
+                        ? 'No deliveries are postponed in this period.'
+                        : localFreightStatus === 'all'
+                          ? 'No delivery notes found in this period.'
+                          : 'All delivery notes in this period have their fare entered. New delivery notes will appear here once their dispatch details are filled in.'}
                   </p>
 
                   {(localSearch ||
                     localZoneId ||
-                    localAmountFrom !== '' ||
-                    localAmountTo !== '' ||
                     localFreightStatus !== 'pending') && (
                     <button
                       onClick={handleReset}
@@ -261,11 +270,11 @@ export default function Freight({
               zones={zones}
               zoneId={localZoneId}
               onZoneChange={handleZoneChange}
-              amountFrom={localAmountFrom}
-              amountTo={localAmountTo}
-              onAmountChange={handleAmountChange}
               exportParams={exportParams}
+              sorting={sorting}
+              onSortChange={handleSortChange}
             />
+            <Dialogs />
           </FreightProvider>
         )}
       </div>

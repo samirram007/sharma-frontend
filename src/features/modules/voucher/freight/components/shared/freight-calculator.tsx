@@ -16,6 +16,7 @@ import {
   computeFare,
   computeNetAdjustment,
   computeRateFromCharge,
+  computeSenderFreightCharge,
 } from '../../../shared/freight-fare'
 import type { VoucherDispatchDetailForm } from '../../../data-schema/voucher-schema'
 import type {
@@ -121,6 +122,7 @@ export const FreightCalculator = ({ form }: FreightCalculatorProps) => {
 
   const freightBasis = form.watch('freightBasis')
   const rate = form.watch('rate')
+  const senderRate = form.watch('senderRate')
   const weight = form.watch('weight')
   const loadingCharges = form.watch('loadingCharges')
   const unloadingCharges = form.watch('unloadingCharges')
@@ -164,10 +166,15 @@ export const FreightCalculator = ({ form }: FreightCalculatorProps) => {
     })
 
     form.setValue('freightCharges', baseFare)
+    form.setValue(
+      'senderFreightCharges',
+      computeSenderFreightCharge(senderRate, weight),
+    )
     form.setValue('totalFare', totalFare)
   }, [
     freightBasis,
     rate,
+    senderRate,
     weight,
     loadingCharges,
     unloadingCharges,
@@ -219,6 +226,20 @@ export const FreightCalculator = ({ form }: FreightCalculatorProps) => {
             <FreightChargesBox form={form} />
           </div>
         </div>
+        <div aria-hidden="true" className="hidden sm:block" />
+        <ChargeField
+          icon={IndianRupee}
+          label={`Sender Rate (Per ${freightBasis ?? 'Mt'})`}
+          name="senderRate"
+          form={form}
+        />
+        <ChargeField
+          icon={IndianRupee}
+          label="Sender Freight Charges (₹)"
+          name="senderFreightCharges"
+          form={form}
+          readOnly
+        />
       </div>
 
       <div className="mt-5 border-t border-slate-100 pt-4 dark:border-slate-700">

@@ -17,6 +17,7 @@ import {
   FreightPrintContent,
   DeliveryNotePrintContent,
 } from '../../shared/print-content'
+import { PrinterIcon } from 'lucide-react'
 
 type Props = {
   data: DayBookSchema
@@ -62,8 +63,10 @@ const PrintDialog = (props: Props) => {
           </VisuallyHidden>
           <DialogDescription>
             <div onClick={() => onOpenChange(false)}>
-              <IconPrinter size={18} className="inline-block mr-2" /> Print{' '}
-              {props.data.voucherType?.name}
+              <>
+                <PrinterIcon size={18} className="inline-block mr-2" />
+                Print {props.data.voucherType?.name}
+              </>
             </div>
           </DialogDescription>
         </DialogHeader>

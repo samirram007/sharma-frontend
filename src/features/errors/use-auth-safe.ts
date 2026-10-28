@@ -11,6 +11,7 @@ const fallback: AuthContextType = {
   permissions: [],
   userFiscalYear: null,
   period: null,
+  refreshPermissions: async () => {},
   setPeriod: () => {},
   login: async () => {},
   logout: async () => {},

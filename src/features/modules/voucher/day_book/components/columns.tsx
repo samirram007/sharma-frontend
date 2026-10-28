@@ -18,6 +18,7 @@ import {
 } from '../../../../../utils/removeEmptyStrings'
 import { VoucherTypeColorMapping } from '../data/data'
 import type { DayBookSchema } from '../data/schema'
+import DeliveryLockBadge from './delivery-lock-badge'
 import RowActions from './row-actions'
 import VoucherNoSummaryDialog from './voucher-no-summary-dialog'
 import { useAuth } from '@/features/auth/contexts/AuthContext'
@@ -198,6 +199,9 @@ export const columns: ColumnDef<DayBookSchema>[] = [
         </TooltipProvider>
       )
     },
+    // The dispatch block is free text/spans several fields — the API cannot
+    // order by it, so no sort control is offered.
+    enableSorting: false,
     enableHiding: false,
   },
   {
@@ -282,54 +286,75 @@ export const columns: ColumnDef<DayBookSchema>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Status" />
     ),
+    // Status + lock chip may sit on two lines: let the cell wrap between the
+    // badges (each badge keeps its own text on one line).
+    meta: { className: 'whitespace-normal' },
+    // Derived cell (freight done / paid / postponed) — not a sortable column.
+    enableSorting: false,
     cell: ({ row }) => {
       const { voucherType, module, referencedBy, paymentStatus } = row.original
 
-      // Delivery Note: show freight status
-      if (voucherType?.id === 2001) {
-        const hasFreight = referencedBy?.some((ref) => ref.type === 'freight')
-        return (
-          <Badge
-            variant="outline"
-            className={cn(
-              'capitalize text-xs',
-              hasFreight
-                ? 'text-green-600 dark:text-green-400 border-green-300 dark:border-green-700 bg-green-50/50 dark:bg-green-950/30'
-                : 'text-amber-600 dark:text-amber-400 border-amber-300 dark:border-amber-700 bg-amber-50/50 dark:bg-amber-950/30',
-            )}
-          >
-            {hasFreight ? 'Freight Done' : 'No Freight'}
-          </Badge>
-        )
-      }
+      // Delivery Note: freight status
+      const statusBadge =
+        voucherType?.id === 2001
+          ? (() => {
+              const hasFreight = referencedBy?.some(
+                (ref) => ref.type === 'freight',
+              )
+              return (
+                <Badge
+                  variant="outline"
+                  className={cn(
+                    'capitalize text-xs',
+                    hasFreight
+                      ? 'text-green-600 dark:text-green-400 border-green-300 dark:border-green-700 bg-green-50/50 dark:bg-green-950/30'
+                      : 'text-amber-600 dark:text-amber-400 border-amber-300 dark:border-amber-700 bg-amber-50/50 dark:bg-amber-950/30',
+                  )}
+                >
+                  {hasFreight ? 'Freight Done' : 'No Freight'}
+                </Badge>
+              )
+            })()
+          : module === 'freight'
+            ? // Freight: payment receipt status
+              (() => {
+                const status = paymentStatus ?? 'unpaid'
+                const isPaid = status === 'paid'
+                const isPartial = status === 'partially_paid'
+                return (
+                  <Badge
+                    variant="outline"
+                    className={cn(
+                      'capitalize text-xs',
+                      isPaid
+                        ? 'text-green-600 dark:text-green-400 border-green-300 dark:border-green-700 bg-green-50/50 dark:bg-green-950/30'
+                        : isPartial
+                          ? 'text-blue-600 dark:text-blue-400 border-blue-300 dark:border-blue-700 bg-blue-50/50 dark:bg-blue-950/30'
+                          : 'text-amber-600 dark:text-amber-400 border-amber-300 dark:border-amber-700 bg-amber-50/50 dark:bg-amber-950/30',
+                    )}
+                  >
+                    {status === 'paid'
+                      ? 'Paid'
+                      : status === 'partially_paid'
+                        ? 'Partial'
+                        : 'Unpaid'}
+                  </Badge>
+                )
+              })()
+            : null
 
-      // Freight: show payment receipt status
-      if (module === 'freight') {
-        const status = paymentStatus ?? 'unpaid'
-        const isPaid = status === 'paid'
-        const isPartial = status === 'partially_paid'
-        return (
-          <Badge
-            variant="outline"
-            className={cn(
-              'capitalize text-xs',
-              isPaid
-                ? 'text-green-600 dark:text-green-400 border-green-300 dark:border-green-700 bg-green-50/50 dark:bg-green-950/30'
-                : isPartial
-                  ? 'text-blue-600 dark:text-blue-400 border-blue-300 dark:border-blue-700 bg-blue-50/50 dark:bg-blue-950/30'
-                  : 'text-amber-600 dark:text-amber-400 border-amber-300 dark:border-amber-700 bg-amber-50/50 dark:bg-amber-950/30',
-            )}
-          >
-            {status === 'paid'
-              ? 'Paid'
-              : status === 'partially_paid'
-                ? 'Partial'
-                : 'Unpaid'}
-          </Badge>
-        )
-      }
-
-      return <div className="text-muted-foreground/50 text-xs">—</div>
+      // The delivery lock (postponed / released) rides next to the status as
+      // its own chip, so it is visible whatever else the status says. The chip
+      // never wraps internally (`whitespace-nowrap`) — the cell wraps between
+      // the two badges instead, which keeps each label readable.
+      return (
+        <div className="flex min-w-0 flex-wrap items-center gap-1">
+          {statusBadge ?? (
+            <span className="text-muted-foreground/50 text-xs">—</span>
+          )}
+          <DeliveryLockBadge row={row.original} />
+        </div>
+      )
     },
     enableHiding: false,
   },

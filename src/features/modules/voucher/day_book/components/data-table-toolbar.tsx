@@ -18,6 +18,7 @@ import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
 import { DataTableViewOptions } from '@/features/tasks/components/data-table-view-options'
 import { fetchUsedVoucherTypesService } from '../data/api'
+import { dayBookExportStatus } from '../data/export-status'
 import { date_format } from '@/utils/removeEmptyStrings'
 import { Cross2Icon, CheckIcon, PlusCircledIcon } from '@radix-ui/react-icons'
 import type { Table } from '@tanstack/react-table'
@@ -91,34 +92,16 @@ export function DataTableToolbar<TData>({
   }, [onVoucherTypeChange])
 
   const exportData = useMemo(() => {
-    return (filteredRows as any[]).map((row) => {
-      // Compute status display value matching the status column logic
-      let status = '—'
-      if (row.voucherType?.id === 2001) {
-        const hasFreight = row.referencedBy?.some(
-          (ref: any) => ref.type === 'freight',
-        )
-        status = hasFreight ? 'Freight Done' : 'No Freight'
-      } else if (row.module === 'freight') {
-        const paymentStatus = row.paymentStatus ?? 'unpaid'
-        status =
-          paymentStatus === 'paid'
-            ? 'Paid'
-            : paymentStatus === 'partially_paid'
-              ? 'Partial'
-              : 'Unpaid'
-      }
-
-      return {
-        voucherDate: date_format(row.voucherDate) ?? '',
-        partyLedger: row.partyLedger?.name ?? '',
-        voucherType: row.voucherType?.name ?? '',
-        voucherNo: row.voucherNo ?? '',
-        status,
-        billingPreference: row.voucherDispatchDetail?.billingPreference ?? '',
-        amount: row.amount ?? '',
-      }
-    })
+    return (filteredRows as any[]).map((row) => ({
+      voucherDate: date_format(row.voucherDate) ?? '',
+      partyLedger: row.partyLedger?.name ?? '',
+      voucherType: row.voucherType?.name ?? '',
+      voucherNo: row.voucherNo ?? '',
+      // Status text carries the delivery lock chip (postponed / released).
+      status: dayBookExportStatus(row),
+      billingPreference: row.voucherDispatchDetail?.billingPreference ?? '',
+      amount: row.amount ?? '',
+    }))
   }, [filteredRows])
 
   const filteredColumn = exportColumnsData.filter((col) => {

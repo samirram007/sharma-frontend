@@ -121,6 +121,7 @@ export const voucherDispatchDetailSchema = z.object({
   distance: z.coerce.number().nullish(),
   distanceUnitId: z.number().int().positive().nullish(),
   rate: z.coerce.number().nullish(),
+  senderRate: z.coerce.number().nullish(),
   rateUnitId: z.number().int().nonnegative().nullish(),
   quantity: z.coerce.number().nullish(),
   weight: z.coerce.number().nullish(),
@@ -136,6 +137,7 @@ export const voucherDispatchDetailSchema = z.object({
   otherCharges: z.coerce.number().nullish(),
   discount: z.coerce.number().nullish(),
   freightCharges: z.coerce.number().nullish(),
+  senderFreightCharges: z.coerce.number().nullish(),
   totalFare: z.coerce.number().nullish(),
   billingPreference: billingPreferenceSchema.nullish(),
   isEdit: z.boolean().nullish(),
@@ -181,6 +183,29 @@ export const voucherSchema = z.object({
   voucherDispatchDetail: voucherDispatchDetailSchema.nullish(),
   amount: z.coerce.number().nullish(),
   remarks: z.string().nullish(),
+  // Delivery lock (postpone) — recorded from the Freight screen, indicator
+  // only (no edits are blocked). deliveryLockReason holds a preset key from
+  // voucher/shared/delivery-lock.ts; deliveryLockNote is the free-text detail.
+  deliveryLocked: z.boolean().nullish(),
+  deliveryLockReason: z.string().nullish(),
+  deliveryLockNote: z.string().nullish(),
+  deliveryLockedAt: z.coerce.date().nullish(),
+  deliveryLockedBy: z.number().int().nullish(),
+  deliveryLockedByName: z.string().nullish(),
+  // Release side of the same lock row — set when the delivery is unlocked.
+  deliveryUnlockedAt: z.coerce.date().nullish(),
+  deliveryUnlockedBy: z.number().int().nullish(),
+  deliveryUnlockedByName: z.string().nullish(),
+  latestDeliveryLock: z
+    .object({
+      reason: z.string().nullish(),
+      note: z.string().nullish(),
+      lockedAt: z.coerce.date().nullish(),
+      unlockedAt: z.coerce.date().nullish(),
+      lockedByName: z.string().nullish(),
+      unlockedByName: z.string().nullish(),
+    })
+    .nullish(),
 })
 export type VoucherSchema = z.infer<typeof voucherSchema>
 export const voucherListSchema = z.array(voucherSchema)

@@ -1,43 +1,27 @@
-import { useStockSummary } from '../../stock_summary/contexts/stock_summary-context'
-import { ActionDialog } from './action-dialog'
-import { DeleteDialog } from './delete-dialog'
+import { useFreight } from '../contexts/freight-context'
+import DeliveryLockDialog from './delivery-lock-dialog'
 
+/**
+ * Freight screen dialogs. Mounted once above the grid so a row unmount during
+ * the invalidation refetch that follows a save can't close a dialog mid-submit.
+ *
+ * Only the delivery-lock (postpone) dialog lives here — adding/editing a
+ * delivery note happens on its own route, not in a modal on this screen.
+ */
 export function Dialogs() {
-  const { open, setOpen, currentRow, setCurrentRow, keyName } =
-    useStockSummary()
+  const { lockTarget, closeLock } = useFreight()
+
   return (
     <>
-      <ActionDialog
-        key={`${keyName}-add`}
-        open={open === 'add'}
-        onOpenChange={() => setOpen('add')}
-      />
-      {currentRow && (
-        <>
-          <ActionDialog
-            key={`${keyName}-edit-${currentRow.id}`}
-            open={open === 'edit'}
-            onOpenChange={() => {
-              setOpen('edit')
-              setTimeout(() => {
-                setCurrentRow(null)
-              }, 500)
-            }}
-            currentRow={currentRow}
-          />
-
-          <DeleteDialog
-            key={`${keyName}-delete-${currentRow.id}`}
-            open={open === 'delete'}
-            onOpenChange={() => {
-              setOpen('delete')
-              setTimeout(() => {
-                setCurrentRow(null)
-              }, 500)
-            }}
-            currentRow={currentRow}
-          />
-        </>
+      {lockTarget && (
+        <DeliveryLockDialog
+          key={`lock-${lockTarget.id}`}
+          open
+          onOpenChange={(isOpen) => {
+            if (!isOpen) closeLock()
+          }}
+          voucher={lockTarget}
+        />
       )}
     </>
   )

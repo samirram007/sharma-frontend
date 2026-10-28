@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { lowerCase } from 'lodash'
@@ -10,7 +10,6 @@ import { useFreight } from '../contexts/freight-context'
 import { voucherDispatchDefaultValues } from '../../delivery_note/data/data'
 import VoucherDispatchDetail01 from './voucher-dispatch-detail01'
 import VoucherDispatchDetail02 from './voucher-dispatch-detail02'
-import PrintFreightDialog from './print-freight-dialog'
 import type { FreightForm, FreightSchema } from '../data/schema'
 import type { VoucherSchema } from '../../data-schema/voucher-schema'
 import type { CellContext } from '@tanstack/react-table'
@@ -20,14 +19,8 @@ import { Form } from '@/components/ui/form'
 
 export default function BillCell({ row }: CellContext<VoucherSchema, unknown>) {
   const data = row.original
-  const { config } = useFreight()
+  const { config, openPrint } = useFreight()
   const { mutate: saveFreight, isPending } = useFreightMutation()
-  const [freightData, setFreightData] = useState<FreightSchema | null>(null)
-  const [printDialogOpen, setPrintDialogOpen] = useState(false)
-  const [printDispatchDetail, setPrintDispatchDetail] = useState<Record<
-    string,
-    unknown
-  > | null>(null)
 
   // Defaults for the Dispatch Details dialog: the saved dispatch detail wins,
   // but null fields must NOT override the base defaults' unit ids (e.g.
@@ -204,7 +197,7 @@ export default function BillCell({ row }: CellContext<VoucherSchema, unknown>) {
     // uses what the user actually entered — not stale row data. Includes the
     // additional charges + discount so the FareBreakdown on the print shows
     // the full breakdown (weight × rate + charges − discount).
-    setPrintDispatchDetail({
+    const dispatchDetail = {
       carrierName: formData.transporter,
       motorVehicleNo: formData.vehicleNumber,
       source: formData.source,
@@ -224,30 +217,22 @@ export default function BillCell({ row }: CellContext<VoucherSchema, unknown>) {
       weightUnit: data.voucherDispatchDetail?.weightUnit,
       weightUnitId: data.voucherDispatchDetail?.weightUnitId,
       rateUnitId: data.voucherDispatchDetail?.rateUnitId,
-    })
+    }
 
     saveFreight(formData, {
       onSuccess: (res) => {
-        setFreightData((res?.data as FreightSchema) ?? null)
-        setPrintDialogOpen(true)
+        const freight = res?.data as FreightSchema | undefined
+        if (!freight) return
+        // The print dialog lives in the FreightProvider, not in this cell:
+        // saving invalidates the grid query, and the refetch used to unmount
+        // this BillCell (skeleton rows), discarding the dialog mid-open.
+        openPrint({ freight, dispatchDetail })
       },
     })
   }
 
   return (
     <>
-      {printDialogOpen && freightData && (
-        <PrintFreightDialog
-          open={printDialogOpen}
-          onOpenChange={setPrintDialogOpen}
-          freightData={freightData}
-          dispatchDetail={
-            printDispatchDetail ??
-            (data.voucherDispatchDetail as
-              Record<string, unknown> | null | undefined)
-          }
-        />
-      )}
       <Form {...form}>
         <div className="flex justify-start items-center gap-2">
           {config.find((c) => c.key === 'freight_method')?.value === 1 ? (
@@ -261,14 +246,21 @@ export default function BillCell({ row }: CellContext<VoucherSchema, unknown>) {
               voucherDispatchDefaultValues={dispatchDefaults}
             />
           )}
-          {Number(data.voucherDispatchDetail?.totalFare) > 0 && data.id && (
+          {data.id && (
             <Button
               type="button"
               className="focus:bg-slate-950 focus:text-zinc-50"
               variant="outline"
               size="sm"
               onClick={handleFreightBill}
-              disabled={isPending}
+              disabled={
+                isPending || Number(data.voucherDispatchDetail?.totalFare) <= 0
+              }
+              title={
+                Number(data.voucherDispatchDetail?.totalFare) > 0
+                  ? 'Generate Freight Bill'
+                  : 'Enter freight details before generating a bill'
+              }
             >
               Freight Bill
             </Button>

@@ -84,6 +84,10 @@ export const Route = createFileRoute('/_protected/reports/day_book/_layout/')({
     // Convert to TanStack SortingState for the table (reverse map backend field → column id)
     const sortFieldReverseMap: Record<string, string> = {
       billing_preference: 'billingPreference',
+      voucher_date: 'voucherDate',
+      voucher_no: 'voucherNo',
+      voucher_type: 'voucherType',
+      party: 'partyLedger',
     }
     const sorting: SortingState = sortBy
       ? [

@@ -98,3 +98,18 @@ export function computeRateFromCharge(
 
   return charge / measure
 }
+
+/** Calculate the sender's freight cost from its per-unit rate and weight. */
+export function computeSenderFreightCharge(
+  senderRate: number | string | null | undefined,
+  weight: FareInputs['weight'],
+): number {
+  const rate = Number(senderRate)
+  const measure = Number(weight)
+
+  if (!(rate > 0) || !(measure > 0)) {
+    return 0
+  }
+
+  return rate * measure
+}

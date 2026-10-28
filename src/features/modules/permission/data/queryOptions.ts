@@ -3,6 +3,7 @@ import {
   useMutation,
   useQueryClient,
 } from '@tanstack/react-query'
+import { useAuth } from '@/features/auth/contexts/AuthContext'
 import {
   fetchPermissionService,
   fetchFeaturesWithRolePermissionsService,
@@ -34,6 +35,7 @@ export const featuresWithRolePermissionsQueryOptions = (roleId?: number) => {
 
 export function usePermissionMutation() {
   const queryClient = useQueryClient()
+  const { refreshPermissions } = useAuth()
 
   return useMutation({
     mutationFn: async (data: PermissionForm & { id?: number }) => {
@@ -55,6 +57,9 @@ export function usePermissionMutation() {
       queryClient.invalidateQueries({ queryKey: ['Menus'] })
       queryClient.invalidateQueries({ queryKey: ['MenuPermissions'] })
       queryClient.invalidateQueries({ queryKey: ['AppModuleFeatures'] })
+      // The signed-in user's own rights are a snapshot taken at login — pick
+      // the new grants/revocations up right away (no logout/login needed).
+      void refreshPermissions()
     },
     onError: (error) => {
       console.error('Permission mutation failed:', error)

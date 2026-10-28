@@ -122,11 +122,21 @@ export function GridTable({
       if (newSorting.length > 0) {
         const sortField = newSorting[0].id
         const sortDir = newSorting[0].desc ? 'desc' : 'asc'
-        // Map column id to backend sort field
+        // Map the column id to the field the API can order by. Columns the
+        // backend cannot sort are not in the map — clearing the sort (instead
+        // of sending an unknown field) keeps the list on its natural order.
         const sortMap: Record<string, string> = {
+          voucherDate: 'voucher_date',
+          voucherNo: 'voucher_no',
+          voucherType: 'voucher_type',
+          partyLedger: 'party',
           billingPreference: 'billing_preference',
         }
-        const backendSortBy = sortMap[sortField] ?? sortField
+        const backendSortBy = sortMap[sortField]
+        if (!backendSortBy) {
+          onSortChange?.('', '')
+          return
+        }
         onSortChange?.(backendSortBy, sortDir)
       } else {
         onSortChange?.('', '')
@@ -191,7 +201,7 @@ export function GridTable({
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow
                 key={headerGroup.id}
-                className="group/row grid grid-cols-[115px_1fr_160px_120px_100px_100px_100px_110px_60px] "
+                className="group/row grid grid-cols-[115px_1fr_160px_120px_100px_100px_130px_110px_60px] "
               >
                 {headerGroup.headers.map((header) => {
                   return (
@@ -218,7 +228,7 @@ export function GridTable({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && 'selected'}
-                  className="group/row grid grid-cols-[115px_1fr_160px_120px_100px_100px_100px_110px_60px] hover:bg-violet-400/30"
+                  className="group/row grid grid-cols-[115px_1fr_160px_120px_100px_100px_130px_110px_60px] hover:bg-violet-400/30"
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell

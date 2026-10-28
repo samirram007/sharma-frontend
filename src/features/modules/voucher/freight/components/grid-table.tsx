@@ -9,7 +9,7 @@ import { rankItem } from '@tanstack/match-sorter-utils'
 import { MixerHorizontalIcon } from '@radix-ui/react-icons'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
-import { ChevronDown, ChevronUp, Search } from 'lucide-react'
+import { ChevronDown, ChevronUp, Download, Loader2, Search } from 'lucide-react'
 import type {
   ColumnDef,
   ColumnFiltersState,
@@ -57,9 +57,21 @@ import { cn } from '@/lib/utils'
 import { fetchFreightService } from '../data/api'
 import type { FreightQueryParams } from '../data/api'
 import { formatItemQuantity } from './columns'
+import {
+  deliveryLockMoment,
+  deliveryLockReasonLabel,
+} from '../../shared/delivery-lock'
 import { date_format } from '@/utils/removeEmptyStrings'
 import { ExportDropdown, ExportOverlay } from '../shared/export-controls'
 import { useExportJob } from '../shared/export-job'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 
 declare module '@tanstack/react-table' {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars -- required by the augmented interface's type signature
@@ -85,10 +97,6 @@ interface DataTableProps {
   zones?: GodownList
   zoneId?: number
   onZoneChange?: (zoneId?: number) => void
-  /** Fare amount range inputs — local string state so partial typing works */
-  amountFrom?: string
-  amountTo?: string
-  onAmountChange?: (from: string, to: string) => void
   /** API query params for the list — reused by the export to fetch ALL
    *  matching records (current filters applied) instead of just this page. */
   exportParams?: FreightQueryParams
@@ -97,6 +105,10 @@ interface DataTableProps {
   isLoading?: boolean
   /** Rendered inside the table body when there is nothing to show. */
   emptyState?: ReactNode
+  /** Active server-side sort (column id + direction), from the URL search. */
+  sorting?: SortingState
+  /** Commits a sort change as API fields (`voucher_date`, `party`, …). */
+  onSortChange?: (sortBy: string, sortOrder: string) => void
 }
 
 /**
@@ -131,6 +143,13 @@ function toRawExportRows(records: Array<VoucherSchema>) {
         : '',
       totalFare: item.voucherDispatchDetail?.totalFare
         ? Number(item.voucherDispatchDetail.totalFare).toFixed(2)
+        : '',
+      status: item.deliveryLocked
+        ? `Postponed${
+            item.deliveryLockReason
+              ? ` (${deliveryLockReasonLabel(item.deliveryLockReason)})`
+              : ''
+          }`
         : '',
     }
 
@@ -216,6 +235,7 @@ const rawExportColumns = [
   { header: 'Weight (Mt)', accessor: 'weight' },
   { header: 'Rate (Per Mt)', accessor: 'rate' },
   { header: 'Total Fare', accessor: 'totalFare' },
+  { header: 'Status', accessor: 'status' },
 ]
 
 /** Numeric raw-view columns that are right-aligned (Sl. No. centered). */
@@ -302,6 +322,15 @@ function toExportRows(records: Array<VoucherSchema>) {
     totalFare: item.voucherDispatchDetail?.totalFare
       ? Number(item.voucherDispatchDetail.totalFare).toFixed(2)
       : '',
+    // Postponed (locked) deliveries — the lock reason travels with the export
+    // so postponed rows stay explainable outside the app.
+    status: item.deliveryLocked
+      ? `Postponed${
+          item.deliveryLockReason
+            ? ` (${deliveryLockReasonLabel(item.deliveryLockReason)})`
+            : ''
+        }`
+      : '',
   }))
 }
 
@@ -321,20 +350,41 @@ export function GridTable({
   zones,
   zoneId,
   onZoneChange,
-  amountFrom,
-  amountTo,
-  onAmountChange,
   exportParams,
   isLoading = false,
   emptyState,
+  sorting = [],
+  onSortChange,
 }: DataTableProps) {
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
-  const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   // The setter is intentionally unused — the table manages its own global
   // filter state internally (see useReactTable's initialState below).
   const [globalFilter] = useState('')
   const [columnSizing, setColumnSizing] = useState({})
+  const [deliveryLockPreviewOpen, setDeliveryLockPreviewOpen] = useState(false)
+  const [deliveryLockPreviewLoading, setDeliveryLockPreviewLoading] =
+    useState(false)
+  const [deliveryLockPreviewError, setDeliveryLockPreviewError] = useState<
+    string | null
+  >(null)
+  const [deliveryLockPreviewRows, setDeliveryLockPreviewRows] = useState<
+    Array<VoucherSchema>
+  >([])
+  const [rateComparisonPreviewOpen, setRateComparisonPreviewOpen] =
+    useState(false)
+  const [rateComparisonPreviewLoading, setRateComparisonPreviewLoading] =
+    useState(false)
+  const [rateComparisonPreviewError, setRateComparisonPreviewError] = useState<
+    string | null
+  >(null)
+  const [rateComparisonPreviewRows, setRateComparisonPreviewRows] = useState<
+    Array<VoucherSchema>
+  >([])
+  const [rateComparisonFilter, setRateComparisonFilter] = useState<
+    'all' | 'different'
+  >('all')
+
   // True once the table is scrolled horizontally — the pinned Bill column
   // only casts its separating shadow while content actually passes under it.
   const [tableScrolled, setTableScrolled] = useState(false)
@@ -381,14 +431,10 @@ export function GridTable({
   // Raw view expands the current page of vouchers client-side (same expansion
   // used by raw exports); merged view shows the vouchers as-is. Server-side
   // pagination still walks voucher pages in both modes.
-  const displayData = useMemo(
-    () => (rawView ? toRawExportRows(data) : data),
-    [rawView, data],
-  )
   const displayColumns = rawView ? rawColumnDefs : columns
 
   const table = useReactTable<any>({
-    data: displayData,
+    data: rawView ? toRawExportRows(data) : data,
     columns: displayColumns,
     state: {
       sorting,
@@ -402,8 +448,33 @@ export function GridTable({
       },
     },
     manualPagination: true,
+    manualSorting: true,
     pageCount: safePageCount,
-    onSortingChange: setSorting,
+    // Sorting is server-side (the list is paginated): map the column id to the
+    // field the API orders by and let the page refetch. Unsupported columns
+    // clear the sort instead of sending an unknown field.
+    onSortingChange: (updater) => {
+      const next = typeof updater === 'function' ? updater(sorting) : updater
+
+      if (next.length === 0) {
+        onSortChange?.('', '')
+        return
+      }
+
+      const sortMap: Record<string, string> = {
+        voucherDate: 'voucher_date',
+        voucherNo: 'voucher_no',
+        partyName: 'party',
+      }
+      const sortBy = sortMap[next[0].id]
+
+      if (!sortBy) {
+        onSortChange?.('', '')
+        return
+      }
+
+      onSortChange?.(sortBy, next[0].desc ? 'desc' : 'asc')
+    },
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
     onColumnSizingChange: setColumnSizing,
@@ -427,10 +498,15 @@ export function GridTable({
   })
 
   // The "This page" export scope uses the currently rendered rows directly.
+  // When the delivery-lock filter is active, raw exports must still expand the
+  // full page of vouchers (not just the filtered subset) so the export reflects
+  // what the backend would return.
   const pageRows = useMemo(
     () => table.getRowModel().rows.map((row) => row.original),
     [table],
   )
+
+  const exportData = data
 
   // Prepare export column mapping from the MERGED column definitions — never
   // the table's, so merged exports keep their columns even in raw view.
@@ -446,6 +522,7 @@ export function GridTable({
       partyName: 'Distributor',
       voucherNo: 'Dl. No.',
       voucherDate: 'Date',
+      status: 'Status',
     }
     return columns
       .filter((col) => col.id !== 'actions' && col.id !== 'slNo')
@@ -477,7 +554,7 @@ export function GridTable({
     // Page-scope exports always work from the page's vouchers so the raw view
     // never leaks raw rows into merged formatting (generate() picks the raw
     // expansion when the raw view is active).
-    getPageRows: () => data,
+    getPageRows: () => exportData,
     // Fetch EVERY matching delivery note (current filters applied), walking
     // pages so the export is never truncated. The signal both aborts the
     // in-flight request and stops the loop when the user cancels.
@@ -532,6 +609,15 @@ export function GridTable({
           fileName: `${fileName}pdf`,
           signal,
         })
+      } else if (action === 'delivery-lock-report') {
+        const { default: exportTableToCsv } =
+          await import('@/utils/export-table-csv')
+        await exportTableToCsv({
+          columnData: deliveryLockReportColumns,
+          data: getDeliveryLockReportRows(rows),
+          fileName: 'freight-delivery-lock-report.csv',
+          signal,
+        })
       } else {
         const { default: exportTableToExcel } =
           await import('@/utils/export-table-excel')
@@ -549,7 +635,259 @@ export function GridTable({
     successLabel: 'record',
   })
 
-  // Sum totals from the current page data
+  const openDeliveryLockPreview = async () => {
+    setDeliveryLockPreviewOpen(true)
+    setDeliveryLockPreviewLoading(true)
+    setDeliveryLockPreviewError(null)
+    setDeliveryLockPreviewRows([])
+
+    try {
+      const batchSize = 100
+      const rows: Array<VoucherSchema> = []
+      let page = 1
+      let total: number | null = null
+      let pageRecords: Array<VoucherSchema>
+
+      do {
+        const response = await fetchFreightService('delivery_note', {
+          ...(exportParams ?? {}),
+          freight_status: 'all',
+          lock_history: true,
+          page,
+          per_page: batchSize,
+        })
+        pageRecords = response?.data ?? []
+        rows.push(...pageRecords)
+        setDeliveryLockPreviewRows([...rows])
+        total = response?.meta?.total ?? null
+        page += 1
+      } while (
+        pageRecords.length === batchSize &&
+        (total === null || rows.length < total)
+      )
+
+      setDeliveryLockPreviewRows(rows)
+    } catch {
+      setDeliveryLockPreviewError(
+        'Could not load delivery lock history. Please try again.',
+      )
+    } finally {
+      setDeliveryLockPreviewLoading(false)
+    }
+  }
+
+  const openRateComparisonPreview = async () => {
+    setRateComparisonPreviewOpen(true)
+    setRateComparisonPreviewLoading(true)
+    setRateComparisonPreviewError(null)
+    setRateComparisonPreviewRows([])
+    setRateComparisonFilter('all')
+
+    try {
+      const batchSize = 100
+      const rows: Array<VoucherSchema> = []
+      let page = 1
+      let total: number | null = null
+      let pageRecords: Array<VoucherSchema>
+
+      do {
+        const response = await fetchFreightService('delivery_note', {
+          ...(exportParams ?? {}),
+          freight_status: 'all',
+          page,
+          per_page: batchSize,
+        })
+        pageRecords = response?.data ?? []
+        rows.push(...pageRecords)
+        setRateComparisonPreviewRows([...rows])
+        total = response?.meta?.total ?? null
+        page += 1
+      } while (
+        pageRecords.length === batchSize &&
+        (total === null || rows.length < total)
+      )
+    } catch {
+      setRateComparisonPreviewError(
+        'Could not load rate comparison data. Please try again.',
+      )
+    } finally {
+      setRateComparisonPreviewLoading(false)
+    }
+  }
+
+  const getRateComparisonReportRows = (records: Array<VoucherSchema>) =>
+    records.flatMap((item) => {
+      const dispatch = item.voucherDispatchDetail
+      const originalRate = dispatch?.rate
+      const senderRate = dispatch?.senderRate
+
+      if (originalRate == null && senderRate == null) return []
+
+      const difference =
+        originalRate == null || senderRate == null
+          ? null
+          : Number(senderRate) - Number(originalRate)
+
+      return [
+        {
+          voucherNo: item.voucherNo ?? '',
+          date: date_format(item.voucherDate),
+          party: item.party?.name ?? '',
+          freightBasis: dispatch?.freightBasis ?? '',
+          originalRate:
+            originalRate == null ? '' : Number(originalRate).toFixed(2),
+          senderRate: senderRate == null ? '' : Number(senderRate).toFixed(2),
+          difference: difference == null ? '' : difference.toFixed(2),
+          comparison:
+            difference == null
+              ? 'Incomplete rates'
+              : difference > 0
+                ? 'Sender rate is higher'
+                : difference < 0
+                  ? 'Sender rate is lower'
+                  : 'Rates match',
+        },
+      ]
+    })
+
+  const rateComparisonRows = getRateComparisonReportRows(
+    rateComparisonPreviewRows,
+  )
+  const rateComparisonSummary = {
+    higher: rateComparisonRows.filter(
+      (row) => row.comparison === 'Sender rate is higher',
+    ).length,
+    lower: rateComparisonRows.filter(
+      (row) => row.comparison === 'Sender rate is lower',
+    ).length,
+    matching: rateComparisonRows.filter(
+      (row) => row.comparison === 'Rates match',
+    ).length,
+  }
+  const visibleRateComparisonRows =
+    rateComparisonFilter === 'different'
+      ? rateComparisonRows.filter(
+          (row) =>
+            row.comparison === 'Sender rate is higher' ||
+            row.comparison === 'Sender rate is lower',
+        )
+      : rateComparisonRows
+  const rateComparisonColumns: Array<{
+    header: string
+    accessor: keyof (typeof rateComparisonRows)[number]
+  }> = [
+    { header: 'Dl. No.', accessor: 'voucherNo' },
+    { header: 'Date', accessor: 'date' },
+    { header: 'Distributor', accessor: 'party' },
+    { header: 'Freight Basis', accessor: 'freightBasis' },
+    { header: 'Original Rate', accessor: 'originalRate' },
+    { header: 'Sender Rate', accessor: 'senderRate' },
+    { header: 'Difference (Sender − Original)', accessor: 'difference' },
+    { header: 'Comparison', accessor: 'comparison' },
+  ]
+
+  const downloadRateComparisonCsv = async () => {
+    const { default: exportTableToCsv } =
+      await import('@/utils/export-table-csv')
+
+    await exportTableToCsv({
+      columnData: rateComparisonColumns,
+      data: visibleRateComparisonRows,
+      fileName: 'freight-sender-rate-comparison.csv',
+    })
+  }
+
+  const getDeliveryLockReportRows = (rows: Array<VoucherSchema>) =>
+    rows.map((item) => {
+      const dispatch = item.voucherDispatchDetail
+      return {
+        voucherNo: item.voucherNo ?? '',
+        date: date_format(item.voucherDate),
+        party: item.party?.name ?? '',
+        dispatchNo: dispatch?.billOfLadingNo ?? '',
+        route: [
+          dispatch?.source,
+          dispatch?.destination,
+          dispatch?.destinationSecondary,
+        ]
+          .filter(Boolean)
+          .join(' → '),
+        carrier: dispatch?.carrierName ?? '',
+        vehicle: dispatch?.motorVehicleNo ?? '',
+        weight:
+          dispatch?.weight == null ? '' : Number(dispatch.weight).toFixed(3),
+        rate: dispatch?.rate == null ? '' : Number(dispatch.rate).toFixed(2),
+        totalFare:
+          dispatch?.totalFare == null
+            ? ''
+            : Number(dispatch.totalFare).toFixed(2),
+        status: item.deliveryLocked ? 'Postponed' : 'Released',
+        reason: item.latestDeliveryLock?.reason
+          ? (deliveryLockReasonLabel(item.latestDeliveryLock.reason) ?? '')
+          : item.deliveryLockReason
+            ? (deliveryLockReasonLabel(item.deliveryLockReason) ?? '')
+            : '',
+        note: item.latestDeliveryLock?.note ?? item.deliveryLockNote ?? '',
+        lockedAt:
+          deliveryLockMoment(item.latestDeliveryLock?.lockedAt) ??
+          deliveryLockMoment(item.deliveryLockedAt) ??
+          '',
+        lockedBy:
+          item.latestDeliveryLock?.lockedByName ??
+          item.deliveryLockedByName ??
+          '',
+        unlockedAt:
+          deliveryLockMoment(item.latestDeliveryLock?.unlockedAt) ??
+          deliveryLockMoment(item.deliveryUnlockedAt) ??
+          '',
+        unlockedBy:
+          item.latestDeliveryLock?.unlockedByName ??
+          item.deliveryUnlockedByName ??
+          '',
+      }
+    })
+
+  const lockedPreviewCount = deliveryLockPreviewRows.filter(
+    (item) => item.deliveryLocked,
+  ).length
+  const releasedPreviewCount =
+    deliveryLockPreviewRows.length - lockedPreviewCount
+
+  const deliveryLockReportColumns: Array<{
+    header: string
+    accessor: keyof ReturnType<typeof getDeliveryLockReportRows>[number]
+  }> = [
+    { header: 'Dl. No.', accessor: 'voucherNo' },
+    { header: 'Date', accessor: 'date' },
+    { header: 'Distributor', accessor: 'party' },
+    { header: 'Dispatch No.', accessor: 'dispatchNo' },
+    { header: 'Route', accessor: 'route' },
+    { header: 'Carrier', accessor: 'carrier' },
+    { header: 'Vehicle', accessor: 'vehicle' },
+    { header: 'Weight (Mt)', accessor: 'weight' },
+    { header: 'Rate', accessor: 'rate' },
+    { header: 'Total Fare', accessor: 'totalFare' },
+    { header: 'Status', accessor: 'status' },
+    { header: 'Reason', accessor: 'reason' },
+    { header: 'Note', accessor: 'note' },
+    { header: 'Postponed At', accessor: 'lockedAt' },
+    { header: 'Postponed By', accessor: 'lockedBy' },
+    { header: 'Released At', accessor: 'unlockedAt' },
+    { header: 'Released By', accessor: 'unlockedBy' },
+  ]
+
+  const downloadDeliveryLockPreview = async () => {
+    const { default: exportTableToCsv } =
+      await import('@/utils/export-table-csv')
+
+    await exportTableToCsv({
+      columnData: deliveryLockReportColumns,
+      data: getDeliveryLockReportRows(deliveryLockPreviewRows),
+      fileName: 'freight-delivery-lock-report.csv',
+    })
+  }
+
+  // Sum totals from the current page data.
   const totalFare = data.reduce(
     (sum, item) => sum + (Number(item.voucherDispatchDetail?.totalFare) || 0),
     0,
@@ -572,40 +910,17 @@ export function GridTable({
 
   return (
     <div className="flex flex-col gap-3 p-1">
-      {/* Toolbar with search, freight status filter, column visibility toggle + export buttons */}
+      {/* Toolbar with search, freight status filter, delivery-lock filter, column visibility toggle + export buttons */}
       <div className="flex flex-wrap items-center justify-between gap-3 px-2 pt-1">
         <div className="flex items-center gap-3">
           {/* Search input — auto-commits debounced (no click-to-search) */}
           <div className="relative flex w-[200px] items-center">
             <Search className="absolute left-2.5 h-3.5 w-3.5 text-muted-foreground" />
             <Input
-              placeholder="Search..."
+              placeholder="Search delivery, party, carrier, vehicle, route, destination..."
               value={search || ''}
               className="h-8 w-full pl-8 pr-3 text-xs"
               onChange={(e) => onSearchChange?.(e.target.value)}
-            />
-          </div>
-
-          {/* Fare amount range (min–max on the freight fare) */}
-          <div className="flex items-center gap-1">
-            <Input
-              type="number"
-              min={0}
-              placeholder="Min fare"
-              className="h-8 w-[90px] text-xs"
-              value={amountFrom ?? ''}
-              onChange={(e) => onAmountChange?.(e.target.value, amountTo ?? '')}
-            />
-            <span className="text-xs text-muted-foreground">–</span>
-            <Input
-              type="number"
-              min={0}
-              placeholder="Max fare"
-              className="h-8 w-[90px] text-xs"
-              value={amountTo ?? ''}
-              onChange={(e) =>
-                onAmountChange?.(amountFrom ?? '', e.target.value)
-              }
             />
           </div>
 
@@ -641,6 +956,7 @@ export function GridTable({
             {[
               { value: 'pending', label: 'Pending' },
               { value: 'prepared', label: 'Prepared' },
+              { value: 'locked', label: 'Postponed' },
               { value: 'all', label: 'All' },
             ].map((option) => (
               <button
@@ -693,7 +1009,15 @@ export function GridTable({
               job={exportJob}
               pageCount={pageRows.length}
               totalCount={totalRecords ?? null}
-              onSelect={runExport}
+              onSelect={(action, scope) => {
+                if (action === 'delivery-lock-report') {
+                  void openDeliveryLockPreview()
+                } else if (action === 'sender-rate-comparison') {
+                  void openRateComparisonPreview()
+                } else {
+                  runExport(action, scope)
+                }
+              }}
               extraGroups={[
                 {
                   label: 'Raw rows (per item & godown)',
@@ -705,6 +1029,21 @@ export function GridTable({
                     {
                       action: 'pdf-raw',
                       label: 'PDF · one row per item & godown',
+                    },
+                  ],
+                },
+                {
+                  label: 'Preview report',
+                  items: [
+                    {
+                      action: 'delivery-lock-report',
+                      label: 'Delivery lock & release report',
+                      direct: true,
+                    },
+                    {
+                      action: 'sender-rate-comparison',
+                      label: 'Sender vs original rate',
+                      direct: true,
                     },
                   ],
                 },
@@ -941,6 +1280,388 @@ export function GridTable({
           onCancel={cancelExport}
         />
       )}
+
+      <Dialog
+        open={deliveryLockPreviewOpen}
+        onOpenChange={setDeliveryLockPreviewOpen}
+      >
+        <DialogContent className="flex h-[90vh] w-[98vw] max-w-[96rem] flex-col gap-5 sm:max-w-[96rem]">
+          <DialogHeader>
+            <DialogTitle>Delivery lock & release report</DialogTitle>
+            <DialogDescription>
+              {' '}
+              {deliveryLockPreviewRows.length === 1
+                ? '1 delivery'
+                : `${deliveryLockPreviewRows.length} deliveries`}{' '}
+              with lock history matching the current filters.
+            </DialogDescription>
+            {!deliveryLockPreviewLoading && !deliveryLockPreviewError && (
+              <div className="grid grid-cols-2 gap-3 pt-2 sm:max-w-md">
+                <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-900/60 dark:bg-amber-950/20">
+                  <div className="text-xs font-medium text-amber-800 dark:text-amber-300">
+                    Currently postponed
+                  </div>
+                  <div className="mt-1 text-xl font-semibold tabular-nums text-amber-900 dark:text-amber-200">
+                    {lockedPreviewCount}
+                  </div>
+                </div>
+                <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 dark:border-emerald-900/60 dark:bg-emerald-950/20">
+                  <div className="text-xs font-medium text-emerald-800 dark:text-emerald-300">
+                    Released
+                  </div>
+                  <div className="mt-1 text-xl font-semibold tabular-nums text-emerald-900 dark:text-emerald-200">
+                    {releasedPreviewCount}
+                  </div>
+                </div>
+              </div>
+            )}
+          </DialogHeader>
+          <div className="min-h-0 flex-1 overflow-auto rounded-md border">
+            {deliveryLockPreviewLoading &&
+            deliveryLockPreviewRows.length === 0 ? (
+              <div className="flex items-center justify-center gap-2 p-10 text-sm text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Loading delivery lock history…
+              </div>
+            ) : deliveryLockPreviewError &&
+              deliveryLockPreviewRows.length === 0 ? (
+              <p
+                role="alert"
+                className="p-6 text-center text-sm text-destructive"
+              >
+                {deliveryLockPreviewError}
+              </p>
+            ) : deliveryLockPreviewRows.length === 0 ? (
+              <p className="p-6 text-center text-sm text-muted-foreground">
+                No deliveries with lock history match the current filters.
+              </p>
+            ) : (
+              <>
+                {deliveryLockPreviewLoading && (
+                  <div className="sticky top-0 z-10 flex items-center gap-2 border-b bg-background/95 px-4 py-2 text-xs text-muted-foreground backdrop-blur">
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    Loading more delivery history…{' '}
+                    {deliveryLockPreviewRows.length} loaded
+                  </div>
+                )}
+                {deliveryLockPreviewError && (
+                  <p
+                    role="alert"
+                    className="border-b bg-destructive/5 px-4 py-2 text-xs text-destructive"
+                  >
+                    {deliveryLockPreviewError} Showing the rows loaded so far.
+                  </p>
+                )}
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="min-w-24">Dl. No.</TableHead>
+                      <TableHead className="min-w-28">Date</TableHead>
+                      <TableHead className="min-w-40">Distributor</TableHead>
+                      <TableHead className="min-w-32">Dispatch No.</TableHead>
+                      <TableHead className="min-w-56">Route</TableHead>
+                      <TableHead className="min-w-36">Carrier</TableHead>
+                      <TableHead className="min-w-28">Vehicle</TableHead>
+                      <TableHead className="min-w-28 text-right">
+                        Weight
+                      </TableHead>
+                      <TableHead className="min-w-24 text-right">
+                        Rate
+                      </TableHead>
+                      <TableHead className="min-w-28 text-right">
+                        Fare
+                      </TableHead>
+                      <TableHead className="min-w-28">Status</TableHead>
+                      <TableHead className="min-w-36">Reason</TableHead>
+                      <TableHead className="min-w-56">Note</TableHead>
+                      <TableHead className="min-w-40">Postponed At</TableHead>
+                      <TableHead className="min-w-32">Postponed By</TableHead>
+                      <TableHead className="min-w-40">Released At</TableHead>
+                      <TableHead className="min-w-32">Released By</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {deliveryLockPreviewRows.map((item) => (
+                      <TableRow key={item.id}>
+                        <TableCell className="font-medium">
+                          {item.voucherNo ?? '—'}
+                        </TableCell>
+                        <TableCell>{date_format(item.voucherDate)}</TableCell>
+                        <TableCell className="whitespace-normal">
+                          {item.party?.name ?? '—'}
+                        </TableCell>
+                        <TableCell>
+                          {item.voucherDispatchDetail?.billOfLadingNo ?? '—'}
+                        </TableCell>
+                        <TableCell className="whitespace-normal">
+                          {[
+                            item.voucherDispatchDetail?.source,
+                            item.voucherDispatchDetail?.destination,
+                            item.voucherDispatchDetail?.destinationSecondary,
+                          ]
+                            .filter(Boolean)
+                            .join(' → ') || '—'}
+                        </TableCell>
+                        <TableCell>
+                          {item.voucherDispatchDetail?.carrierName ?? '—'}
+                        </TableCell>
+                        <TableCell>
+                          {item.voucherDispatchDetail?.motorVehicleNo ?? '—'}
+                        </TableCell>
+                        <TableCell className="text-right tabular-nums">
+                          {item.voucherDispatchDetail?.weight == null
+                            ? '—'
+                            : Number(item.voucherDispatchDetail.weight).toFixed(
+                                3,
+                              )}
+                        </TableCell>
+                        <TableCell className="text-right tabular-nums">
+                          {item.voucherDispatchDetail?.rate == null
+                            ? '—'
+                            : Number(item.voucherDispatchDetail.rate).toFixed(
+                                2,
+                              )}
+                        </TableCell>
+                        <TableCell className="text-right tabular-nums">
+                          {item.voucherDispatchDetail?.totalFare == null
+                            ? '—'
+                            : Number(
+                                item.voucherDispatchDetail.totalFare,
+                              ).toFixed(2)}
+                        </TableCell>
+                        <TableCell>
+                          <span
+                            className={cn(
+                              'rounded-full px-2 py-1 text-xs font-medium',
+                              item.deliveryLocked
+                                ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300'
+                                : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300',
+                            )}
+                          >
+                            {item.deliveryLocked ? 'Postponed' : 'Released'}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          {item.latestDeliveryLock?.reason
+                            ? deliveryLockReasonLabel(
+                                item.latestDeliveryLock.reason,
+                              )
+                            : item.deliveryLockReason
+                              ? deliveryLockReasonLabel(item.deliveryLockReason)
+                              : '—'}
+                        </TableCell>
+                        <TableCell className="max-w-[24rem] whitespace-normal">
+                          {item.latestDeliveryLock?.note ??
+                            item.deliveryLockNote ??
+                            '—'}
+                        </TableCell>
+                        <TableCell>
+                          {deliveryLockMoment(
+                            item.latestDeliveryLock?.lockedAt,
+                          ) ??
+                            deliveryLockMoment(item.deliveryLockedAt) ??
+                            '—'}
+                        </TableCell>
+                        <TableCell>
+                          {item.latestDeliveryLock?.lockedByName ??
+                            item.deliveryLockedByName ??
+                            '—'}
+                        </TableCell>
+                        <TableCell>
+                          {deliveryLockMoment(
+                            item.latestDeliveryLock?.unlockedAt,
+                          ) ??
+                            deliveryLockMoment(item.deliveryUnlockedAt) ??
+                            '—'}
+                        </TableCell>
+                        <TableCell>
+                          {item.latestDeliveryLock?.unlockedByName ??
+                            item.deliveryUnlockedByName ??
+                            '—'}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </>
+            )}
+          </div>
+          <DialogFooter>
+            <Button
+              onClick={() => void downloadDeliveryLockPreview()}
+              disabled={
+                deliveryLockPreviewLoading ||
+                deliveryLockPreviewRows.length === 0
+              }
+            >
+              <Download className="mr-2 h-4 w-4" />
+              Download detailed CSV
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={rateComparisonPreviewOpen}
+        onOpenChange={setRateComparisonPreviewOpen}
+      >
+        <DialogContent className="flex h-[85vh] w-[96vw] max-w-[72rem] flex-col gap-5 sm:max-w-[72rem]">
+          <DialogHeader>
+            <DialogTitle>Sender vs original freight rate</DialogTitle>
+            <DialogDescription>
+              Compare per-unit sender rates with original freight rates for
+              deliveries matching the current filters. Difference is sender rate
+              minus original rate.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-3 gap-3 sm:max-w-2xl">
+            <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 dark:border-emerald-900/60 dark:bg-emerald-950/20">
+              <div className="text-xs font-medium text-emerald-800 dark:text-emerald-300">
+                Sender rate higher
+              </div>
+              <div className="mt-1 text-xl font-semibold tabular-nums text-emerald-900 dark:text-emerald-200">
+                {rateComparisonSummary.higher}
+              </div>
+            </div>
+            <div className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 dark:border-rose-900/60 dark:bg-rose-950/20">
+              <div className="text-xs font-medium text-rose-800 dark:text-rose-300">
+                Sender rate lower
+              </div>
+              <div className="mt-1 text-xl font-semibold tabular-nums text-rose-900 dark:text-rose-200">
+                {rateComparisonSummary.lower}
+              </div>
+            </div>
+            <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-900/50">
+              <div className="text-xs font-medium text-slate-600 dark:text-slate-300">
+                Rates match
+              </div>
+              <div className="mt-1 text-xl font-semibold tabular-nums text-slate-900 dark:text-slate-100">
+                {rateComparisonSummary.matching}
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-medium text-muted-foreground">
+              Show
+            </span>
+            <Select
+              value={rateComparisonFilter}
+              onValueChange={(value) =>
+                setRateComparisonFilter(value as 'all' | 'different')
+              }
+            >
+              <SelectTrigger className="h-8 w-44 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All rate comparisons</SelectItem>
+                <SelectItem value="different">Different rates only</SelectItem>
+              </SelectContent>
+            </Select>
+            <span className="text-xs text-muted-foreground">
+              {visibleRateComparisonRows.length} of {rateComparisonRows.length}{' '}
+              rows
+            </span>
+          </div>
+          <div className="min-h-0 flex-1 overflow-auto rounded-md border">
+            {rateComparisonPreviewLoading &&
+            rateComparisonPreviewRows.length === 0 ? (
+              <div className="flex items-center justify-center gap-2 p-10 text-sm text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Loading rate comparison…
+              </div>
+            ) : rateComparisonPreviewError &&
+              rateComparisonPreviewRows.length === 0 ? (
+              <p
+                role="alert"
+                className="p-6 text-center text-sm text-destructive"
+              >
+                {rateComparisonPreviewError}
+              </p>
+            ) : visibleRateComparisonRows.length === 0 ? (
+              <p className="p-6 text-center text-sm text-muted-foreground">
+                {rateComparisonFilter === 'different'
+                  ? 'No deliveries with different sender and original rates match the current filters.'
+                  : 'No deliveries with sender or original rates match the current filters.'}
+              </p>
+            ) : (
+              <>
+                {rateComparisonPreviewLoading && (
+                  <div className="sticky top-0 z-10 flex items-center gap-2 border-b bg-background/95 px-4 py-2 text-xs text-muted-foreground backdrop-blur">
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    Loading more deliveries… {
+                      rateComparisonPreviewRows.length
+                    }{' '}
+                    loaded
+                  </div>
+                )}
+                {rateComparisonPreviewError && (
+                  <p
+                    role="alert"
+                    className="border-b bg-destructive/5 px-4 py-2 text-xs text-destructive"
+                  >
+                    {rateComparisonPreviewError} Showing the rows loaded so far.
+                  </p>
+                )}
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="min-w-24">Dl. No.</TableHead>
+                      <TableHead className="min-w-28">Date</TableHead>
+                      <TableHead className="min-w-40">Distributor</TableHead>
+                      <TableHead className="min-w-28">Basis</TableHead>
+                      <TableHead className="min-w-28 text-right">
+                        Original Rate
+                      </TableHead>
+                      <TableHead className="min-w-28 text-right">
+                        Sender Rate
+                      </TableHead>
+                      <TableHead className="min-w-40 text-right">
+                        Difference
+                      </TableHead>
+                      <TableHead className="min-w-40">Comparison</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {visibleRateComparisonRows.map((row, index) => (
+                      <TableRow key={`${row.voucherNo}-${index}`}>
+                        <TableCell className="font-medium">
+                          {row.voucherNo || '—'}
+                        </TableCell>
+                        <TableCell>{row.date}</TableCell>
+                        <TableCell>{row.party || '—'}</TableCell>
+                        <TableCell>{row.freightBasis || '—'}</TableCell>
+                        <TableCell className="text-right tabular-nums">
+                          {row.originalRate || '—'}
+                        </TableCell>
+                        <TableCell className="text-right tabular-nums">
+                          {row.senderRate || '—'}
+                        </TableCell>
+                        <TableCell className="text-right tabular-nums">
+                          {row.difference || '—'}
+                        </TableCell>
+                        <TableCell>{row.comparison}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </>
+            )}
+          </div>
+          <DialogFooter>
+            <Button
+              onClick={() => void downloadRateComparisonCsv()}
+              disabled={
+                rateComparisonPreviewLoading ||
+                visibleRateComparisonRows.length === 0
+              }
+            >
+              <Download className="mr-2 h-4 w-4" />
+              Download CSV
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Footer with totals and pagination */}
       <div className="flex flex-wrap items-center justify-between gap-4 rounded-lg border border-border bg-muted/40 px-5 py-2.5 text-sm dark:bg-muted/30">

@@ -1,7 +1,9 @@
 import BillCell from './bill-cell'
+import StatusCell from './status-cell'
 import VoucherNoSummaryDialog from '../../day_book/components/voucher-no-summary-dialog'
 import { EstimatedHint } from '../../shared/EstimatedHint'
 import { resolveDispatchWeight } from '../../shared/dispatch-defaults'
+import { DataTableColumnHeader } from '@/features/global/components/data-table/data-table-column-header'
 import type { ColumnDef } from '@tanstack/react-table'
 import type { VoucherSchema } from '../../data-schema/voucher-schema'
 import { cn } from '@/lib/utils'
@@ -44,7 +46,9 @@ export const columns: Array<ColumnDef<VoucherSchema>> = [
   },
   {
     accessorKey: 'voucherDate',
-    header: () => <div>Date</div>,
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Date" />
+    ),
     cell: ({ row }) => {
       const date = row.getValue('voucherDate') as Date | string | undefined
       return (
@@ -59,17 +63,21 @@ export const columns: Array<ColumnDef<VoucherSchema>> = [
   },
   {
     accessorKey: 'voucherNo',
-    header: () => <div>Dl. No.</div>,
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Dl. No." />
+    ),
     // Delivery no: first click shows the delivery note summary dialog; clicking
     // the no again from the dialog opens the delivery note edit page.
     cell: ({ row }) => <VoucherNoSummaryDialog data={row.original} />,
     size: 100,
     meta: { className: cn('w-[100px]') },
-    enableSorting: false,
+    enableSorting: true,
   },
   {
     id: 'partyName',
-    header: () => <div>Distributor</div>,
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Distributor" />
+    ),
     cell: ({ row }) => {
       const party = row.original.party
       return (
@@ -79,7 +87,7 @@ export const columns: Array<ColumnDef<VoucherSchema>> = [
     minSize: 140,
     size: 160,
     meta: { className: cn('min-w-[140px]') },
-    enableSorting: false,
+    enableSorting: true,
   },
   {
     id: 'dispatch',
@@ -262,6 +270,16 @@ export const columns: Array<ColumnDef<VoucherSchema>> = [
     },
     size: 110,
     meta: { className: cn('w-[110px]') },
+    enableSorting: false,
+  },
+  {
+    id: 'status',
+    header: () => <div>Status</div>,
+    // Postponed (locked) badge + the lock/unlock action — see status-cell.
+    cell: StatusCell,
+    size: 150,
+    minSize: 140,
+    meta: { className: cn('w-[150px]') },
     enableSorting: false,
   },
   {

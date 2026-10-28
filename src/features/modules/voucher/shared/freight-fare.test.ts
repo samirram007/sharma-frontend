@@ -3,6 +3,7 @@ import {
   computeFare,
   computeNetAdjustment,
   computeRateFromCharge,
+  computeSenderFreightCharge,
   type FareInputs,
 } from './freight-fare'
 import { buildChargeRows } from './fare-breakdown'
@@ -124,6 +125,23 @@ describe('computeNetAdjustment — FareBreakdown Net Adjustment math', () => {
     expect(computeNetAdjustment({ loadingCharges: '50', discount: '10' })).toBe(
       40,
     )
+  })
+})
+
+describe('computeSenderFreightCharge — Sender Rate × Weight', () => {
+  it('computes sender freight charges from the sender rate and weight', () => {
+    expect(computeSenderFreightCharge(125, 8)).toBe(1000)
+  })
+
+  it('returns zero when sender rate or weight is missing or zero', () => {
+    expect(computeSenderFreightCharge(125, 0)).toBe(0)
+    expect(computeSenderFreightCharge(0, 8)).toBe(0)
+    expect(computeSenderFreightCharge(null, 8)).toBe(0)
+    expect(computeSenderFreightCharge(125, undefined)).toBe(0)
+  })
+
+  it('coerces string inputs and keeps cents precision', () => {
+    expect(computeSenderFreightCharge('12.5', '3.2')).toBe(40)
   })
 })
 

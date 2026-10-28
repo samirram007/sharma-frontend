@@ -22,10 +22,9 @@ const freightSearchSchema = z.object({
   search: z.string().optional().catch(undefined),
   freightStatus: z.string().optional().catch(undefined),
   zoneId: z.coerce.number().int().positive().optional().catch(undefined),
-  // Fare amount range filters (dispatch-detail total_fare), mirrored
-  // snake_case in the API query params below.
-  amountFrom: z.coerce.number().nonnegative().optional().catch(undefined),
-  amountTo: z.coerce.number().nonnegative().optional().catch(undefined),
+  // Column sort, kept in the URL so a refresh / shared link keeps the order.
+  sortBy: z.string().optional().catch(undefined),
+  sortOrder: z.enum(['asc', 'desc']).optional().catch(undefined),
 })
 
 export type FreightSearchParams = z.infer<typeof freightSearchSchema>
@@ -73,8 +72,8 @@ export const Route = createFileRoute(
       search: search.search,
       freight_status: search.freightStatus,
       zone_id: search.zoneId,
-      amount_min: search.amountFrom,
-      amount_max: search.amountTo,
+      sort_by: search.sortBy,
+      sort_order: search.sortOrder,
     }
 
     // Non-suspense query with keepPreviousData: the filter panel and table
@@ -90,6 +89,7 @@ export const Route = createFileRoute(
     })
 
     const overallTotalFare = freightResponse?.aggregates?.total_fare
+    const postponedCount = freightResponse?.aggregates?.postponed_count
     // Only pass the minimal pagination meta down (current_page, last_page, per_page, total)
     const paginationMeta = freightResponse?.meta
 
@@ -112,6 +112,7 @@ export const Route = createFileRoute(
         isFetching={isFetching}
         paginationMeta={paginationMeta}
         totalFareOverall={overallTotalFare}
+        postponedCount={postponedCount}
         deliveryVehicles={deliveryVehicles}
         deliveryPlaces={deliveryPlaces}
         transporter={transporter}

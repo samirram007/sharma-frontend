@@ -32,6 +32,7 @@ export const voucherDispatchDefaultValues: VoucherDispatchDetailForm = {
   distance: null,
   distanceUnitId: 2,
   rate: null,
+  senderRate: null,
   rateUnitId: 16,
   totalFare: null,
   quantity: null,
@@ -48,6 +49,7 @@ export const voucherDispatchDefaultValues: VoucherDispatchDetailForm = {
   discount: null,
   billingPreference: 'advance' as const,
   freightCharges: null,
+  senderFreightCharges: null,
 }
 
 const deliveryNoteDefaultValues: DeliveryNoteForm = {

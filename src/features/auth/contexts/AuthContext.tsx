@@ -30,6 +30,12 @@ export interface AuthContextType {
   login: (props: LoginProps) => Promise<void>
   logout: () => Promise<void>
   fetchProfile: () => Promise<void>
+  /**
+   * Re-read the profile and recompute `permissions` without the global
+   * loading state — used after a role-permission change so a granted or
+   * revoked feature takes effect immediately instead of after a re-login.
+   */
+  refreshPermissions: () => Promise<void>
   permissions: string[]
   menuTree: MenuTreeItem[]
   period: PeriodType | null
@@ -43,6 +49,25 @@ export interface AuthContextType {
 import { getToken, setToken, removeToken } from '@/lib/token-storage'
 
 export { getToken, setToken, removeToken }
+
+/**
+ * Allowed feature codes across the user's roles, used for every
+ * `permissions.includes(...)` gate in the app.
+ */
+function collectPermissions(roles?: Role[] | null): string[] {
+  const perms: string[] = []
+
+  roles?.forEach((role) => {
+    role?.permissions?.forEach((permission: Permission) => {
+      const code = permission.appModuleFeature?.code
+      if (permission.isAllowed && code && !perms.includes(code)) {
+        perms.push(code)
+      }
+    })
+  })
+
+  return perms
+}
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -90,29 +115,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               }
             : null,
         )
-        const perms: string[] = []
         // Extract permissions from roles
-
-        data?.data?.roles?.forEach((role: Role) => {
-          role?.permissions?.forEach((permission: Permission) => {
-            // console.log(permission, "permissions in auth context")
-            if (
-              permission.isAllowed &&
-              !perms.includes(permission.appModuleFeature?.code || '')
-            ) {
-              perms.push(permission.appModuleFeature?.code || '')
-            }
-          })
-        })
-
-        // data?.data?.roles?.forEach((role: Role) => {
-        //     role.permission?.forEach((permission: Permission) => {
-        //         if (permission.isAllowed) {
-        //             perms.push(permission.appModuleFeature?.code || '');
-        //         }
-        //     });
-        // });
-        setpermissions(perms)
+        setpermissions(collectPermissions(data?.data?.roles))
       })
       // console.log('Profile fetched successfully:', data?.data);
 
@@ -130,6 +134,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setIsLoading(false)
     }
   }
+  /**
+   * Refresh `permissions` in place (no loading spinner): after a permission is
+   * granted or revoked the current session must follow immediately, otherwise
+   * a user keeps the stale rights captured at login.
+   */
+  const refreshPermissions = React.useCallback(async () => {
+    try {
+      const data = await fetchUserProfileService()
+      const profile = data?.data
+      if (profile) {
+        setUser(profile)
+        setpermissions(collectPermissions(profile.roles))
+      }
+    } catch {
+      // Keep the current snapshot — a failed refresh must not drop rights.
+    }
+  }, [])
+
   const login = React.useCallback(async ({ email, password }: LoginProps) => {
     setIsLoading(true)
     try {
@@ -190,6 +212,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         login,
         logout,
         fetchProfile,
+        refreshPermissions,
         permissions,
         menuTree,
       }}

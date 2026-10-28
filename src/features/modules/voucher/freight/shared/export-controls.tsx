@@ -17,6 +17,8 @@ import { formatEta } from './export-job'
 export interface ExportItem {
   action: string
   label: string
+  /** Start the action directly instead of opening the generic export-count confirmation. */
+  direct?: boolean
 }
 
 export interface ExportGroup {
@@ -24,6 +26,9 @@ export interface ExportGroup {
   items: Array<ExportItem>
 }
 
+/**
+ * Optional additional groups (e.g. "More formats" with variant exports).
+ */
 interface ExportDropdownProps {
   job: ExportJob | null
   pageCount: number
@@ -183,7 +188,11 @@ export function ExportDropdown({
             {group.items.map((item) => (
               <DropdownMenuItem
                 key={item.action}
-                onSelect={() => openPreview(item.action, 'all')}
+                onSelect={() =>
+                  item.direct
+                    ? onSelect(item.action, 'all')
+                    : openPreview(item.action, 'all')
+                }
               >
                 {item.action.startsWith('excel') ? (
                   <FileSpreadsheet />
