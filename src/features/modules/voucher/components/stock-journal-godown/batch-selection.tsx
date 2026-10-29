@@ -8,10 +8,12 @@ import {
   CommandList,
 } from '@/components/ui/command'
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet'
 import type { StockItem } from '@/features/modules/stock_item/data/schema'
 import { useQuantityDecimals } from '@/hooks/use-quantity-decimals'
 import { cn } from '@/lib/utils'
@@ -66,15 +68,6 @@ const BatchSelection = (props: BatchSelectionProps) => {
   )
 
  const frameworks = [
-  {
-    label: 'Select Batch',
-    value: '',
-    stockInHand: undefined,
-    stockUnitLabel: '',
-    className: 'min-w-full hover:bg-blue-300',
-    stockInHandFormatted: '',
-  },
-
   ...(batches.data?.map((batch: BatchData) => {
     const batchNo =
       (typeof batch.batchNo === 'string'
@@ -159,73 +152,80 @@ const BatchSelection = (props: BatchSelectionProps) => {
 
   return (
     <div>
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <Button
-            ref={triggerRef}
-            variant="outline"
-            role="combobox"
-            aria-expanded={open}
-            className={cn('w-full justify-between')}
-            onBlur={handleBlur}
-          >
-            {selectedLabel}
-            <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent
-          className="popover-content-width-same-as-trigger p-0"
-          onOpenAutoFocus={(e) => {
-            // Move focus into the search box so the batch can be
-            // chosen entirely with the keyboard. Fires after the
-            // content mounts, so the ref is always available.
-            e.preventDefault()
-            searchInputRef.current?.focus()
-          }}
+    <Sheet open={open} onOpenChange={setOpen}>
+      <SheetTrigger asChild>
+        <Button
+          ref={triggerRef}
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className={cn('w-full justify-between')}
+          onBlur={handleBlur}
         >
-          <Command className="rounded-lg border shadow-md min-w-full">
-            <CommandInput ref={searchInputRef} placeholder="Search batch..." />
-            <CommandList className=" max-h-full">
-              <CommandEmpty>No batch found.</CommandEmpty>
-              <CommandGroup>
-                {frameworks.map(
-                  (framework: {
-                    label: string
-                    value: string
-                    stockInHand: number
-                    stockUnitLabel: string
-                    className: string
-                    stockInHandFormatted: string
-                  }) => (
-                    <CommandItem
-                      className={cn('justify-start', framework.className)}
-                      key={framework.value}
-                      value={framework.value}
-                      onSelect={() => handleSelect(framework.value)}
-                    >
-                      <CheckIcon
-                        className={cn(
-                          'mr-2 h-4 w-4',
-                          selectedId === framework.value
-                            ? 'opacity-100'
-                            : 'opacity-0',
-                        )}
-                      />
-                      <div className="flex flex-row justify-between w-full">
-                        <div>{framework.label}</div>
-                        <div>
-                          {framework.stockInHandFormatted}{' '}
-                          {framework.stockUnitLabel}
-                        </div>
+          {selectedLabel}
+          <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </SheetTrigger>
+      <SheetContent
+        className="min-w-[450px]! p-0"
+        onOpenAutoFocus={(e) => {
+          e.preventDefault()
+          setTimeout(() => searchInputRef.current?.focus(), 0)
+        }}
+      >
+        <SheetHeader>
+          <SheetTitle>Select Batch</SheetTitle>
+        </SheetHeader>
+        <Command
+          value={selectedId}
+          className="rounded-lg border shadow-md min-w-full"
+        >
+          <CommandInput ref={searchInputRef} placeholder="Search batch..." />
+          <CommandList className=" max-h-full">
+            <CommandEmpty>No batch found.</CommandEmpty>
+            <CommandGroup>
+              {frameworks.map(
+                (framework: {
+                  label: string
+                  value: string
+                  stockInHand: number
+                  stockUnitLabel: string
+                  className: string
+                  stockInHandFormatted: string
+                }) => (
+                  <CommandItem
+                    className={cn(
+                      'justify-start',
+                      framework.className,
+                      selectedId === framework.value && 'bg-accent text-accent-foreground',
+                    )}
+                    key={framework.value}
+                    value={framework.value}
+                    onSelect={() => handleSelect(framework.value)}
+                  >
+                    <CheckIcon
+                      className={cn(
+                        'mr-2 h-4 w-4',
+                        selectedId === framework.value
+                          ? 'opacity-100'
+                          : 'opacity-0',
+                      )}
+                    />
+                    <div className="flex flex-row justify-between w-full">
+                      <div>{framework.label}</div>
+                      <div>
+                        {framework.stockInHandFormatted}{' '}
+                        {framework.stockUnitLabel}
                       </div>
-                    </CommandItem>
-                  ),
-                )}
-              </CommandGroup>
-            </CommandList>
-          </Command>
-        </PopoverContent>
-      </Popover>
+                    </div>
+                  </CommandItem>
+                ),
+              )}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </SheetContent>
+    </Sheet>
     </div>
   )
 }

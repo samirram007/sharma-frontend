@@ -77,11 +77,12 @@ function challanStyles(paperSize: ChallanPaperSize) {
     .challan-items .challan-qty { width: 16%; }
     .challan-items .challan-particulars { width: 55%; }
     .challan-items .challan-rate { width: 14%; }
-    .challan-items .challan-total { width: 15%; }
+      .challan-items .challan-total { width: 15%; }
+      .challan-items .challan-sl { width: 6%; }
     .challan-items tbody td { min-height: 170px; height: 170px; }
     .challan-item-particulars { white-space: pre-line; }
     .challan-item-extra-space { min-height: 105px; }
-    .challan-items tfoot td { font-weight: 700; }
+    .challan-items tfoot td { font-weight: 700; border: 1px solid #111; }
     .challan-payment-details { margin: 5px 0 8px; }
     .challan-mode-payment { padding: 3px 2px; }
     .challan-value-words { border-top: 1px dotted #777; border-bottom: 1px dotted #777; padding: 5px 2px; font-style: italic; }
@@ -99,15 +100,15 @@ function challanStyles(paperSize: ChallanPaperSize) {
     ${
       !landscape
         ? `
-      .challan-sheet { padding: 12px; font-size: 9px; }
+      .challan-sheet { padding: 12px; font-size: 10px; }
       .challan-heading { grid-template-columns: 1fr; }
       .challan-company { padding: 8px; border-right: 0; border-bottom: 1px solid #111; }
-      .challan-company-name { font-size: 19px; }
+      .challan-company-name { font-size: 20px; }
       .challan-meta div { min-height: 30px; padding: 5px; }
       .challan-from-to div { min-height: 30px; padding: 6px; }
       .challan-party { min-height: 28px; padding: 5px; }
-      .challan-items th, .challan-items td { padding: 3px; font-size: 7px; }
-      .challan-items th { font-size: 7px; }
+      .challan-items th, .challan-items td { padding: 3px; font-size: 8px; }
+      .challan-items th { font-size: 8px; }
       .challan-items tbody td { min-height: 130px; height: 130px; }
       .challan-freight { width: 56%; }
       .challan-freight th, .challan-freight td, .challan-freight caption { padding: 3px 5px; font-size: 7px; }
@@ -115,6 +116,8 @@ function challanStyles(paperSize: ChallanPaperSize) {
       .challan-items .challan-particulars { width: 55%; }
       .challan-items .challan-rate { width: 14%; }
       .challan-items .challan-total { width: 15%; }
+      .challan-items .challan-sl { width: 6%; }
+    .challan-items .challan-sl { width: 6%; }
       .challan-item-extra-space { min-height: 75px; }
       .challan-payment-details { margin: 4px 0 5px; }
       .challan-value-words { padding: 3px 2px; }
@@ -394,20 +397,29 @@ function ChallanPreview({
         <>
           <div className="challan-heading">
             <div className="challan-company">
-              <div className="challan-company-name">
-                {company?.name ?? 'Company'}
-              </div>
-              <div className="challan-company-address">
-                {address || 'Company address'}
+               <div className="challan-company-name">
+                 {company?.name ?? 'Company'}
+               </div>
+               <div className="challan-company-address">
+                 {address || 'Company address'}
                 {(company?.phoneNo || company?.mobileNo) && (
                   <div>
                     Phone:{' '}
                     {[company.phoneNo, company.mobileNo]
                       .filter(Boolean)
                       .join(' / ')}
-                  </div>
-                )}
-              </div>
+                   </div>
+                 )}
+               </div>
+               <div
+                 style={{
+                   marginTop: 4,
+                   fontWeight: 700,
+                   textAlign: 'center',
+                 }}
+               >
+                 DELIVERY CHALLAN
+               </div>
             </div>
             <div className="challan-meta">
               <div>
@@ -475,42 +487,49 @@ function ChallanPreview({
         <table className="challan-items">
           <thead>
             <tr>
-              <th className="challan-qty">No. Bags / Qty</th>
+               <th className="challan-sl">Sl.</th>
               <th className="challan-particulars">Particulars</th>
+              <th className="challan-qty">No. Bags / Qty</th>
               <th className="challan-rate">Rate Per MT</th>
               <th className="challan-total">Total</th>
             </tr>
           </thead>
           <tbody>
-            {itemRows.map((row, index) => (
-              <tr key={`${row.quantity}-${index}`}>
-                <td>{row.quantity}</td>
-                <td className="challan-item-particulars">
-                  {row.particulars}
-                  <div className="challan-item-extra-space" />
-                </td>
-                <td>{formatItemAmount(row.rate, currency)}</td>
-                <td>{formatItemAmount(row.total, currency)}</td>
-              </tr>
+             {itemRows.map((row, index) => (
+               <tr key={`${row.quantity}-${index}`}>
+                  <td className="challan-sl">{index + 1}</td>
+                  <td className="challan-item-particulars">
+                    {row.particulars}
+                    <div className="challan-item-extra-space" />
+                  </td>
+                  <td className="text-center">{row.quantity}</td>
+                  <td className="text-right">
+                    {formatItemAmount(row.rate, currency)}
+                  </td>
+                  <td className="text-right">
+                    {formatItemAmount(row.total, currency)}
+                  </td>
+               </tr>
             ))}
           </tbody>
-          <tfoot>
-            <tr>
-              <td>
-                {totalQuantity > 0
-                  ? `${totalQuantity.toFixed(quantityDecimals)}${quantityUnit ? ` ${quantityUnit}` : ''}`
-                  : ''}
-              </td>
-              <td>Total</td>
-              <td></td>
-              <td>
-                {formatItemAmount(
-                  itemRows.reduce((sum, row) => sum + row.totalValue, 0),
-                  currency,
-                )}
-              </td>
-            </tr>
-          </tfoot>
+           <tfoot>
+              <tr>
+                <td></td>
+                <td>Total</td>
+                <td className="text-center">
+                  {totalQuantity > 0
+                    ? `${totalQuantity.toFixed(quantityDecimals)}${quantityUnit ? ` ${quantityUnit}` : ''}`
+                    : ''}
+                </td>
+                <td></td>
+                <td className="text-right">
+                  {formatItemAmount(
+                    itemRows.reduce((sum, row) => sum + row.totalValue, 0),
+                    currency,
+                  )}
+                </td>
+              </tr>
+           </tfoot>
         </table>
       )}
       <div className="challan-payment-details">
@@ -759,17 +778,19 @@ export default function ChallanDialog({ data }: Props) {
           2
         autoTable(doc, {
           startY: y,
-          head: [['No. Bags / Qty', 'Particulars', 'Rate Per MT', 'Total']],
-          body: itemRows.map((row) => [
-            row.quantity,
-            row.particulars,
-            formatItemAmount(row.rate, company?.currency ?? null),
-            formatItemAmount(row.total, company?.currency ?? null),
-          ]),
-          foot: [
-            [
-              `${totalQuantity.toFixed(quantityDecimals)}${(entries[0]?.stockUnit?.code ?? entries[0]?.stockItem?.stockUnit?.code) ? ` ${entries[0]?.stockUnit?.code ?? entries[0]?.stockItem?.stockUnit?.code}` : ''}`,
-              'Total',
+           head: [['Sl.', 'Particulars', 'No. Bags / Qty', 'Rate Per MT', 'Total']],
+           body: itemRows.map((row, index) => [
+             index + 1,
+             row.particulars,
+             row.quantity,
+             formatItemAmount(row.rate, company?.currency ?? null),
+             formatItemAmount(row.total, company?.currency ?? null),
+           ]),
+           foot: [
+             [
+               '',
+               `${totalQuantity.toFixed(quantityDecimals)}${(entries[0]?.stockUnit?.code ?? entries[0]?.stockItem?.stockUnit?.code) ? ` ${entries[0]?.stockUnit?.code ?? entries[0]?.stockItem?.stockUnit?.code}` : ''}`,
+               'Total',
               '',
               formatItemAmount(
                 itemRows.reduce((sum, row) => sum + row.totalValue, 0),
@@ -801,17 +822,19 @@ export default function ChallanDialog({ data }: Props) {
           },
           columnStyles: landscape
             ? {
-                0: { cellWidth: 28 },
-                1: { cellWidth: 'auto' },
-                2: { cellWidth: 30 },
-                3: { cellWidth: 30 },
-              }
-            : {
-                0: { cellWidth: 23 },
-                1: { cellWidth: 'auto' },
-                2: { cellWidth: 22 },
-                3: { cellWidth: 23 },
-              },
+                 0: { cellWidth: 10 },
+                 1: { cellWidth: 28 },
+                 2: { cellWidth: 'auto' },
+                 3: { cellWidth: 30 },
+                 4: { cellWidth: 30 },
+               }
+             : {
+                 0: { cellWidth: 8 },
+                 1: { cellWidth: 23 },
+                 2: { cellWidth: 'auto' },
+                 3: { cellWidth: 22 },
+                 4: { cellWidth: 23 },
+               },
           margin: { left: margin, right: margin },
         })
         itemFinalY =
