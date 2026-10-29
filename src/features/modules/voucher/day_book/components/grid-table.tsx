@@ -201,7 +201,7 @@ export function GridTable({
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow
                 key={headerGroup.id}
-                className="group/row grid grid-cols-[115px_1fr_160px_120px_100px_100px_130px_110px_60px] "
+                className="group/row grid grid-cols-[115px_1fr_160px_120px_100px_100px_130px_110px_145px] "
               >
                 {headerGroup.headers.map((header) => {
                   return (
@@ -228,7 +228,7 @@ export function GridTable({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && 'selected'}
-                  className="group/row grid grid-cols-[115px_1fr_160px_120px_100px_100px_130px_110px_60px] hover:bg-violet-400/30"
+                  className="group/row grid grid-cols-[115px_1fr_160px_120px_100px_100px_130px_110px_145px] hover:bg-violet-400/30"
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell

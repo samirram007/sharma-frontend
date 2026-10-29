@@ -1,6 +1,13 @@
 export const PRINT_CSS_STATIC = `
   table, img { page-break-inside: avoid; }
   h1, h2, h3, h4 { page-break-after: avoid; }
+  .print-freight-breakdown { border-collapse: collapse; font-size: 10px; }
+  .print-freight-breakdown th, .print-freight-breakdown td { border: 1px solid #111; padding: 1.5mm 2mm; }
+  .print-freight-breakdown thead th { background: #f1f1f1; font-weight: 700; }
+  .print-freight-breakdown tbody td:first-child, .print-freight-breakdown tfoot th:first-child { text-align: left; }
+  .print-freight-breakdown tbody td:not(:first-child), .print-freight-breakdown tfoot th:not(:first-child) { text-align: right; }
+  .print-freight-breakdown .print-freight-discount { color: #b91c1c; }
+  .print-freight-breakdown .print-freight-net-total th { border-top: 2px solid #111; background: #f1f1f1; font-weight: 700; }
 `
 
 export const PAPER_SIZES = [

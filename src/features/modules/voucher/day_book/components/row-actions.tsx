@@ -3,6 +3,7 @@ import type { Row } from '@tanstack/react-table'
 
 import type { DayBookSchema } from '../data/schema'
 import PrintDialog from './print-dialog'
+import ChallanDialog from './challan-dialog'
 import { Button } from '@/components/ui/button'
 
 import { IconEdit } from '@tabler/icons-react'
@@ -18,6 +19,9 @@ const RowActions = (props: DataTableRowActionsProps) => {
   const { row } = props
   return (
     <div className="flex items-center gap-2">
+      {row?.original?.voucherType?.id === 2001 ? (
+        <ChallanDialog data={row.original} />
+      ) : null}
       {row?.original?.voucherType?.id === 1006 ? (
         <PrintDialog data={row?.original} />
       ) : (

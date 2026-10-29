@@ -22,7 +22,7 @@ import { numberToWords } from '@/utils/helper'
 import { Dialog } from '@radix-ui/react-dialog'
 import { buildPrintCss, PAPER_SIZES, type PaperSizeId } from './print-styles'
 import {
-  FareBreakdown,
+  buildChargeRows,
   type FareDispatchDetail,
 } from '../../../shared/fare-breakdown'
 import {
@@ -139,10 +139,26 @@ const PrintFreightDialog = (props: Props) => {
     return Number(freightData?.amount) || Number(dispatchDetail?.totalFare) || 0
   }, [freightData?.amount, dispatchDetail])
 
-  const discount = useMemo(
-    () => Number(dispatchDetail?.discount) || 0,
+  const { discount, rows: freightChargeRows } = useMemo(
+    () => buildChargeRows(dispatchDetail as FareDispatchDetail),
     [dispatchDetail],
   )
+
+  const freightBreakdownRows = [
+    ...freightChargeRows,
+    ...(discount > 0 ? [{ label: 'Less: Discount', value: discount }] : []),
+  ].map(({ label, value }) => {
+    const [rupees, paise = '00'] = Math.abs(value).toFixed(2).split('.')
+    return {
+      label,
+      rupees: label === 'Less: Discount' ? `− ${rupees}` : rupees,
+      paise,
+      isDiscount: label === 'Less: Discount',
+    }
+  })
+  const [totalRupees, totalPaise = '00'] = Math.abs(totalFare)
+    .toFixed(2)
+    .split('.')
 
   const printCss = useMemo(
     () => buildPrintCss(resolvedPaperSize),
@@ -423,15 +439,47 @@ const PrintFreightDialog = (props: Props) => {
                   Fare Details
                 </div>
                 <div className="print-section-body p-4">
-                  <FareBreakdown
-                    dispatchDetail={dispatchDetail as FareDispatchDetail}
-                    totalFare={totalFare}
-                    variant="flex"
-                    currencySymbol="₹"
-                    showNetAdjustment
-                    rowClassName="py-1 border-b border-dashed border-slate-100 dark:border-slate-800"
-                    totalRowClassName="mb-2 flex items-baseline justify-between gap-4 border-b-2 border-slate-700 pb-2 text-sm font-bold"
-                  />
+                  <table className="print-freight-breakdown w-full border-collapse text-sm">
+                    <thead>
+                      <tr>
+                        <th className="text-left">Particulars</th>
+                        <th className="w-24 text-right">Rs.</th>
+                        <th className="w-16 text-right">P.</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {freightBreakdownRows.map((row) => (
+                        <tr key={row.label}>
+                          <td
+                            className={
+                              row.isDiscount ? 'print-freight-discount' : ''
+                            }
+                          >
+                            {row.label}
+                          </td>
+                          <td
+                            className={`text-right ${row.isDiscount ? 'print-freight-discount' : ''}`}
+                          >
+                            {row.rupees}
+                          </td>
+                          <td
+                            className={`text-right ${row.isDiscount ? 'print-freight-discount' : ''}`}
+                          >
+                            {row.paise}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                    <tfoot>
+                      <tr className="print-freight-net-total">
+                        <th className="text-left">NET TOTAL</th>
+                        <th className="text-right">
+                          {totalFare < 0 ? `-${totalRupees}` : totalRupees}
+                        </th>
+                        <th className="text-right">{totalPaise}</th>
+                      </tr>
+                    </tfoot>
+                  </table>
                 </div>
               </div>
             )}
