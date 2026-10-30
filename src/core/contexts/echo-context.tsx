@@ -62,10 +62,14 @@ export function EchoProvider({ children }: { children: ReactNode }) {
   // subscription callbacks would re-fire, triggering infinite update loops
   // in consumers that call setState inside Echo subscription handlers.
   const echoCreatedRef = useRef(false)
+  // Hold the latest Echo instance so the bfcache `pageshow` handler (which
+  // runs outside React's render cycle) can disconnect/reconnect it.
+  const echoInstanceRef = useRef<EchoInstance | null>(null)
 
   useEffect(() => {
     if (!isAuthenticated || !user?.id) {
       setEcho(null)
+      echoInstanceRef.current = null
       echoCreatedRef.current = false
       return
     }
@@ -137,6 +141,7 @@ export function EchoProvider({ children }: { children: ReactNode }) {
       }),
     })
 
+    echoInstanceRef.current = instance
     setEcho(instance)
 
     // App-key drift check — binds to the WS connection's error event and warns
@@ -144,8 +149,23 @@ export function EchoProvider({ children }: { children: ReactNode }) {
     // mismatch). Safe to attach eagerly: it only fires on an actual error.
     attachReverbKeyDriftWarning(instance)
 
+    // Reconnect the WebSocket when the page is restored from the
+    // Back-Forward Cache (bfcache). Browsers freeze and tear down live
+    // connections when a page is navigated away from, and on `pageshow`
+    // with `event.persisted === true` they restore the page without
+    // re-running any script. The frozen WebSocket never resumes, so the
+    // next pusher-js connection attempt fails with the stale socket.
+    const onPageShow = (event: PageTransitionEvent) => {
+      if (!event.persisted || !echoInstanceRef.current) return
+      echoInstanceRef.current.disconnect()
+      echoInstanceRef.current.connect()
+    }
+    window.addEventListener('pageshow', onPageShow)
+
     return () => {
+      window.removeEventListener('pageshow', onPageShow)
       instance.disconnect()
+      echoInstanceRef.current = null
       setEcho(null)
       echoCreatedRef.current = false
     }

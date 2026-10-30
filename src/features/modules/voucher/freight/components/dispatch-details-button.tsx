@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import type { Resolver } from 'react-hook-form'
@@ -76,6 +76,10 @@ const DispatchDetailsButton = ({
     resolver: zodResolver(formSchema) as Resolver<FreightForm>,
     defaultValues,
   })
+
+  useEffect(() => {
+    form.reset(defaultValues)
+  }, [defaultValues, form])
 
   const voucherDispatchDefaultValuesWithVoucher =
     useMemo<VoucherDispatchDetailForm>(() => {
