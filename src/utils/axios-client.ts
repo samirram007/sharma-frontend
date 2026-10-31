@@ -20,8 +20,9 @@ const axiosClient: AxiosInstance = axios.create({
   // },
 })
 
-// Refresh token handler
-async function refreshToken(): Promise<void> {
+// Refresh token handler — also used by AuthContext to mint a token from the
+// httpOnly `token` cookie when a tab has none in (readable) storage.
+export async function refreshToken(): Promise<void> {
   try {
     const response = await axios.post(
       `${API_BASE_URL}/auth/refresh`,

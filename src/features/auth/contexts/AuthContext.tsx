@@ -47,6 +47,7 @@ export interface AuthContextType {
 //  Consolidated in src/lib/token-storage.ts (shared with the axios client)
 // ---------------------------------------------------------------------------
 import { getToken, setToken, removeToken } from '@/lib/token-storage'
+import { refreshToken } from '@/utils/axios-client'
 
 export { getToken, setToken, removeToken }
 
@@ -96,6 +97,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [menuTreeData])
 
+  /**
+   * The httpOnly `token` cookie authenticates every /api call but is
+   * invisible to JS, so a tab whose readable storage is empty — a new tab when
+   * VITE_AUTH_STORAGE is per-tab sessionStorage, cleared storage, or the
+   * `cookie` driver — is logged in yet has no bearer token for anything that
+   * reads `getToken()` (Echo channel auth, the axios 401 retry). Minting one
+   * from the cookie keeps every tab in the same readable state.
+   */
+  const ensureReadableToken = async () => {
+    if (getToken()) return
+
+    try {
+      await refreshToken()
+    } catch {
+      // No cookie-backed session to mint from (anonymous visitor). The profile
+      // call that preceded this already failed and cleared the user.
+    }
+  }
+
   const fetchProfile = async () => {
     setIsLoading(true)
     // check cookie key "token" is set  else redirect to login
@@ -118,6 +138,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         // Extract permissions from roles
         setpermissions(collectPermissions(data?.data?.roles))
       })
+      // Authenticated by cookie only? Give this tab a token of its own before
+      // anything downstream needs one.
+      await ensureReadableToken()
       // console.log('Profile fetched successfully:', data?.data);
 
       // console.log('profile Data: ', data, isAuthenticated, user);
